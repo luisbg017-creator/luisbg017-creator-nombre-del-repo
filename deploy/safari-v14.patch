@@ -1,0 +1,363 @@
+--- a/index.html
++++ b/index.html
+@@ -4240,6 +4240,68 @@
+   line-height: 1.45;
+ }
+ 
++
++
++/* GMAIL SHARED BINDING · V14 */
++.staff-binding-badge {
++  display: inline-flex;
++  align-items: center;
++  gap: 6px;
++}
++.staff-binding-badge::before {
++  content: "";
++  width: 6px;
++  height: 6px;
++  border-radius: 50%;
++  background: currentColor;
++  opacity: .55;
++}
++.staff-binding-badge.linked {
++  color: #8cc99a;
++}
++.staff-binding-badge.unlinked {
++  color: #777;
++}
++.staff-binding-badge.checking {
++  color: #9a9a9a;
++}
++.staff-binding-live {
++  margin-top: 13px;
++  min-height: 34px;
++  border: 1px solid rgba(255,255,255,.14);
++  padding: 9px 11px;
++  display: flex;
++  align-items: center;
++  gap: 9px;
++  font-size: .5rem;
++  letter-spacing: .12em;
++  color: #888;
++}
++.staff-binding-dot {
++  width: 7px;
++  height: 7px;
++  border-radius: 50%;
++  background: currentColor;
++  flex: 0 0 auto;
++}
++.staff-binding-live.linked {
++  color: #9fd1aa;
++  border-color: rgba(159,209,170,.3);
++}
++.staff-binding-live.unlinked {
++  color: #aaa;
++}
++.staff-binding-live.unknown {
++  color: #a9a18d;
++}
++.staff-login-submit:disabled {
++  opacity: .55;
++  cursor: wait;
++}
++.staff-login-submit.loading {
++  letter-spacing: .11em;
++}
++
+ </style>
+ </head>
+ <body>
+@@ -4312,17 +4374,19 @@
+           <input
+             id="staffGmailInput"
+             type="email"
++            inputmode="email"
+             autocomplete="email"
+             placeholder="tunombre@gmail.com"
+             required
+           />
+           <p class="staff-login-help" id="staffLoginHelp">
+-            La primera vez, este navegador asociará ese Gmail al perfil seleccionado.
++            El primer Gmail usado en este perfil quedará vinculado para todos los dispositivos.
+           </p>
++          <div class="staff-binding-live" id="staffBindingLive">
++            <span class="staff-binding-dot"></span>
++            <span id="staffBindingLiveText">CONSULTANDO VINCULACIÓN…</span>
++          </div>
+           <p class="staff-login-error" id="staffLoginError" aria-live="polite"></p>
+-          <p class="google-auth-ready-note">
+-            GOOGLE LOGIN · autorización por cuenta individual preparada para activación.
+-          </p>
+ 
+           <button type="submit" class="staff-login-submit">
+             INGRESAR AL PANEL <span>↗</span>
+@@ -5010,6 +5074,8 @@
+ const staffLoginHelp = document.getElementById("staffLoginHelp");
+ const staffLoginError = document.getElementById("staffLoginError");
++const staffBindingLive = document.getElementById("staffBindingLive");
++const staffBindingLiveText = document.getElementById("staffBindingLiveText");
+ const currentStaffName = document.getElementById("currentStaffName");
+ const logoutStaff = document.getElementById("logoutStaff");
+ 
+@@ -5024,6 +5090,9 @@
+ const STAFF_EMAILS_KEY = "legacyStaffEmailsV1";
+ const STAFF_SESSION_KEY = "legacyCurrentStaffV1";
+ 
++const STAFF_BINDING_API_URL = "https://sqxcygylcxlsigcmawma.supabase.co";
++const STAFF_BINDING_API_KEY = "sb_publishable_SdZBbhB1onHQHFB-XFX3PQ_rsfgL7Af";
++
+ const defaultStaffProfiles = [
+   { id: "staff-1", name: "Bolaños", description: "Staff · descripción editable" },
+   { id: "staff-2", name: "Rami", description: "Staff · descripción editable" },
+@@ -5045,6 +5114,8 @@
+   }
+ }
+ let staffEmailBindings = loadStaffEmailBindings(); // cache local de compatibilidad
++let staffBindingStatus = {};
++let staffBindingStatusLoaded = false;
+ let selectedStaffId = null;
+ let editingStaffId = null;
+ 
+@@ -5087,6 +5158,114 @@
+   }
+ }
+ 
++async function fetchStaffGmailStatus({ rerender = true } = {}) {
++  try {
++    const response = await fetch(
++      `${STAFF_BINDING_API_URL}/rest/v1/rpc/get_staff_gmail_status`,
++      {
++        method: "POST",
++        headers: {
++          "apikey": STAFF_BINDING_API_KEY,
++          "Content-Type": "application/json"
++        },
++        body: "{}",
++        cache: "no-store"
++      }
++    );
++
++    if (!response.ok) throw new Error(`Status ${response.status}`);
++    const rows = await response.json();
++
++    staffBindingStatus = {};
++    for (const row of rows || []) {
++      staffBindingStatus[row.profile_id] = Boolean(row.linked);
++    }
++    staffBindingStatusLoaded = true;
++
++    if (rerender && staffGate.classList.contains("visible") &&
++        !staffLoginPanel.classList.contains("visible")) {
++      renderStaffProfiles();
++    }
++
++    if (selectedStaffId && staffLoginPanel.classList.contains("visible")) {
++      updateSelectedStaffBindingUI();
++    }
++  } catch (error) {
++    console.warn("No se pudo consultar la vinculación de Gmail:", error);
++    staffBindingStatusLoaded = false;
++    if (selectedStaffId && staffLoginPanel.classList.contains("visible")) {
++      staffBindingLive.classList.remove("linked");
++      staffBindingLive.classList.add("unknown");
++      staffBindingLiveText.textContent = "NO SE PUDO VERIFICAR EL ESTADO";
++    }
++  }
++}
++
++async function claimStaffGmail(profileId, email) {
++  const response = await fetch(
++    `${STAFF_BINDING_API_URL}/rest/v1/rpc/claim_staff_gmail`,
++    {
++      method: "POST",
++      headers: {
++        "apikey": STAFF_BINDING_API_KEY,
++        "Content-Type": "application/json"
++      },
++      body: JSON.stringify({
++        p_profile_id: profileId,
++        p_email: email
++      }),
++      cache: "no-store"
++    }
++  );
++
++  if (!response.ok) {
++    throw new Error(`No se pudo validar el Gmail (${response.status}).`);
++  }
++
++  return await response.json();
++}
++
++function bindingLabelFor(profileId) {
++  if (!staffBindingStatusLoaded) return "VERIFICANDO…";
++  return staffBindingStatus[profileId] ? "GMAIL VINCULADO" : "SIN VINCULAR";
++}
++
++function updateSelectedStaffBindingUI() {
++  if (!selectedStaffId) return;
++  const linked = Boolean(staffBindingStatus[selectedStaffId]);
++
++  staffBindingLive.classList.toggle("linked", staffBindingStatusLoaded && linked);
++  staffBindingLive.classList.toggle("unlinked", staffBindingStatusLoaded && !linked);
++  staffBindingLive.classList.toggle("unknown", !staffBindingStatusLoaded);
++
++  if (!staffBindingStatusLoaded) {
++    staffBindingLiveText.textContent = "CONSULTANDO VINCULACIÓN…";
++    staffLoginHelp.textContent =
++      "Estamos verificando si este perfil ya tiene un Gmail vinculado.";
++    return;
++  }
++
++  if (linked) {
++    staffBindingLiveText.textContent = "GMAIL VINCULADO";
++    staffLoginHelp.textContent =
++      "Este perfil ya está vinculado. Ingresá exactamente el mismo Gmail para continuar.";
++  } else {
++    staffBindingLiveText.textContent = "PRIMER INGRESO · SIN VINCULAR";
++    staffLoginHelp.textContent =
++      "El primer Gmail válido que ingrese correctamente quedará vinculado a este perfil para todos los dispositivos.";
++  }
++}
++
+ function getStaffById(id) {
+   return staffProfiles.find(profile => profile.id === id);
+ }
+@@ -5094,7 +5273,8 @@
+ function renderStaffProfiles() {
+   staffGrid.innerHTML = staffProfiles.map((profile, index) => {
+-    const bound = Boolean(staffEmailBindings[profile.id]);
++    const bound = Boolean(staffBindingStatus[profile.id]);
++    const bindingLabel = bindingLabelFor(profile.id);
+     return `
+       <article
+         class="staff-profile-card"
+@@ -5104,7 +5284,7 @@
+       >
+         <div class="staff-profile-top">
+           <span>${String(index + 1).padStart(2, "0")}</span>
+-          <span>${bound ? "GMAIL VINCULADO" : "SIN VINCULAR"}</span>
++          <span class="staff-binding-badge ${staffBindingStatusLoaded ? (bound ? "linked" : "unlinked") : "checking"}">${bindingLabel}</span>
+         </div>
+ 
+         <div class="staff-profile-main">
+@@ -5147,6 +5327,7 @@
+   staffGate.classList.add("visible");
+   staffGate.setAttribute("aria-hidden", "false");
+   renderStaffProfiles();
++  fetchStaffGmailStatus();
+ 
+   requestAnimationFrame(() => {
+     requestAnimationFrame(() => staffGate.classList.add("revealed"));
+@@ -5178,11 +5359,8 @@
+   staffGmailInput.value = "";
+   staffLoginError.textContent = "";
+ 
+-  if (staffEmailBindings[id]) {
+-    staffLoginHelp.textContent = "Este perfil ya tiene un Gmail vinculado. Ingresá con el mismo Gmail para continuar.";
+-  } else {
+-    staffLoginHelp.textContent = "La primera vez, este navegador asociará ese Gmail al perfil seleccionado.";
+-  }
++  updateSelectedStaffBindingUI();
++  fetchStaffGmailStatus({ rerender: false });
+ 
+   if (selectedCard) selectedCard.classList.add("selected");
+   staffGrid.classList.add("leaving");
+@@ -5308,36 +5486,77 @@
+ 
+ staffLoginBack.addEventListener("click", closeStaffLogin);
+ 
+-staffLoginForm.addEventListener("submit", (event) => {
++staffLoginForm.addEventListener("submit", async (event) => {
+   event.preventDefault();
+ 
+   const profile = getStaffById(selectedStaffId);
+   const email = normalizeGmail(staffGmailInput.value);
+ 
+   if (!profile) return;
+ 
+   if (!isGmail(email)) {
+     staffLoginError.textContent = "Ingresá una dirección @gmail.com válida.";
+     return;
+   }
+ 
+-  const encodedEmail = encodeLocalEmail(email);
+-  const existingBinding = staffEmailBindings[profile.id];
+-
+-  if (existingBinding && existingBinding !== encodedEmail) {
+-    staffLoginError.textContent = "Ese Gmail no corresponde a este staff.";
+-    return;
+-  }
+-
+-  if (!existingBinding) {
+-    staffEmailBindings[profile.id] = encodedEmail;
+-    saveStaffEmailBindings();
+-  }
+-
++  const submitButton = staffLoginForm.querySelector(".staff-login-submit");
++  submitButton.disabled = true;
++  submitButton.classList.add("loading");
++  const oldHTML = submitButton.innerHTML;
++  submitButton.textContent = "VERIFICANDO GMAIL…";
+   staffLoginError.textContent = "";
+-  enterDashboardAsStaff(profile);
++
++  try {
++    const result = await claimStaffGmail(profile.id, email);
++
++    if (!result?.ok) {
++      const code = result?.code || "unknown";
++
++      if (code === "wrong_gmail") {
++        staffLoginError.textContent =
++          "Ese Gmail no corresponde a este staff. Usá el Gmail que quedó vinculado originalmente.";
++      } else if (code === "gmail_already_used") {
++        staffLoginError.textContent =
++          "Ese Gmail ya está vinculado a otro perfil del staff.";
++      } else if (code === "invalid_gmail") {
++        staffLoginError.textContent =
++          "Ingresá una dirección @gmail.com válida.";
++      } else {
++        staffLoginError.textContent =
++          "No se pudo validar este acceso. Probá nuevamente.";
++      }
++      return;
++    }
++
++    // Cache local sólo para comodidad; la autorización real de esta
++    // versión se consulta en Supabase.
++    staffEmailBindings[profile.id] = encodeLocalEmail(email);
++    saveStaffEmailBindings();
++
++    staffBindingStatus[profile.id] = true;
++    staffBindingStatusLoaded = true;
++    updateSelectedStaffBindingUI();
++
++    if (result.newly_linked) {
++      staffBindingLiveText.textContent = "GMAIL VINCULADO · LISTO";
++    }
++
++    staffLoginError.textContent = "";
++    enterDashboardAsStaff(profile);
++  } catch (error) {
++    console.error(error);
++    staffLoginError.textContent =
++      "No se pudo conectar con el sistema de acceso. Revisá tu conexión e intentá de nuevo.";
++  } finally {
++    submitButton.disabled = false;
++    submitButton.classList.remove("loading");
++    submitButton.innerHTML = oldHTML;
++  }
+ });
+ 
+ profileEditorForm.addEventListener("submit", (event) => {
+@@ -5361,6 +5580,7 @@
+ });
+ 
+ renderStaffProfiles();
++fetchStaffGmailStatus();
+ 
+ 
+ 
