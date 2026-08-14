@@ -1,0 +1,303 @@
+ }
+
+  if (!keepMode) mapMode = "explore";
+
+  renderDraftRouteSidebar();
+  updateMapModeUI();
+}
+
+/* -------------------------
+   SEARCH · PHOTON
+   ------------------------- */
+function searchCacheKey(query) {
+  const center = legacyMapInstance?.getCenter();
+  const lat = center ? center.lat.toFixed(2) : "-25.29";
+  const lng = center ? center.lng.toFixed(2) : "-57.58";
+  return `${query.trim().toLowerCase()}|${lat}|${lng}`;
+}
+
+function formatPhotonAddress(properties) {
+  const parts = [
+    properties.street,
+    properties.housenumber,
+    properties.district,
+    properties.city,
+    properties.state,
+    properties.country
+  ].filter(Boolean);
+
+  return parts.join(", ");
+}
+
+function photonFeatureTitle(feature, fallback = "Lugar") {
+  const properties = feature?.properties || {};
+  return properties.name ||
+    properties.street ||
+    properties.city ||
+    fallback;
+}
+
+function showSearchState(message) {
+  mapSearchResults.classList.add("visible");
+  mapSearchResults.innerHTML = `<div class="map-search-state">${escapeHtml(message)}</div>`;
+}
+
+function hideSearchResults() {
+  mapSearchResults.classList.remove("visible");
+}
+
+function renderSearchResults(features, query) {
+  activeSearchFeatures = Array.isArray(features) ? features : [];
+
+  if (!activeSearchFeatures.length) {
+    showSearchState(`No encontramos resultados para “${query}”.`);
+    return;
+  }
+
+  mapSearchResults.classList.add("visible");
+  mapSearchResults.innerHTML = activeSearchFeatures.map((feature, index) => {
+    const properties = feature.properties || {};
+    const coordinates = feature.geometry?.coordinates || [];
+    const title = photonFeatureTitle(feature, query);
+    const address = formatPhotonAddress(properties);
+    const category = properties.osm_value || properties.osm_key || "lugar";
+
+    return `
+      <article class="map-search-result">
+        <div class="map-search-result-title">
+          <strong>${escapeHtml(title)}</strong>
+          <small>${escapeHtml(address || properties.country || "Resultado de OpenStreetMap")}</small>
+        </div>
+
+        <div class="map-search-result-meta">
+          <span>${escapeHtml(category)}</span>
+          ${properties.city ? `<span>${escapeHtml(properties.city)}</span>` : ""}
+        </div>
+
+        <div class="map-search-result-actions">
+          <button type="button" data-search-action="view" data-index="${index}">VER</button>
+          <button type="button" data-search-action="route" data-index="${index}">A RUTA</button>
+          <button type="button" data-search-action="save" data-index="${index}">GUARDAR PUNTO</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+async function waitForSearchGap() {
+  const elapsed = Date.now() - lastSearchRequestAt;
+  const wait = Math.max(0, SEARCH_REQUEST_MIN_GAP_MS - elapsed);
+
+  if (wait > 0) {
+    await new Promise(resolve => setTimeout(resolve, wait));
+  }
+}
+
+async function searchMapPlaces(rawQuery) {
+  const query = String(rawQuery || "").trim();
+
+  if (query.length < 2) {
+    showSearchState("Escribí al menos 2 caracteres.");
+    return;
+  }
+
+  const key = searchCacheKey(query);
+  const cached = searchMemoryCache.get(key);
+
+  if (cached && Date.now() - cached.time < 15 * 60 * 1000) {
+    renderSearchResults(cached.features, query);
+    return;
+  }
+
+  if (searchRequestController) {
+    searchRequestController.abort();
+  }
+
+  searchRequestController = new AbortController();
+
+  mapSearchButton.disabled = true;
+  showSearchState("BUSCANDO…");
+
+  try {
+    await waitForSearchGap();
+    lastSearchRequestAt = Date.now();
+
+    const center = legacyMapInstance?.getCenter() || { lat: -25.2867, lng: -57.5759 };
+    const zoom = Math.round(legacyMapInstance?.getZoom() || 12);
+
+    const params = new URLSearchParams({
+      q: query,
+      limit: "8",
+      lang: "es",
+      lat: center.lat.toFixed(6),
+      lon: center.lng.toFixed(6),
+      zoom: String(zoom),
+      location_bias_scale: "0.18"
+    });
+
+    const response = await fetch(`${PHOTON_SEARCH_BASE}?${params.toString()}`, {
+      signal: searchRequestController.signal,
+      cache: "default"
+    });
+
+    if (!response.ok) throw new Error(`Photon ${response.status}`);
+
+    const result = await response.json();
+    const features = Array.isArray(result?.features) ? result.features : [];
+
+    searchMemoryCache.set(key, {
+      time: Date.now(),
+      features
+    });
+
+    renderSearchResults(features, query);
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+
+    console.warn("No se pudo buscar lugares:", error);
+    showSearchState("No se pudo completar la búsqueda. Probá nuevamente.");
+  } finally {
+    mapSearchButton.disabled = false;
+    searchRequestController = null;
+  }
+}
+
+function getSearchFeature(index) {
+  const feature = activeSearchFeatures[Number(index)];
+  const coords = feature?.geometry?.coordinates;
+
+  if (!feature || !Array.isArray(coords) || coords.length < 2) return null;
+
+  const lng = Number(coords[0]);
+  const lat = Number(coords[1]);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+  return {
+    feature,
+    lat,
+    lng,
+    title: photonFeatureTitle(feature, "Lugar")
+  };
+}
+
+function viewSearchFeature(index) {
+  const item = getSearchFeature(index);
+  if (!item || !legacyMapInstance) return;
+
+  if (mapSearchLayer) mapSearchLayer.clearLayers();
+
+  const marker = L.marker([item.lat, item.lng], {
+    icon: createSearchLocationIcon(),
+    keyboard: true
+  }).addTo(mapSearchLayer);
+
+  const address = formatPhotonAddress(item.feature.properties || {});
+
+  marker.bindPopup(
+    `<div class="legacy-map-popup">` +
+      `<strong>${escapeHtml(item.title)}</strong>` +
+      (address ? `<span>${escapeHtml(address)}</span>` : "") +
+      `<span>Resultado de búsqueda</span>` +
+    `</div>`
+  ).openPopup();
+
+  legacyMapInstance.flyTo([item.lat, item.lng], 16, {
+    animate: true,
+    duration: .5
+  });
+
+  if (window.innerWidth <= 820) hideSearchResults();
+}
+
+function saveSearchFeatureAsPoint(index) {
+  const item = getSearchFeature(index);
+  if (!item) return;
+
+  pendingPointCoords = {
+    lat: Number(item.lat.toFixed(6)),
+    lng: Number(item.lng.toFixed(6))
+  };
+  pendingPointSuggestedName = item.title;
+  pendingPointSuggestedGroupId = "";
+
+  openMapPointEditor();
+
+  if (window.innerWidth <= 820) hideSearchResults();
+}
+
+function addSearchFeatureToRoute(index) {
+  const item = getSearchFeature(index);
+  if (!item) return;
+
+  closeMapSidebarMobileFn();
+  hideSearchResults();
+
+  if (mapMode !== "route") {
+    mapMode = "route";
+    updateMapModeUI();
+  }
+
+  addDraftRouteWaypoint(item.lat, item.lng, item.title);
+}
+
+/* -------------------------
+   GROUPS
+   ------------------------- */
+function createMapGroup(name, color) {
+  const cleanName = String(name || "").trim();
+  if (!cleanName) return null;
+
+  const group = {
+    id: makeMapObjectId("group"),
+    name: cleanName,
+    color: sanitizeColor(color),
+    createdBy: getCurrentStaffDisplayName(),
+    createdAt: new Date().toISOString()
+  };
+
+  v17MapData.groups.push(group);
+  saveMapData();
+  renderPointGroupOptions(group.id);
+  renderStoredMapLayers();
+
+  return group;
+}
+
+function renameMapGroup(id) {
+  const group = getMapGroup(id);
+  if (!group) return;
+
+  const next = prompt("Nombre del grupo:", group.name);
+  if (next == null) return;
+
+  const name = next.trim();
+  if (!name) return;
+
+  group.name = name;
+  group.updatedAt = new Date().toISOString();
+
+  saveMapData();
+  renderPointGroupOptions();
+  renderStoredMapLayers();
+}
+
+function changeMapGroupColor(id, color) {
+  const group = getMapGroup(id);
+  if (!group) return;
+
+  group.color = sanitizeColor(color);
+  group.updatedAt = new Date().toISOString();
+
+  saveMapData();
+  renderStoredMapLayers();
+  updatePointGroupPreview();
+}
+
+function deleteMapGroup(id) {
+  const group = getMapGroup(id);
+  if (!group) return;
+
+  const pointsInGroup = v17MapData.points.filter(point => point.groupId === id).length;
+  const suffix = pointsInGroup
+    ? ` Sus ${pointsInGroup} ${points
