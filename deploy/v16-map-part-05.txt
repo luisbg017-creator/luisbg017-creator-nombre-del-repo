@@ -1,0 +1,273 @@
+eractive: false
+    }).addTo(legacyMapInstance);
+  }
+
+  if (mapDraftGuideLayer) {
+    legacyMapInstance.removeLayer(mapDraftGuideLayer);
+    mapDraftGuideLayer = null;
+  }
+}
+
+function scheduleRouteCalculation(delay = 160) {
+  if (routeRequestTimer) clearTimeout(routeRequestTimer);
+  routeRequestTimer = setTimeout(calculateRoadRoute, delay);
+}
+
+function cancelRouteRequest() {
+  if (routeRequestTimer) {
+    clearTimeout(routeRequestTimer);
+    routeRequestTimer = null;
+  }
+
+  if (routeRequestController) {
+    routeRequestController.abort();
+    routeRequestController = null;
+  }
+}
+
+async function calculateRoadRoute() {
+  if (mapMode !== "route" || draftRouteWaypoints.length < 2) {
+    draftRouteIsValid = false;
+    updateMapModeUI();
+    return;
+  }
+
+  cancelRouteRequest();
+  routeRequestController = new AbortController();
+
+  const mySerial = ++routeRequestSerial;
+  setRouteBusy(true);
+
+  const coords = draftRouteWaypoints
+    .map(point => `${point.lng.toFixed(6)},${point.lat.toFixed(6)}`)
+    .join(";");
+
+  const url =
+    `${OSRM_ROUTE_BASE}/${coords}` +
+    `?overview=full&geometries=geojson&steps=false&alternatives=false`;
+
+  try {
+    const response = await fetch(url, {
+      signal: routeRequestController.signal,
+      cache: "no-store"
+    });
+
+    if (!response.ok) throw new Error(`OSRM ${response.status}`);
+
+    const result = await response.json();
+    if (mySerial !== routeRequestSerial) return;
+
+    const route = result?.routes?.[0];
+    const coordinates = route?.geometry?.coordinates;
+
+    if (result?.code !== "Ok" || !Array.isArray(coordinates) || coordinates.length < 2) {
+      throw new Error("NoRoute");
+    }
+
+    draftRouteGeometry = coordinates.map(([lng, lat]) => [lat, lng]);
+    draftRouteDistance = Number(route.distance) || 0;
+    draftRouteDuration = Number(route.duration) || 0;
+    draftRouteIsValid = true;
+
+    renderDraftRoadRoute();
+    setRouteBusy(false);
+    renderDraftRouteSidebar();
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+
+    console.warn("No se pudo calcular la ruta por calles:", error);
+
+    draftRouteGeometry = [];
+    draftRouteDistance = 0;
+    draftRouteDuration = 0;
+    draftRouteIsValid = false;
+
+    renderDraftGuide();
+    routeStats.textContent = "SIN RUTA";
+    saveMapRoute.disabled = true;
+
+    setMapHint("route", "NO SE PUDO CALCULAR", "Mové una parada o probá con otro lugar.");
+  } finally {
+    if (mySerial === routeRequestSerial) routeRequestController = null;
+  }
+}
+
+function removeDraftWaypoint(index) {
+  if (index < 0 || index >= draftRouteWaypoints.length) return;
+
+  cancelRouteRequest();
+
+  draftRouteWaypoints.splice(index, 1);
+  draftRouteGeometry = [];
+  draftRouteDistance = 0;
+  draftRouteDuration = 0;
+  draftRouteIsValid = false;
+
+  if (mapDraftRouteLayer && legacyMapInstance) {
+    legacyMapInstance.removeLayer(mapDraftRouteLayer);
+    mapDraftRouteLayer = null;
+  }
+
+  renderDraftWaypointMarkers();
+  renderDraftGuide();
+  renderDraftRouteSidebar();
+  updateMapModeUI();
+
+  if (draftRouteWaypoints.length >= 2) {
+    scheduleRouteCalculation(100);
+  }
+}
+
+function clearDraftRoute({ keepMode = false } = {}) {
+  cancelRouteRequest();
+
+  draftRouteWaypoints = [];
+  draftRouteGeometry = [];
+  draftRouteDistance = 0;
+  draftRouteDuration = 0;
+  draftRouteIsValid = false;
+  routeNameInput.value = "";
+
+  if (mapDraftWaypointLayer) mapDraftWaypointLayer.clearLayers();
+
+  if (mapDraftRouteLayer && legacyMapInstance) {
+    legacyMapInstance.removeLayer(mapDraftRouteLayer);
+    mapDraftRouteLayer = null;
+  }
+
+  if (mapDraftGuideLayer && legacyMapInstance) {
+    legacyMapInstance.removeLayer(mapDraftGuideLayer);
+    mapDraftGuideLayer = null;
+  }
+
+  if (!keepMode) mapMode = "explore";
+
+  renderDraftRouteSidebar();
+  updateMapModeUI();
+}
+
+function showLegacyMap() {
+  mapModal.classList.add("open");
+  mapModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("map-open");
+
+  initLegacyMap();
+
+  if (mapResizeTimer) clearTimeout(mapResizeTimer);
+
+  mapResizeTimer = setTimeout(() => {
+    requestAnimationFrame(() => {
+      legacyMapInstance?.invalidateSize({ pan: false, animate: false });
+      renderStoredMapLayers();
+    });
+  }, 90);
+}
+
+function hideLegacyMap() {
+  closeMapSidebarMobileFn();
+  setMapMode("explore");
+
+  mapModal.classList.remove("open");
+  mapModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("map-open");
+}
+
+function openMapPointEditor(id = null) {
+  editingMapPointId = id;
+
+  if (id) {
+    const point = v16MapData.points.find(item => item.id === id);
+    if (!point) return;
+
+    pendingPointCoords = {
+      lat: Number(point.lat),
+      lng: Number(point.lng)
+    };
+
+    mapPointEditorMode.textContent = "EDITAR PUNTO";
+    mapPointNameInput.value = point.name || "";
+    mapPointAddedByPreview.textContent = authorLabel(point.createdBy);
+  } else {
+    mapPointEditorMode.textContent = "NUEVO PUNTO";
+    mapPointNameInput.value = "";
+    mapPointAddedByPreview.textContent = getCurrentStaffDisplayName();
+  }
+
+  if (!pendingPointCoords) return;
+
+  mapPointCoordsPreview.textContent =
+    `${pendingPointCoords.lat.toFixed(6)}, ${pendingPointCoords.lng.toFixed(6)}`;
+
+  mapPointEditorModal.classList.add("open");
+  mapPointEditorModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("map-point-editor-open");
+
+  setTimeout(() => mapPointNameInput.focus(), 50);
+}
+
+function hideMapPointEditor({ keepPointMode = false } = {}) {
+  mapPointEditorModal.classList.remove("open");
+  mapPointEditorModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("map-point-editor-open");
+
+  editingMapPointId = null;
+  pendingPointCoords = null;
+  mapPointEditorForm.reset();
+
+  if (!keepPointMode && mapMode === "point") {
+    setMapMode("explore");
+  }
+}
+
+function focusMapPoint(id) {
+  const point = v16MapData.points.find(item => item.id === id);
+  if (!point || !legacyMapInstance) return;
+
+  closeMapSidebarMobileFn();
+
+  legacyMapInstance.flyTo(
+    [Number(point.lat), Number(point.lng)],
+    16,
+    { animate: true, duration: .5 }
+  );
+}
+
+function focusMapRoute(id) {
+  const route = v16MapData.routes.find(item => item.id === id);
+  const geometry = route ? getRouteGeometry(route) : [];
+
+  if (!route || !legacyMapInstance || geometry.length < 2) return;
+
+  closeMapSidebarMobileFn();
+
+  legacyMapInstance.fitBounds(
+    L.latLngBounds(geometry),
+    { padding: [38, 38], animate: true, duration: .5 }
+  );
+}
+
+function useReferencePointInRoute(id) {
+  const point = v16MapData.points.find(item => item.id === id);
+  if (!point) return;
+
+  closeMapSidebarMobileFn();
+
+  if (mapMode !== "route") {
+    mapMode = "route";
+    updateMapModeUI();
+  }
+
+  addDraftRouteWaypoint(
+    Number(point.lat),
+    Number(point.lng),
+    point.name || "Punto"
+  );
+}
+
+function locateCurrentUser() {
+  if (!legacyMapInstance || !navigator.geolocation) {
+    setMapHint("explore", "UBICACIÓN NO DISPONIBLE", "Este dispositivo no permite obtenerla.");
+    return;
+  }
+
+  
