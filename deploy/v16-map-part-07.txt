@@ -1,0 +1,28 @@
+
+      if (typeof mapData !== "undefined") {
+        v16MapData = normalizeMapData(mapData);
+        localStorage.setItem(MAP_STORAGE_KEY, JSON.stringify(v16MapData));
+      }
+    } catch (error) {
+      console.warn("No se pudo actualizar Safari Map V16 desde el estado compartido:", error);
+    }
+    renderStoredMapLayers();
+  };
+} catch (error) {
+  console.warn("No se pudo enlazar Safari Map V16 al sincronizador:", error);
+}
+
+window.SafariMapV16 = {
+  refresh() {
+    try {
+      if (typeof mapData !== "undefined") v16MapData = normalizeMapData(mapData);
+    } catch (error) {}
+    renderStoredMapLayers();
+  },
+  open: showLegacyMap
+};
+
+renderMapSidebar();
+
+  window.__SAFARI_MAP_V16_READY__ = true;
+})();
