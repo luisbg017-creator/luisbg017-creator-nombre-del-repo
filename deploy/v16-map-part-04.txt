@@ -1,0 +1,218 @@
+oolean);
+
+        return `
+          <article class="map-object-row map-object-row-v15">
+            <div>
+              <h6>${escapeHtml(route.name || "Ruta")}</h6>
+              <div class="map-object-meta">
+                <em class="created-by">${escapeHtml(authorLabel(route.createdBy))}</em>
+                ${meta.map(value => `<em>${escapeHtml(String(value))}</em>`).join("")}
+                <em>${route.waypoints?.length || geometry.length} puntos</em>
+              </div>
+            </div>
+
+            <div class="map-object-actions">
+              <button data-map-action="focus-route" data-id="${escapeHtml(route.id)}">VER</button>
+              <button data-map-action="rename-route" data-id="${escapeHtml(route.id)}">EDITAR</button>
+              <button data-map-action="delete-route" data-id="${escapeHtml(route.id)}">QUITAR</button>
+            </div>
+          </article>
+        `;
+      }).join("")
+    : '<div class="map-object-empty">No hay rutas guardadas todavía. Usá el botón RUTA que está sobre el mapa.</div>';
+
+  renderDraftRouteSidebar();
+}
+
+function renderDraftRouteSidebar() {
+  const routeMode = mapMode === "route";
+
+  mapDraftSection.hidden = !routeMode;
+  mapDraftStopsCount.textContent = String(draftRouteWaypoints.length);
+
+  if (!routeMode) {
+    mapDraftStopsList.innerHTML = "";
+    return;
+  }
+
+  mapDraftStopsList.innerHTML = draftRouteWaypoints.length
+    ? draftRouteWaypoints.map((point, index) => `
+        <div class="map-route-stop-row">
+          <span class="map-route-stop-index">${index === 0 ? "A" : index + 1}</span>
+
+          <div class="map-route-stop-copy">
+            <strong>${escapeHtml(point.label || (index === 0 ? "Inicio" : `Parada ${index + 1}`))}</strong>
+            <small>${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}</small>
+          </div>
+
+          <button type="button" data-draft-action="remove" data-index="${index}" aria-label="Quitar parada">×</button>
+        </div>
+      `).join("")
+    : '<div class="map-object-empty">Tocá dos lugares en el mapa. Después podés arrastrar las paradas para ajustar la ruta.</div>';
+}
+
+function setMapMode(mode) {
+  if (mode === mapMode && mode !== "route") return;
+
+  if (mode !== "route") {
+    cancelRouteRequest();
+    clearDraftRoute({ keepMode: true });
+  }
+
+  mapMode = mode;
+  updateMapModeUI();
+  renderMapSidebar();
+}
+
+function updateMapModeUI() {
+  const pointMode = mapMode === "point";
+  const routeMode = mapMode === "route";
+
+  addMapPoint.classList.toggle("active", pointMode);
+  startMapRoute.classList.toggle("active", routeMode);
+
+  addMapPoint.setAttribute("aria-pressed", pointMode ? "true" : "false");
+  startMapRoute.setAttribute("aria-pressed", routeMode ? "true" : "false");
+
+  routeComposer.classList.toggle("visible", routeMode);
+  routeComposer.setAttribute("aria-hidden", routeMode ? "false" : "true");
+
+  legacyMapEl.classList.toggle("map-point-mode", pointMode);
+  legacyMapEl.classList.toggle("map-route-mode", routeMode);
+
+  routeStopsSummary.textContent =
+    `${draftRouteWaypoints.length} ${draftRouteWaypoints.length === 1 ? "PARADA" : "PARADAS"}`;
+
+  if (routeMode) {
+    if (draftRouteIsValid) {
+      routeStats.textContent = `${formatDistance(draftRouteDistance)} · ${formatDuration(draftRouteDuration)}`;
+      setMapHint("route", "RUTA LISTA", "Podés mover las paradas o guardar la ruta.");
+    } else if (draftRouteWaypoints.length >= 2) {
+      routeStats.textContent = "CALCULANDO…";
+      setMapHint("route", "CALCULANDO RUTA", "Buscando el recorrido por calles.", true);
+    } else {
+      routeStats.textContent = "MARCÁ DOS LUGARES";
+      setMapHint("route", "TRAZANDO RUTA", "Tocá dos lugares en el mapa. Luego podés seguir agregando paradas.");
+    }
+  } else if (pointMode) {
+    setMapHint("point", "AÑADIR PUNTO", "Tocá exactamente el lugar que querés guardar.");
+  } else {
+    setMapHint("explore", "MAPA LISTO", "Elegí PUNTO o RUTA para empezar.");
+  }
+
+  undoMapRoute.disabled = !routeMode || draftRouteWaypoints.length === 0;
+  clearMapRoute.disabled = !routeMode || draftRouteWaypoints.length === 0;
+  saveMapRoute.disabled = !routeMode || !draftRouteIsValid || draftRouteWaypoints.length < 2;
+}
+
+function setRouteBusy(busy) {
+  if (busy) {
+    setMapHint("route", "CALCULANDO RUTA", "Buscando el recorrido por calles.", true);
+    routeStats.textContent = "CALCULANDO…";
+    saveMapRoute.disabled = true;
+  } else {
+    updateMapModeUI();
+  }
+}
+
+function addDraftRouteWaypoint(lat, lng, label = "") {
+  if (mapMode !== "route") {
+    mapMode = "route";
+    updateMapModeUI();
+  }
+
+  draftRouteWaypoints.push({
+    lat: Number(lat),
+    lng: Number(lng),
+    label: label || ""
+  });
+
+  draftRouteIsValid = false;
+
+  renderDraftWaypointMarkers();
+  renderDraftGuide();
+  renderDraftRouteSidebar();
+  updateMapModeUI();
+
+  if (draftRouteWaypoints.length >= 2) {
+    scheduleRouteCalculation(120);
+  }
+}
+
+function renderDraftWaypointMarkers() {
+  if (!legacyMapInstance || !mapDraftWaypointLayer) return;
+
+  mapDraftWaypointLayer.clearLayers();
+
+  draftRouteWaypoints.forEach((point, index) => {
+    const marker = L.marker([point.lat, point.lng], {
+      draggable: true,
+      icon: createRouteWaypointIcon(index),
+      autoPan: true,
+      keyboard: true,
+      zIndexOffset: 1000 + index
+    }).addTo(mapDraftWaypointLayer);
+
+    marker.on("dragstart", () => {
+      cancelRouteRequest();
+      draftRouteIsValid = false;
+      setMapHint("route", "MOVIENDO PARADA", "Soltá el punto para recalcular.", true);
+    });
+
+    marker.on("drag", event => {
+      const latlng = event.target.getLatLng();
+      draftRouteWaypoints[index].lat = Number(latlng.lat.toFixed(6));
+      draftRouteWaypoints[index].lng = Number(latlng.lng.toFixed(6));
+      renderDraftGuide();
+    });
+
+    marker.on("dragend", event => {
+      const latlng = event.target.getLatLng();
+
+      draftRouteWaypoints[index].lat = Number(latlng.lat.toFixed(6));
+      draftRouteWaypoints[index].lng = Number(latlng.lng.toFixed(6));
+
+      renderDraftRouteSidebar();
+      scheduleRouteCalculation(60);
+    });
+  });
+}
+
+function renderDraftGuide() {
+  if (!legacyMapInstance) return;
+
+  if (mapDraftGuideLayer) {
+    legacyMapInstance.removeLayer(mapDraftGuideLayer);
+    mapDraftGuideLayer = null;
+  }
+
+  if (draftRouteWaypoints.length >= 2 && !draftRouteIsValid) {
+    mapDraftGuideLayer = L.polyline(
+      draftRouteWaypoints.map(point => [point.lat, point.lng]),
+      {
+        color: "#111111",
+        weight: 3,
+        opacity: .38,
+        dashArray: "7 9",
+        interactive: false
+      }
+    ).addTo(legacyMapInstance);
+  }
+}
+
+function renderDraftRoadRoute() {
+  if (!legacyMapInstance) return;
+
+  if (mapDraftRouteLayer) {
+    legacyMapInstance.removeLayer(mapDraftRouteLayer);
+    mapDraftRouteLayer = null;
+  }
+
+  if (draftRouteGeometry.length >= 2) {
+    mapDraftRouteLayer = L.polyline(draftRouteGeometry, {
+      color: "#050505",
+      weight: 7,
+      opacity: .94,
+      lineCap: "round",
+      lineJoin: "round",
+      int
