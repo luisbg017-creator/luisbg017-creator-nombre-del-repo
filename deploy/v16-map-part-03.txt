@@ -1,0 +1,226 @@
+ins / 60);
+  const rest = mins % 60;
+  return rest ? `${h} h ${rest} min` : `${h} h`;
+}
+
+function getRouteGeometry(route) {
+  if (Array.isArray(route.geometry) && route.geometry.length >= 2) return route.geometry;
+  if (Array.isArray(route.coordinates) && route.coordinates.length >= 2) return route.coordinates;
+  return [];
+}
+
+function createReferenceIcon() {
+  return L.divIcon({
+    className: "",
+    html: '<div class="legacy-reference-icon"></div>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -10]
+  });
+}
+
+function createRouteWaypointIcon(index) {
+  const label = index === 0 ? "A" : String(index + 1);
+  return L.divIcon({
+    className: "",
+    html: `<div class="legacy-route-waypoint">${label}</div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+  });
+}
+
+function createUserLocationIcon() {
+  return L.divIcon({
+    className: "",
+    html: '<div class="legacy-user-location"></div>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
+}
+
+function setMapHint(kind, title, text, busy = false) {
+  mapActionHint.classList.toggle("point", kind === "point");
+  mapActionHint.classList.toggle("route", kind === "route");
+  mapActionHint.classList.toggle("busy", busy);
+  mapActionHintTitle.textContent = title;
+  mapActionHintText.textContent = text;
+}
+
+function openMapSidebarMobile() {
+  mapSidebar.classList.add("mobile-open");
+  mapSidebarToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeMapSidebarMobileFn() {
+  mapSidebar.classList.remove("mobile-open");
+  mapSidebarToggle.setAttribute("aria-expanded", "false");
+}
+
+function initLegacyMap() {
+  if (legacyMapInstance || !legacyMapEl) return;
+
+  if (!window.L) {
+    mapLoadError.classList.add("visible");
+    return;
+  }
+
+  try {
+    legacyMapInstance = L.map("legacyMap", {
+      preferCanvas: true,
+      zoomControl: true,
+      attributionControl: true,
+      zoomAnimation: true,
+      fadeAnimation: false,
+      markerZoomAnimation: true,
+      wheelDebounceTime: 35,
+      wheelPxPerZoomLevel: 85,
+      tap: true
+    }).setView([-25.2867, -57.5759], 12);
+
+    mapTileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      minZoom: 3,
+      keepBuffer: 3,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      detectRetina: false,
+      crossOrigin: true,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(legacyMapInstance);
+
+    mapPointsLayer = L.layerGroup().addTo(legacyMapInstance);
+    mapRoutesLayer = L.layerGroup().addTo(legacyMapInstance);
+    mapDraftWaypointLayer = L.layerGroup().addTo(legacyMapInstance);
+    mapUserLayer = L.layerGroup().addTo(legacyMapInstance);
+
+    legacyMapInstance.on("click", handleLegacyMapClick);
+
+    renderStoredMapLayers();
+    renderMapSidebar();
+    updateMapModeUI();
+
+    setMapHint("explore", "MAPA LISTO", "Elegí PUNTO o RUTA para empezar.");
+  } catch (error) {
+    console.error("Error al iniciar Leaflet:", error);
+    mapLoadError.classList.add("visible");
+  }
+}
+
+function handleLegacyMapClick(event) {
+  const lat = Number(event.latlng.lat.toFixed(6));
+  const lng = Number(event.latlng.lng.toFixed(6));
+
+  if (mapMode === "point") {
+    pendingPointCoords = { lat, lng };
+    openMapPointEditor();
+    return;
+  }
+
+  if (mapMode === "route") {
+    addDraftRouteWaypoint(lat, lng);
+  }
+}
+
+function renderStoredMapLayers() {
+  renderMapSidebar();
+
+  if (!legacyMapInstance || !window.L || !mapPointsLayer || !mapRoutesLayer) return;
+
+  mapPointsLayer.clearLayers();
+  mapRoutesLayer.clearLayers();
+
+  for (const route of v16MapData.routes) {
+    const geometry = getRouteGeometry(route);
+    if (geometry.length < 2) continue;
+
+    const line = L.polyline(geometry, {
+      color: "#111111",
+      weight: 5,
+      opacity: .76,
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: true
+    }).addTo(mapRoutesLayer);
+
+    const creator = authorLabel(route.createdBy);
+    const meta = [
+      route.distance ? formatDistance(route.distance) : "",
+      route.duration ? formatDuration(route.duration) : ""
+    ].filter(Boolean).join(" · ");
+
+    line.bindPopup(
+      `<div class="legacy-map-popup">` +
+        `<strong>${escapeHtml(route.name || "Ruta")}</strong>` +
+        (meta ? `<span>${escapeHtml(meta)}</span>` : "") +
+        `<span class="added-by">Añadida por ${escapeHtml(creator)}</span>` +
+      `</div>`
+    );
+  }
+
+  for (const point of v16MapData.points) {
+    const lat = Number(point.lat);
+    const lng = Number(point.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+
+    const creator = authorLabel(point.createdBy);
+
+    const marker = L.marker([lat, lng], {
+      icon: createReferenceIcon(),
+      keyboard: true,
+      riseOnHover: true,
+      title: `${point.name || "Punto"} · añadido por ${creator}`
+    }).addTo(mapPointsLayer);
+
+    marker.bindPopup(
+      `<div class="legacy-map-popup">` +
+        `<strong>${escapeHtml(point.name || "Punto")}</strong>` +
+        `<span>${lat.toFixed(5)}, ${lng.toFixed(5)}</span>` +
+        `<span class="added-by">Añadido por ${escapeHtml(creator)}</span>` +
+      `</div>`
+    );
+
+    marker.bindTooltip(
+      `${escapeHtml(point.name || "Punto")} · ${escapeHtml(creator)}`,
+      {
+        direction: "top",
+        offset: [0, -10],
+        opacity: .94
+      }
+    );
+  }
+}
+
+function renderMapSidebar() {
+  if (!mapPointsList || !mapRoutesList) return;
+
+  mapPointsCount.textContent = String(v16MapData.points.length);
+  mapRoutesCount.textContent = String(v16MapData.routes.length);
+
+  mapPointsList.innerHTML = v16MapData.points.length
+    ? v16MapData.points.map(point => `
+        <article class="map-object-row map-object-row-v15">
+          <div>
+            <h6>${escapeHtml(point.name || "Punto")}</h6>
+            <div class="map-object-meta">
+              <em class="created-by">${escapeHtml(authorLabel(point.createdBy))}</em>
+              <em>${Number(point.lat).toFixed(5)}, ${Number(point.lng).toFixed(5)}</em>
+            </div>
+          </div>
+
+          <div class="map-object-actions">
+            <button data-map-action="focus-point" data-id="${escapeHtml(point.id)}">VER</button>
+            <button class="map-route-add-btn ${mapMode === "route" ? "active" : ""}" data-map-action="route-add-point" data-id="${escapeHtml(point.id)}">A RUTA</button>
+            <button data-map-action="edit-point" data-id="${escapeHtml(point.id)}">EDITAR</button>
+            <button data-map-action="delete-point" data-id="${escapeHtml(point.id)}">QUITAR</button>
+          </div>
+        </article>
+      `).join("")
+    : '<div class="map-object-empty">No hay puntos todavía. Usá el botón PUNTO que está sobre el mapa.</div>';
+
+  mapRoutesList.innerHTML = v16MapData.routes.length
+    ? v16MapData.routes.map(route => {
+        const geometry = getRouteGeometry(route);
+        const meta = [
+          route.distance ? formatDistance(route.distance) : "",
+          route.duration ? formatDuration(route.duration) : ""
+        ].filter(B
