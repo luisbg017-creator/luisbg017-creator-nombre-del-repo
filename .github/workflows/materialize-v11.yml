@@ -5,7 +5,10 @@ on:
   push:
     paths:
       - '.github/workflows/materialize-v11.yml'
-      - 'legacy-v11.html.gz'
+      - 'payload/legacy-v11-01.txt'
+      - 'payload/legacy-v11-02.txt'
+      - 'payload/legacy-v11-03.txt'
+      - 'payload/legacy-v11-04.txt'
 
 permissions:
   contents: write
@@ -16,8 +19,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Decompress v11 into index.html
-        run: gzip -dc legacy-v11.html.gz > index.html
+      - name: Rebuild direct v11 HTML
+        run: |
+          cat payload/legacy-v11-01.txt payload/legacy-v11-02.txt payload/legacy-v11-03.txt payload/legacy-v11-04.txt | tr -d '\r\n ' | base64 -d > /tmp/legacy-v11.html.gz
+          gzip -t /tmp/legacy-v11.html.gz
+          gzip -dc /tmp/legacy-v11.html.gz > index.html
+          test -s index.html
+          grep -q '<!DOCTYPE html>' index.html
+          grep -q 'SAFARI 2026' index.html
+          wc -c index.html
+          sha256sum index.html
       - name: Commit direct HTML
         run: |
           git config user.name "github-actions[bot]"
