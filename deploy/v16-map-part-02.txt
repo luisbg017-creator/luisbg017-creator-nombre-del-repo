@@ -1,0 +1,165 @@
+orForm">\n          <label>\n            <span>NOMBRE DEL PUNTO</span>\n            <input id=\"mapPointNameInput\" type=\"text\" maxlength=\"70\" placeholder=\"Ej.: Casa de Bola\u00f1os\" required />\n          </label>\n\n          <div class=\"map-coords-preview\">\n            <span>UBICACI\u00d3N</span>\n            <strong id=\"mapPointCoordsPreview\">--</strong>\n          </div>\n\n          <div class=\"map-added-by-preview\">\n            <span>SE GUARDAR\u00c1 COMO</span>\n            <strong id=\"mapPointAddedByPreview\">STAFF</strong>\n          </div>\n\n          <p class=\"map-point-help\">Este punto ser\u00e1 visible para todo el staff.</p>\n\n          <div class=\"map-point-editor-actions\">\n            <button type=\"button\" id=\"cancelMapPointEditor\">CANCELAR</button>\n            <button type=\"submit\">GUARDAR PUNTO</button>\n          </div>\n        </form>\n      </section>\n    </div>";
+
+  const freshModal = holder.querySelector("#mapModal");
+  const freshEditor = holder.querySelector("#mapPointEditorModal");
+
+  oldModal.parentNode.insertBefore(freshModal, oldModal);
+
+  if (oldEditor) {
+    oldEditor.parentNode.insertBefore(freshEditor, oldEditor);
+    oldEditor.remove();
+  } else {
+    freshModal.parentNode.insertBefore(freshEditor, freshModal.nextSibling);
+  }
+
+  oldModal.remove();
+
+  // Remove old map click listeners (V13/V15) from the dashboard card.
+  const freshOpenButton = oldOpenButton.cloneNode(true);
+  oldOpenButton.replaceWith(freshOpenButton);
+
+// =========================
+// MAPA COMPARTIDO · V16
+// Controles flotantes + mobile bottom sheet + autor visible
+// =========================
+const MAP_STORAGE_KEY = "legacyMapDataV1";
+const OSRM_ROUTE_BASE = "https://router.project-osrm.org/route/v1/driving";
+
+const openLegacyMap = document.getElementById("openLegacyMap");
+const mapModal = document.getElementById("mapModal");
+const mapBackdrop = document.getElementById("mapBackdrop");
+const closeLegacyMap = document.getElementById("closeLegacyMap");
+const legacyMapEl = document.getElementById("legacyMap");
+const mapLoadError = document.getElementById("mapLoadError");
+const mapSyncLabel = document.getElementById("mapSyncLabel");
+
+const addMapPoint = document.getElementById("addMapPoint");
+const startMapRoute = document.getElementById("startMapRoute");
+const locateMapUser = document.getElementById("locateMapUser");
+const mapSidebarToggle = document.getElementById("mapSidebarToggle");
+const closeMapSidebarMobile = document.getElementById("closeMapSidebarMobile");
+const mapSidebar = document.getElementById("mapSidebar");
+
+const mapActionHint = document.getElementById("mapActionHint");
+const mapActionHintTitle = document.getElementById("mapActionHintTitle");
+const mapActionHintText = document.getElementById("mapActionHintText");
+
+const undoMapRoute = document.getElementById("undoMapRoute");
+const clearMapRoute = document.getElementById("clearMapRoute");
+const cancelMapMode = document.getElementById("cancelMapMode");
+const saveMapRoute = document.getElementById("saveMapRoute");
+const routeComposer = document.getElementById("routeComposer");
+const routeNameInput = document.getElementById("routeNameInput");
+const routeStopsSummary = document.getElementById("routeStopsSummary");
+const routeStats = document.getElementById("routeStats");
+
+const mapDraftSection = document.getElementById("mapDraftSection");
+const mapDraftStopsList = document.getElementById("mapDraftStopsList");
+const mapDraftStopsCount = document.getElementById("mapDraftStopsCount");
+const mapPointsList = document.getElementById("mapPointsList");
+const mapRoutesList = document.getElementById("mapRoutesList");
+const mapPointsCount = document.getElementById("mapPointsCount");
+const mapRoutesCount = document.getElementById("mapRoutesCount");
+
+const mapPointEditorModal = document.getElementById("mapPointEditorModal");
+const mapPointEditorBackdrop = document.getElementById("mapPointEditorBackdrop");
+const mapPointEditorForm = document.getElementById("mapPointEditorForm");
+const mapPointEditorMode = document.getElementById("mapPointEditorMode");
+const mapPointNameInput = document.getElementById("mapPointNameInput");
+const mapPointCoordsPreview = document.getElementById("mapPointCoordsPreview");
+const mapPointAddedByPreview = document.getElementById("mapPointAddedByPreview");
+const closeMapPointEditor = document.getElementById("closeMapPointEditor");
+const cancelMapPointEditor = document.getElementById("cancelMapPointEditor");
+
+let v16MapData = loadMapData();
+
+let legacyMapInstance = null;
+let mapTileLayer = null;
+let mapPointsLayer = null;
+let mapRoutesLayer = null;
+let mapUserLayer = null;
+let mapDraftRouteLayer = null;
+let mapDraftGuideLayer = null;
+let mapDraftWaypointLayer = null;
+
+let mapMode = "explore"; // explore | point | route
+let pendingPointCoords = null;
+let editingMapPointId = null;
+
+let draftRouteWaypoints = [];
+let draftRouteGeometry = [];
+let draftRouteDistance = 0;
+let draftRouteDuration = 0;
+let draftRouteIsValid = false;
+let routeRequestController = null;
+let routeRequestTimer = null;
+let routeRequestSerial = 0;
+let mapResizeTimer = null;
+
+function normalizeMapData(value) {
+  const safe = value && typeof value === "object" ? value : {};
+  return {
+    points: Array.isArray(safe.points) ? safe.points : [],
+    routes: Array.isArray(safe.routes) ? safe.routes : []
+  };
+}
+
+function loadMapData() {
+  try {
+    if (typeof mapData !== "undefined") {
+      return normalizeMapData(mapData);
+    }
+  } catch (error) {}
+
+  try {
+    return normalizeMapData(JSON.parse(localStorage.getItem(MAP_STORAGE_KEY) || "null"));
+  } catch (error) {
+    return { points: [], routes: [] };
+  }
+}
+
+function saveMapData() {
+  localStorage.setItem(MAP_STORAGE_KEY, JSON.stringify(v16MapData));
+
+  try {
+    mapData = normalizeMapData(JSON.parse(JSON.stringify(v16MapData)));
+  } catch (error) {
+    console.warn("No se pudo copiar el mapa V16 al estado compartido:", error);
+  }
+
+  mapSyncLabel.textContent = "GUARDANDO PARA EL STAFF…";
+
+  try {
+    scheduleSharedSection("map");
+  } catch (error) {
+    console.warn("No se pudo programar la sincronización del mapa:", error);
+  }
+
+  setTimeout(() => {
+    if (mapSyncLabel) mapSyncLabel.textContent = "SINCRONIZADO CON STAFF";
+  }, 900);
+}
+
+function makeMapObjectId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function getCurrentStaffDisplayName() {
+  const currentId = localStorage.getItem(STAFF_SESSION_KEY);
+  return staffProfiles.find(profile => profile.id === currentId)?.name || "Staff";
+}
+
+function authorLabel(value) {
+  return value?.trim() || "Staff";
+}
+
+function formatDistance(meters) {
+  const value = Number(meters) || 0;
+  if (value < 1000) return `${Math.round(value)} m`;
+  return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)} km`;
+}
+
+function formatDuration(seconds) {
+  const mins = Math.max(1, Math.round((Number(seconds) || 0) / 60));
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(m
