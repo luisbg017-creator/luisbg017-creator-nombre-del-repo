@@ -1,0 +1,112 @@
+   <strong id=\"mapPointsCount\">0</strong>\n              </div>\n              <div id=\"mapPointsList\" class=\"map-object-list\"></div>\n            </section>\n\n            <section>\n              <div class=\"map-sidebar-head\">\n                <span>RUTAS GUARDADAS</span>\n                <strong id=\"mapRoutesCount\">0</strong>\n              </div>\n              <div id=\"mapRoutesList\" class=\"map-object-list\"></div>\n            </section>\n          </aside>\n        </div>\n\n        <footer class=\"map-footer map-footer-v16\">\n          <span>OPENSTREETMAP · RUTAS SOBRE CALLES · BÚSQUEDA PHOTON</span>\n          <span id=\"mapSyncLabel\">SINCRONIZADO CON STAFF</span>\n        </footer>\n      </section>\n    </div>\n\n    <div class=\"map-point-editor-modal\" id=\"mapPointEditorModal\" aria-hidden=\"true\">\n      <div class=\"map-point-editor-backdrop\" id=\"mapPointEditorBackdrop\"></div>\n      <section class=\"map-point-editor-window map-point-editor-window-v16\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mapPointEditorTitle\">\n        <header>\n          <div>\n            <p id=\"mapPointEditorMode\">NUEVO PUNTO</p>\n            <h4 id=\"mapPointEditorTitle\">REFERENCIA</h4>\n          </div>\n          <button id=\"closeMapPointEditor\" aria-label=\"Cerrar editor\">×</button>\n        </header>\n\n        <form id=\"mapPointEditorForm\">\n          <label>\n            <span>NOMBRE DEL PUNTO</span>\n            <input id=\"mapPointNameInput\" type=\"text\" maxlength=\"70\" placeholder=\"Ej.: Casa de Bolaños\" required />\n          </label>\n\n          <label>\n            <span>GRUPO</span>\n            <select id=\"mapPointGroupSelect\" aria-label=\"Grupo del punto\">\n              <option value=\"\">SIN GRUPO · NEGRO</option>\n            </select>\n          </label>\n\n          <div class=\"map-point-group-preview\" id=\"mapPointGroupPreview\">\n            <span class=\"map-point-group-preview-dot\" id=\"mapPointGroupPreviewDot\"></span>\n            <strong id=\"mapPointGroupPreviewText\">SIN GRUPO</strong>\n          </div>\n\n          <div class=\"map-coords-preview\">\n            <span>UBICACIÓN</span>\n            <strong id=\"mapPointCoordsPreview\">--</strong>\n          </div>\n\n          <div class=\"map-added-by-preview\">\n            <span>SE GUARDARÁ COMO</span>\n            <strong id=\"mapPointAddedByPreview\">STAFF</strong>\n          </div>\n\n          <p class=\"map-point-help\">El color del marcador depende del grupo. Cambiar el color del grupo cambia todos sus puntos.</p>\n\n          <div class=\"map-point-editor-actions\">\n            <button type=\"button\" id=\"cancelMapPointEditor\">CANCELAR</button>\n            <button type=\"submit\">GUARDAR PUNTO</button>\n          </div>\n        </form>\n      </section>\n    </div>";
+
+  const freshModal = holder.querySelector("#mapModal");
+  const freshEditor = holder.querySelector("#mapPointEditorModal");
+
+  oldModal.parentNode.insertBefore(freshModal, oldModal);
+
+  if (oldEditor) {
+    oldEditor.parentNode.insertBefore(freshEditor, oldEditor);
+    oldEditor.remove();
+  } else {
+    freshModal.parentNode.insertBefore(freshEditor, freshModal.nextSibling);
+  }
+
+  oldModal.remove();
+
+  // Remove V13/V15/V16 click listeners from the dashboard map card.
+  const freshOpenButton = oldOpenButton.cloneNode(true);
+  oldOpenButton.replaceWith(freshOpenButton);
+
+// =========================
+// MAPA COMPARTIDO · V17
+// Grupos de colores + búsqueda Photon + rutas OSRM
+// =========================
+const MAP_STORAGE_KEY = "legacyMapDataV1";
+const OSRM_ROUTE_BASE = "https://router.project-osrm.org/route/v1/driving";
+const PHOTON_SEARCH_BASE = "https://photon.komoot.io/api/";
+const SEARCH_REQUEST_MIN_GAP_MS = 1100;
+
+const openLegacyMap = document.getElementById("openLegacyMap");
+const mapModal = document.getElementById("mapModal");
+const mapBackdrop = document.getElementById("mapBackdrop");
+const closeLegacyMap = document.getElementById("closeLegacyMap");
+const legacyMapEl = document.getElementById("legacyMap");
+const mapLoadError = document.getElementById("mapLoadError");
+const mapSyncLabel = document.getElementById("mapSyncLabel");
+
+const addMapPoint = document.getElementById("addMapPoint");
+const startMapRoute = document.getElementById("startMapRoute");
+const locateMapUser = document.getElementById("locateMapUser");
+const mapSidebarToggle = document.getElementById("mapSidebarToggle");
+const closeMapSidebarMobile = document.getElementById("closeMapSidebarMobile");
+const mapSidebar = document.getElementById("mapSidebar");
+
+const mapActionHint = document.getElementById("mapActionHint");
+const mapActionHintTitle = document.getElementById("mapActionHintTitle");
+const mapActionHintText = document.getElementById("mapActionHintText");
+
+const mapSearchForm = document.getElementById("mapSearchForm");
+const mapSearchInput = document.getElementById("mapSearchInput");
+const mapSearchButton = document.getElementById("mapSearchButton");
+const mapSearchResults = document.getElementById("mapSearchResults");
+const mapSearchTypeButtons = [...document.querySelectorAll("[data-place-query]")];
+
+const undoMapRoute = document.getElementById("undoMapRoute");
+const clearMapRoute = document.getElementById("clearMapRoute");
+const cancelMapMode = document.getElementById("cancelMapMode");
+const saveMapRoute = document.getElementById("saveMapRoute");
+const routeComposer = document.getElementById("routeComposer");
+const routeNameInput = document.getElementById("routeNameInput");
+const routeStopsSummary = document.getElementById("routeStopsSummary");
+const routeStats = document.getElementById("routeStats");
+
+const mapGroupForm = document.getElementById("mapGroupForm");
+const mapGroupNameInput = document.getElementById("mapGroupNameInput");
+const mapGroupColorInput = document.getElementById("mapGroupColorInput");
+const mapGroupsList = document.getElementById("mapGroupsList");
+const mapGroupsCount = document.getElementById("mapGroupsCount");
+
+const mapDraftSection = document.getElementById("mapDraftSection");
+const mapDraftStopsList = document.getElementById("mapDraftStopsList");
+const mapDraftStopsCount = document.getElementById("mapDraftStopsCount");
+const mapPointsList = document.getElementById("mapPointsList");
+const mapRoutesList = document.getElementById("mapRoutesList");
+const mapPointsCount = document.getElementById("mapPointsCount");
+const mapRoutesCount = document.getElementById("mapRoutesCount");
+
+const mapPointEditorModal = document.getElementById("mapPointEditorModal");
+const mapPointEditorBackdrop = document.getElementById("mapPointEditorBackdrop");
+const mapPointEditorForm = document.getElementById("mapPointEditorForm");
+const mapPointEditorMode = document.getElementById("mapPointEditorMode");
+const mapPointNameInput = document.getElementById("mapPointNameInput");
+const mapPointGroupSelect = document.getElementById("mapPointGroupSelect");
+const mapPointGroupPreviewDot = document.getElementById("mapPointGroupPreviewDot");
+const mapPointGroupPreviewText = document.getElementById("mapPointGroupPreviewText");
+const mapPointCoordsPreview = document.getElementById("mapPointCoordsPreview");
+const mapPointAddedByPreview = document.getElementById("mapPointAddedByPreview");
+const closeMapPointEditor = document.getElementById("closeMapPointEditor");
+const cancelMapPointEditor = document.getElementById("cancelMapPointEditor");
+
+let v17MapData = loadMapData();
+
+let legacyMapInstance = null;
+let mapTileLayer = null;
+let mapPointsLayer = null;
+let mapRoutesLayer = null;
+let mapUserLayer = null;
+let mapSearchLayer = null;
+let mapDraftRouteLayer = null;
+let mapDraftGuideLayer = null;
+let mapDraftWaypointLayer = null;
+
+let mapMode = "explore";
+let pendingPointCoords = null;
+let pendingPointSuggestedName = "";
+let pendingPointSuggestedGroupId = "";
+let editingMapPointId = null;
+
+let draftRouteWaypoints = [];
+let draftRouteGeometry = [];
+let draftRouteDistance = 0;
+let draftRouteDur
