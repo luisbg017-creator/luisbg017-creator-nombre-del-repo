@@ -11,6 +11,14 @@
     document.head.appendChild(link);
   };
 
+  const loadV17 = () => {
+    if (window.__SAFARI_MAP_V17_LOADING__ || window.__SAFARI_MAP_V17_READY__) return;
+    const script = document.createElement('script');
+    script.src = './deploy/v17-map-loader.js?v=17';
+    script.async = true;
+    document.body.appendChild(script);
+  };
+
   addStylesheet('./deploy/v16-map.css?v=16', 'safari-map-v16-css');
 
   const parts = [
@@ -34,6 +42,7 @@
 
       const code = (await Promise.all(responses.map(response => response.text()))).join('');
       eval(code);
+      loadV17();
     } catch (error) {
       console.error('No se pudo iniciar Safari Map V16:', error);
       window.__SAFARI_MAP_V16_LOADING__ = false;
