@@ -1,0 +1,136 @@
+w Date().toISOString();
+    saveMapData();
+    renderStoredMapLayers();
+  }
+
+  if (button.dataset.mapAction === "delete-route") {
+    if (!confirm(`¿Quitar la ruta "${route.name}"?`)) return;
+
+    mapData.routes = mapData.routes.filter(item => item.id !== id);
+    saveMapData();
+    renderStoredMapLayers();
+  }
+});
+
+mapDraftStopsList.addEventListener("click", event => {
+  const button = event.target.closest("button[data-draft-action='remove']");
+  if (!button) return;
+  removeDraftWaypoint(Number(button.dataset.index));
+});
+
+addMapPoint.addEventListener("click", () => {
+  if (mapMode === "point") {
+    setMapMode("explore");
+  } else {
+    setMapMode("point");
+  }
+});
+
+startMapRoute.addEventListener("click", () => {
+  if (mapMode === "route") {
+    setMapMode("explore");
+    return;
+  }
+
+  clearDraftRoute({ keepMode: true });
+  mapMode = "route";
+  updateMapModeUI();
+  renderMapSidebar();
+});
+
+locateMapUser.addEventListener("click", locateCurrentUser);
+
+undoMapRoute.addEventListener("click", () => {
+  if (!draftRouteWaypoints.length) return;
+  removeDraftWaypoint(draftRouteWaypoints.length - 1);
+});
+
+clearMapRoute.addEventListener("click", () => {
+  if (!draftRouteWaypoints.length) return;
+  clearDraftRoute({ keepMode: true });
+  mapMode = "route";
+  updateMapModeUI();
+  renderMapSidebar();
+});
+
+cancelMapMode.addEventListener("click", () => setMapMode("explore"));
+
+saveMapRoute.addEventListener("click", () => {
+  if (!draftRouteIsValid || draftRouteGeometry.length < 2 || draftRouteWaypoints.length < 2) return;
+
+  const name = routeNameInput.value.trim() || `Ruta ${mapData.routes.length + 1}`;
+
+  mapData.routes.push({
+    id: makeMapObjectId("route"),
+    name,
+    waypoints: draftRouteWaypoints.map(point => ({
+      lat: point.lat,
+      lng: point.lng,
+      label: point.label || ""
+    })),
+    geometry: draftRouteGeometry.map(coord => [...coord]),
+    distance: draftRouteDistance,
+    duration: draftRouteDuration,
+    createdBy: getCurrentStaffDisplayName(),
+    createdAt: new Date().toISOString()
+  });
+
+  saveMapData();
+  clearDraftRoute();
+  renderStoredMapLayers();
+});
+
+openLegacyMap.addEventListener("click", showLegacyMap);
+closeLegacyMap.addEventListener("click", hideLegacyMap);
+mapBackdrop.addEventListener("click", hideLegacyMap);
+
+closeMapPointEditor.addEventListener("click", () => hideMapPointEditor());
+cancelMapPointEditor.addEventListener("click", () => hideMapPointEditor());
+mapPointEditorBackdrop.addEventListener("click", () => hideMapPointEditor());
+
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape") return;
+
+  if (mapPointEditorModal.classList.contains("open")) {
+    hideMapPointEditor();
+    return;
+  }
+
+  if (mapModal.classList.contains("open")) {
+    if (mapMode !== "explore") {
+      setMapMode("explore");
+      return;
+    }
+    hideLegacyMap();
+  }
+});
+
+window.addEventListener("resize", () => {
+  if (!mapModal.classList.contains("open") || !legacyMapInstance) return;
+  if (mapResizeTimer) clearTimeout(mapResizeTimer);
+
+  mapResizeTimer = setTimeout(() => {
+    legacyMapInstance.invalidateSize({ pan: false, animate: false });
+  }, 100);
+});
+
+renderMapSidebar();
+
+// Make the existing shared Supabase sync refresh this V15 renderer.
+try {
+  renderLegacyMap = function () {
+    mapData = normalizeMapData(mapData);
+    renderStoredMapLayers();
+  };
+} catch (error) {
+  console.warn("No se pudo enlazar el refresco compartido del mapa V15:", error);
+}
+
+window.SafariMapV15 = {
+  refresh() {
+    mapData = normalizeMapData(mapData);
+    renderStoredMapLayers();
+  },
+  open: showLegacyMap
+};
+})();
