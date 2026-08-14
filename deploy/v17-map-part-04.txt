@@ -1,0 +1,204 @@
+ontinue;
+
+    const creator = authorLabel(point.createdBy);
+    const groupName = getPointGroupName(point);
+    const color = getPointColor(point);
+
+    const marker = L.marker([lat, lng], {
+      icon: createReferenceIcon(point),
+      keyboard: true,
+      riseOnHover: true,
+      title: `${point.name || "Punto"} · ${groupName} · añadido por ${creator}`
+    }).addTo(mapPointsLayer);
+
+    marker.bindPopup(
+      `<div class="legacy-map-popup">` +
+        `<strong>${escapeHtml(point.name || "Punto")}</strong>` +
+        `<span><i class="point-group-dot" style="background:${color}"></i>${escapeHtml(groupName)}</span>` +
+        `<span>${lat.toFixed(5)}, ${lng.toFixed(5)}</span>` +
+        `<span class="added-by">Añadido por ${escapeHtml(creator)}</span>` +
+      `</div>`
+    );
+
+    marker.bindTooltip(
+      `${escapeHtml(point.name || "Punto")} · ${escapeHtml(groupName)}`,
+      {
+        direction: "top",
+        offset: [0, -10],
+        opacity: .94
+      }
+    );
+  }
+}
+
+function renderMapSidebar() {
+  if (!mapPointsList || !mapRoutesList || !mapGroupsList) return;
+
+  mapGroupsCount.textContent = String(v17MapData.groups.length);
+  mapPointsCount.textContent = String(v17MapData.points.length);
+  mapRoutesCount.textContent = String(v17MapData.routes.length);
+
+  mapGroupsList.innerHTML = v17MapData.groups.length
+    ? v17MapData.groups.map(group => {
+        const count = v17MapData.points.filter(point => point.groupId === group.id).length;
+        return `
+          <article class="map-group-row" data-group-id="${escapeHtml(group.id)}">
+            <label class="map-group-swatch-wrap" title="Cambiar color de ${escapeHtml(group.name)}">
+              <span class="map-group-swatch" style="background:${sanitizeColor(group.color)}"></span>
+              <input
+                class="map-group-color-input"
+                type="color"
+                value="${sanitizeColor(group.color)}"
+                data-group-action="color"
+                data-id="${escapeHtml(group.id)}"
+                aria-label="Color del grupo ${escapeHtml(group.name)}"
+              />
+            </label>
+
+            <div class="map-group-copy">
+              <strong>${escapeHtml(group.name)}</strong>
+              <small>${count} ${count === 1 ? "punto" : "puntos"} · creado por ${escapeHtml(authorLabel(group.createdBy))}</small>
+            </div>
+
+            <div class="map-group-actions">
+              <button type="button" data-group-action="rename" data-id="${escapeHtml(group.id)}">EDITAR</button>
+              <button type="button" data-group-action="delete" data-id="${escapeHtml(group.id)}">QUITAR</button>
+            </div>
+          </article>
+        `;
+      }).join("")
+    : '<div class="map-object-empty">Todavía no hay grupos. Creá uno y elegí su color.</div>';
+
+  mapPointsList.innerHTML = v17MapData.points.length
+    ? v17MapData.points.map(point => {
+        const groupName = getPointGroupName(point);
+        const color = getPointColor(point);
+
+        return `
+          <article class="map-object-row map-object-row-v15">
+            <div>
+              <h6><span class="point-group-dot" style="background:${color}"></span>${escapeHtml(point.name || "Punto")}</h6>
+              <div class="map-object-meta">
+                <em>${escapeHtml(groupName)}</em>
+                <em class="created-by">${escapeHtml(authorLabel(point.createdBy))}</em>
+                <em>${Number(point.lat).toFixed(5)}, ${Number(point.lng).toFixed(5)}</em>
+              </div>
+            </div>
+
+            <div class="map-object-actions">
+              <button data-map-action="focus-point" data-id="${escapeHtml(point.id)}">VER</button>
+              <button class="map-route-add-btn ${mapMode === "route" ? "active" : ""}" data-map-action="route-add-point" data-id="${escapeHtml(point.id)}">A RUTA</button>
+              <button data-map-action="edit-point" data-id="${escapeHtml(point.id)}">EDITAR</button>
+              <button data-map-action="delete-point" data-id="${escapeHtml(point.id)}">QUITAR</button>
+            </div>
+          </article>
+        `;
+      }).join("")
+    : '<div class="map-object-empty">No hay puntos todavía. Usá PUNTO o guardá un resultado de la búsqueda.</div>';
+
+  mapRoutesList.innerHTML = v17MapData.routes.length
+    ? v17MapData.routes.map(route => {
+        const geometry = getRouteGeometry(route);
+        const meta = [
+          route.distance ? formatDistance(route.distance) : "",
+          route.duration ? formatDuration(route.duration) : ""
+        ].filter(Boolean);
+
+        return `
+          <article class="map-object-row map-object-row-v15">
+            <div>
+              <h6>${escapeHtml(route.name || "Ruta")}</h6>
+              <div class="map-object-meta">
+                <em class="created-by">${escapeHtml(authorLabel(route.createdBy))}</em>
+                ${meta.map(value => `<em>${escapeHtml(String(value))}</em>`).join("")}
+                <em>${route.waypoints?.length || geometry.length} puntos</em>
+              </div>
+            </div>
+
+            <div class="map-object-actions">
+              <button data-map-action="focus-route" data-id="${escapeHtml(route.id)}">VER</button>
+              <button data-map-action="rename-route" data-id="${escapeHtml(route.id)}">EDITAR</button>
+              <button data-map-action="delete-route" data-id="${escapeHtml(route.id)}">QUITAR</button>
+            </div>
+          </article>
+        `;
+      }).join("")
+    : '<div class="map-object-empty">No hay rutas guardadas todavía. Usá RUTA para crear una.</div>';
+
+  renderDraftRouteSidebar();
+}
+
+function renderPointGroupOptions(selectedValue = null) {
+  if (!mapPointGroupSelect) return;
+
+  const current = selectedValue !== null ? selectedValue : mapPointGroupSelect.value;
+
+  mapPointGroupSelect.innerHTML =
+    '<option value="">SIN GRUPO · NEGRO</option>' +
+    v17MapData.groups.map(group =>
+      `<option value="${escapeHtml(group.id)}">${escapeHtml(group.name)}</option>`
+    ).join("");
+
+  mapPointGroupSelect.value =
+    v17MapData.groups.some(group => group.id === current) ? current : "";
+
+  updatePointGroupPreview();
+}
+
+function updatePointGroupPreview() {
+  const group = getMapGroup(mapPointGroupSelect.value);
+  const color = sanitizeColor(group?.color || "#111111");
+
+  mapPointGroupPreviewDot.style.background = color;
+  mapPointGroupPreviewText.textContent = group?.name || "SIN GRUPO · NEGRO";
+}
+
+function renderDraftRouteSidebar() {
+  const routeMode = mapMode === "route";
+
+  mapDraftSection.hidden = !routeMode;
+  mapDraftStopsCount.textContent = String(draftRouteWaypoints.length);
+
+  if (!routeMode) {
+    mapDraftStopsList.innerHTML = "";
+    return;
+  }
+
+  mapDraftStopsList.innerHTML = draftRouteWaypoints.length
+    ? draftRouteWaypoints.map((point, index) => `
+        <div class="map-route-stop-row">
+          <span class="map-route-stop-index">${index === 0 ? "A" : index + 1}</span>
+
+          <div class="map-route-stop-copy">
+            <strong>${escapeHtml(point.label || (index === 0 ? "Inicio" : `Parada ${index + 1}`))}</strong>
+            <small>${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}</small>
+          </div>
+
+          <button type="button" data-draft-action="remove" data-index="${index}" aria-label="Quitar parada">×</button>
+        </div>
+      `).join("")
+    : '<div class="map-object-empty">Tocá dos lugares en el mapa o agregá resultados de búsqueda a la ruta.</div>';
+}
+
+function setMapMode(mode) {
+  if (mode === mapMode && mode !== "route") return;
+
+  if (mode !== "route") {
+    cancelRouteRequest();
+    clearDraftRoute({ keepMode: true });
+  }
+
+  mapMode = mode;
+  updateMapModeUI();
+  renderMapSidebar();
+}
+
+function updateMapModeUI() {
+  const pointMode = mapMode === "point";
+  const routeMode = mapMode === "route";
+
+  addMapPoint.classList.toggle("active", pointMode);
+  startMapRoute.classList.toggle("active", routeMode);
+
+  addMapPoint.setAttribute("aria-pressed", pointMode ? "true" : "false");
+  startMapRoute.setA
