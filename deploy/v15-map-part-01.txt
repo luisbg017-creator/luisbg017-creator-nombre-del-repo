@@ -1,0 +1,61 @@
+(function () {
+  "use strict";
+
+  // Replace the old map DOM entirely so none of the V13 map listeners remain active.
+  const oldModal = document.getElementById("mapModal");
+  const oldEditor = document.getElementById("mapPointEditorModal");
+  const oldOpenButton = document.getElementById("openLegacyMap");
+
+  if (!oldModal || !oldOpenButton) return;
+
+  const holder = document.createElement("div");
+  holder.innerHTML = "<div class=\"map-modal\" id=\"mapModal\" aria-hidden=\"true\">\n      <div class=\"map-backdrop\" id=\"mapBackdrop\"></div>\n\n      <section class=\"map-window map-window-v15\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mapTitle\">\n        <header class=\"map-header\">\n          <div>\n            <p>SAFARI 2026 \u00b7 LEGACY</p>\n            <h4 id=\"mapTitle\">MAPA DE OPERACIONES</h4>\n          </div>\n          <div class=\"map-header-status\">\n            <span class=\"map-online-dot\"></span>\n            <span>MAPA COMPARTIDO</span>\n            <button id=\"closeLegacyMap\" aria-label=\"Cerrar mapa\">\u00d7</button>\n          </div>\n        </header>\n\n        <div class=\"map-toolbar map-toolbar-v15\">\n          <div class=\"map-primary-actions\">\n            <button id=\"addMapPoint\" class=\"map-primary-btn\" type=\"button\">\n              <span>\uff0b</span> A\u00d1ADIR PUNTO\n            </button>\n            <button id=\"startMapRoute\" class=\"map-primary-btn\" type=\"button\">\n              <span>\u219d</span> TRAZAR RUTA\n            </button>\n            <button id=\"locateMapUser\" class=\"map-secondary-btn\" type=\"button\">\n              \u25ce MI UBICACI\u00d3N\n            </button>\n          </div>\n\n          <div class=\"route-composer\" id=\"routeComposer\" aria-hidden=\"true\">\n            <div class=\"route-composer-info\">\n              <span id=\"routeStopsSummary\">0 PARADAS</span>\n              <strong id=\"routeStats\">TOC\u00c1 DOS PUNTOS EN EL MAPA</strong>\n            </div>\n\n            <input\n              id=\"routeNameInput\"\n              type=\"text\"\n              maxlength=\"60\"\n              placeholder=\"Nombre de la ruta\"\n            />\n\n            <div class=\"route-composer-actions\">\n              <button id=\"undoMapRoute\" type=\"button\" disabled>\u21b6 \u00daLTIMO</button>\n              <button id=\"clearMapRoute\" type=\"button\" disabled>LIMPIAR</button>\n              <button id=\"cancelMapMode\" type=\"button\">SALIR DE RUTA</button>\n              <button id=\"saveMapRoute\" class=\"route-save-primary\" type=\"button\" disabled>GUARDAR RUTA</button>\n            </div>\n          </div>\n\n          <div class=\"map-mode-status\" id=\"mapModeStatus\">\n            <span class=\"map-mode-pulse\"></span>\n            <span id=\"mapModeStatusText\">MODO EXPLORAR</span>\n          </div>\n        </div>\n\n        <div class=\"map-layout map-layout-v15\">\n          <div class=\"map-canvas-wrap\">\n            <div id=\"legacyMap\" class=\"legacy-map legacy-map-v15\" aria-label=\"Mapa compartido del staff\"></div>\n\n            <div class=\"map-tip\" id=\"mapTip\">\n              <strong>MAPA</strong>\n              <span>Us\u00e1 \u201cA\u00f1adir punto\u201d o \u201cTrazar ruta\u201d.</span>\n            </div>\n\n            <div class=\"map-load-error\" id=\"mapLoadError\">\n              <strong>NO SE PUDO CARGAR EL MAPA</strong>\n              <span>Revis\u00e1 la conexi\u00f3n y volv\u00e9 a abrir este apartado.</span>\n            </div>\n          </div>\n\n          <aside class=\"map-sidebar map-sidebar-v15\">\n            <section class=\"map-draft-section\" id=\"mapDraftSection\" hidden>\n              <div class=\"map-sidebar-head\">\n                <span>PARADAS DE LA RUTA</span>\n                <strong id=\"mapDraftStopsCount\">0</strong>\n              </div>\n              <div id=\"mapDraftStopsList\" class=\"map-object-list\"></div>\n            </section>\n\n            <section>\n              <div class=\"map-sidebar-head\">\n                <span>PUNTOS DE REFERENCIA</span>\n                <strong id=\"mapPointsCount\">0</strong>\n              </div>\n              <div id=\"mapPointsList\" class=\"map-object-list\"></div>\n            </section>\n\n            <section>\n              <div class=\"map-sidebar-head\">\n                <span>RUTAS GUARDADAS</span>\n                <strong id=\"mapRoutesCount\">0</strong>\n              </div>\n              <div id=\"mapRoutesList\" class=\"map-object-list\"></div>\n            </section>\n          </aside>\n        </div>\n\n        <footer class=\"map-footer\">\n          <span>OPENSTREETMAP \u00b7 RUTAS SOBRE CALLES</span>\n          <span id=\"mapSyncLabel\">SINCRONIZADO CON STAFF</span>\n        </footer>\n      </section>\n    </div>\n\n    <div class=\"map-point-editor-modal\" id=\"mapPointEditorModal\" aria-hidden=\"true\">\n      <div class=\"map-point-editor-backdrop\" id=\"mapPointEditorBackdrop\"></div>\n      <section class=\"map-point-editor-window\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mapPointEditorTitle\">\n        <header>\n          <div>\n            <p id=\"mapPointEditorMode\">NUEVO PUNTO</p>\n            <h4 id=\"mapPointEditorTitle\">REFERENCIA</h4>\n          </div>\n          <button id=\"closeMapPointEditor\" aria-label=\"Cerrar editor\">\u00d7</button>\n        </header>\n\n        <form id=\"mapPointEditorForm\">\n          <label>\n            <span>NOMBRE DEL PUNTO</span>\n            <input id=\"mapPointNameInput\" type=\"text\" maxlength=\"70\" placeholder=\"Ej.: Casa de Bola\u00f1os\" required />\n          </label>\n\n          <div class=\"map-coords-preview\">\n            <span>UBICACI\u00d3N</span>\n            <strong id=\"mapPointCoordsPreview\">--</strong>\n          </div>\n\n          <p class=\"map-point-help\">El punto se guarda para todo el staff y aparece en el mapa de todos los dispositivos.</p>\n\n          <div class=\"map-point-editor-actions\">\n            <button type=\"button\" id=\"cancelMapPointEditor\">CANCELAR</button>\n            <button type=\"submit\">GUARDAR PUNTO</button>\n          </div>\n        </form>\n      </section>\n    </div>";
+
+  const freshModal = holder.querySelector("#mapModal");
+  const freshEditor = holder.querySelector("#mapPointEditorModal");
+
+  oldModal.parentNode.insertBefore(freshModal, oldModal);
+  if (oldEditor) {
+    oldEditor.parentNode.insertBefore(freshEditor, oldEditor);
+    oldEditor.remove();
+  } else {
+    freshModal.parentNode.insertBefore(freshEditor, freshModal.nextSibling);
+  }
+  oldModal.remove();
+
+  // Cloning removes the old V13 click handler attached to the dashboard card.
+  const freshOpenButton = oldOpenButton.cloneNode(true);
+  oldOpenButton.replaceWith(freshOpenButton);
+
+// =========================
+// MAPA COMPARTIDO · V15
+// Leaflet + OpenStreetMap + OSRM road routing
+// =========================
+const MAP_STORAGE_KEY = "legacyMapDataV1";
+const OSRM_ROUTE_BASE = "https://router.project-osrm.org/route/v1/driving";
+
+const openLegacyMap = document.getElementById("openLegacyMap");
+const mapModal = document.getElementById("mapModal");
+const mapBackdrop = document.getElementById("mapBackdrop");
+const closeLegacyMap = document.getElementById("closeLegacyMap");
+const legacyMapEl = document.getElementById("legacyMap");
+const mapLoadError = document.getElementById("mapLoadError");
+const mapTip = document.getElementById("mapTip");
+const mapSyncLabel = document.getElementById("mapSyncLabel");
+
+const addMapPoint = document.getElementById("addMapPoint");
+const startMapRoute = document.getElementById("startMapRoute");
+const locateMapUser = document.getElementById("locateMapUser");
+const undoMapRoute = document.getElementById("undoMapRoute");
+const clearMapRoute = document.getElementById("clearMapRoute");
+const cancelMapMode = document.getElementById("cancelMapMode");
+const saveMapRoute = document.getElementById("saveMapRoute");
+const routeComposer = document.getElementById("routeComposer");
+const routeNameInput = document.getElementById("routeNameInput");
+const routeStopsSummary = document.getElementById("routeStopsSummary");
+const routeStats = document.getElementById("routeStats");
+const mapModeStatus = document.getElementById("mapModeStatus");
+const mapModeStatusText = document.getElementById("mapModeStatusText");
+
+const mapDraftSection = document.getElementById("mapDraftSection");
+const mapDraftStopsList = document.getElementById("m
