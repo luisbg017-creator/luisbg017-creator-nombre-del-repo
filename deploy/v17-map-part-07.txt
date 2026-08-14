@@ -1,0 +1,301 @@
+InGroup === 1 ? "punto quedará" : "puntos quedarán"} sin grupo.`
+    : "";
+
+  if (!confirm(`¿Quitar el grupo "${group.name}"?${suffix}`)) return;
+
+  v17MapData.points.forEach(point => {
+    if (point.groupId === id) point.groupId = "";
+  });
+
+  v17MapData.groups = v17MapData.groups.filter(item => item.id !== id);
+
+  saveMapData();
+  renderPointGroupOptions();
+  renderStoredMapLayers();
+}
+
+/* -------------------------
+   MAP OPEN/CLOSE + POINT EDITOR
+   ------------------------- */
+function showLegacyMap() {
+  mapModal.classList.add("open");
+  mapModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("map-open");
+
+  initLegacyMap();
+
+  if (mapResizeTimer) clearTimeout(mapResizeTimer);
+
+  mapResizeTimer = setTimeout(() => {
+    requestAnimationFrame(() => {
+      legacyMapInstance?.invalidateSize({ pan: false, animate: false });
+      renderStoredMapLayers();
+    });
+  }, 90);
+}
+
+function hideLegacyMap() {
+  closeMapSidebarMobileFn();
+  hideSearchResults();
+  setMapMode("explore");
+
+  mapModal.classList.remove("open");
+  mapModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("map-open");
+}
+
+function openMapPointEditor(id = null) {
+  editingMapPointId = id;
+
+  if (id) {
+    const point = v17MapData.points.find(item => item.id === id);
+    if (!point) return;
+
+    pendingPointCoords = {
+      lat: Number(point.lat),
+      lng: Number(point.lng)
+    };
+
+    mapPointEditorMode.textContent = "EDITAR PUNTO";
+    mapPointNameInput.value = point.name || "";
+    mapPointAddedByPreview.textContent = authorLabel(point.createdBy);
+    renderPointGroupOptions(point.groupId || "");
+  } else {
+    mapPointEditorMode.textContent = "NUEVO PUNTO";
+    mapPointNameInput.value = pendingPointSuggestedName || "";
+    mapPointAddedByPreview.textContent = getCurrentStaffDisplayName();
+    renderPointGroupOptions(pendingPointSuggestedGroupId || "");
+  }
+
+  if (!pendingPointCoords) return;
+
+  mapPointCoordsPreview.textContent =
+    `${pendingPointCoords.lat.toFixed(6)}, ${pendingPointCoords.lng.toFixed(6)}`;
+
+  mapPointEditorModal.classList.add("open");
+  mapPointEditorModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("map-point-editor-open");
+
+  setTimeout(() => mapPointNameInput.focus(), 50);
+}
+
+function hideMapPointEditor({ keepPointMode = false } = {}) {
+  mapPointEditorModal.classList.remove("open");
+  mapPointEditorModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("map-point-editor-open");
+
+  editingMapPointId = null;
+  pendingPointCoords = null;
+  pendingPointSuggestedName = "";
+  pendingPointSuggestedGroupId = "";
+  mapPointEditorForm.reset();
+  renderPointGroupOptions("");
+
+  if (!keepPointMode && mapMode === "point") {
+    setMapMode("explore");
+  }
+}
+
+function focusMapPoint(id) {
+  const point = v17MapData.points.find(item => item.id === id);
+  if (!point || !legacyMapInstance) return;
+
+  closeMapSidebarMobileFn();
+
+  legacyMapInstance.flyTo(
+    [Number(point.lat), Number(point.lng)],
+    16,
+    { animate: true, duration: .5 }
+  );
+}
+
+function focusMapRoute(id) {
+  const route = v17MapData.routes.find(item => item.id === id);
+  const geometry = route ? getRouteGeometry(route) : [];
+
+  if (!route || !legacyMapInstance || geometry.length < 2) return;
+
+  closeMapSidebarMobileFn();
+
+  legacyMapInstance.fitBounds(
+    L.latLngBounds(geometry),
+    { padding: [38, 38], animate: true, duration: .5 }
+  );
+}
+
+function useReferencePointInRoute(id) {
+  const point = v17MapData.points.find(item => item.id === id);
+  if (!point) return;
+
+  closeMapSidebarMobileFn();
+
+  if (mapMode !== "route") {
+    mapMode = "route";
+    updateMapModeUI();
+  }
+
+  addDraftRouteWaypoint(
+    Number(point.lat),
+    Number(point.lng),
+    point.name || "Punto"
+  );
+}
+
+function locateCurrentUser() {
+  if (!legacyMapInstance || !navigator.geolocation) {
+    setMapHint("explore", "UBICACIÓN NO DISPONIBLE", "Este dispositivo no permite obtenerla.");
+    return;
+  }
+
+  locateMapUser.disabled = true;
+  setMapHint("explore", "BUSCANDO UBICACIÓN", "Esperando permiso del dispositivo.", true);
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      mapUserLayer.clearLayers();
+
+      L.marker([lat, lng], {
+        icon: createUserLocationIcon(),
+        keyboard: false
+      }).addTo(mapUserLayer)
+        .bindTooltip("Tu ubicación", { direction: "top" });
+
+      legacyMapInstance.flyTo([lat, lng], 16, { duration: .5 });
+
+      locateMapUser.disabled = false;
+      updateMapModeUI();
+    },
+    () => {
+      locateMapUser.disabled = false;
+      setMapHint("explore", "NO SE PUDO OBTENER", "Revisá el permiso de ubicación del navegador.");
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 7000,
+      maximumAge: 30000
+    }
+  );
+}
+
+/* -------------------------
+   EVENTS
+   ------------------------- */
+mapGroupForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const group = createMapGroup(
+    mapGroupNameInput.value,
+    mapGroupColorInput.value
+  );
+
+  if (!group) return;
+
+  mapGroupNameInput.value = "";
+  mapGroupColorInput.value = "#111111";
+});
+
+mapGroupsList.addEventListener("change", event => {
+  const input = event.target.closest("input[data-group-action='color']");
+  if (!input) return;
+
+  changeMapGroupColor(input.dataset.id, input.value);
+});
+
+mapGroupsList.addEventListener("click", event => {
+  const button = event.target.closest("button[data-group-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+
+  if (button.dataset.groupAction === "rename") renameMapGroup(id);
+  if (button.dataset.groupAction === "delete") deleteMapGroup(id);
+});
+
+mapPointGroupSelect.addEventListener("change", updatePointGroupPreview);
+
+mapPointEditorForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const name = mapPointNameInput.value.trim();
+  if (!name || !pendingPointCoords) return;
+
+  const groupId = getMapGroup(mapPointGroupSelect.value)
+    ? mapPointGroupSelect.value
+    : "";
+
+  if (editingMapPointId) {
+    const point = v17MapData.points.find(item => item.id === editingMapPointId);
+
+    if (point) {
+      point.name = name;
+      point.groupId = groupId;
+      point.updatedAt = new Date().toISOString();
+    }
+  } else {
+    v17MapData.points.push({
+      id: makeMapObjectId("point"),
+      name,
+      lat: pendingPointCoords.lat,
+      lng: pendingPointCoords.lng,
+      groupId,
+      createdBy: getCurrentStaffDisplayName(),
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  saveMapData();
+  hideMapPointEditor();
+  renderStoredMapLayers();
+});
+
+mapPointsList.addEventListener("click", event => {
+  const button = event.target.closest("button[data-map-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+  const action = button.dataset.mapAction;
+
+  if (action === "focus-point") focusMapPoint(id);
+  if (action === "route-add-point") useReferencePointInRoute(id);
+
+  if (action === "edit-point") {
+    const point = v17MapData.points.find(item => item.id === id);
+    if (!point) return;
+
+    pendingPointCoords = {
+      lat: Number(point.lat),
+      lng: Number(point.lng)
+    };
+
+    openMapPointEditor(id);
+  }
+
+  if (action === "delete-point") {
+    const point = v17MapData.points.find(item => item.id === id);
+    if (!point) return;
+
+    if (!confirm(`¿Quitar el punto "${point.name}"?`)) return;
+
+    v17MapData.points = v17MapData.points.filter(item => item.id !== id);
+    saveMapData();
+    renderStoredMapLayers();
+  }
+});
+
+mapRoutesList.addEventListener("click", event => {
+  const button = event.target.closest("button[data-map-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+  const route = v17MapData.routes.find(item => item.id === id);
+  if (!route) return;
+
+  if (button.dataset.mapAction === "focus-route") {
+    focusMapRoute(id);
+  }
+
+  if (button.dataset.mapAction === "rename-route") {
+    const next = prompt("Nombre
