@@ -1,60 +1,6894 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#000000">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#000000" />
   <title>SAFARI 2026 — LEGACY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    html,body{margin:0;min-height:100%;background:#000;color:#fff;font-family:Arial,sans-serif}
-    body{display:grid;place-items:center;min-height:100vh}
-    #loading{font-size:12px;letter-spacing:.28em;opacity:.65;text-align:center;padding:24px}
-  </style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --black: #050505;
+  --white: #f5f5f2;
+  --gray: #9b9b97;
+  --line: rgba(255,255,255,.15);
+}
+
+html {
+  background: var(--black);
+  color: var(--white);
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255,255,255,.055), transparent 35%),
+    #050505;
+}
+
+button {
+  font: inherit;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: .08;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  transition: visibility 0s linear 1.3s;
+}
+
+.intro::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background:
+    linear-gradient(90deg, transparent 49.8%, rgba(255,255,255,.08) 50%, transparent 50.2%),
+    linear-gradient(0deg, transparent 49.8%, rgba(255,255,255,.05) 50%, transparent 50.2%);
+  transform: rotate(-8deg) scale(1.2);
+}
+
+.intro-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  width: min(92vw, 820px);
+}
+
+.eyebrow {
+  letter-spacing: .48em;
+  font-size: .68rem;
+  font-weight: 700;
+  color: #b8b8b3;
+  margin-bottom: 1.4rem;
+  animation: fadeUp .8s ease both;
+}
+
+.intro h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(3.8rem, 11vw, 8rem);
+  line-height: .85;
+  letter-spacing: -.07em;
+  font-weight: 700;
+  animation: fadeUp .9s .08s ease both;
+}
+
+.intro h1 span {
+  -webkit-text-stroke: 1px var(--white);
+  color: transparent;
+}
+
+.legacy-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.3rem auto 2.8rem;
+  width: min(520px, 80vw);
+  animation: fadeUp .9s .16s ease both;
+}
+
+.legacy-wrap h2 {
+  font-size: clamp(1rem, 2.7vw, 1.55rem);
+  letter-spacing: .5em;
+  font-weight: 500;
+  padding-left: .5em;
+}
+
+.legacy-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,.55);
+}
+
+.enter-btn {
+  position: relative;
+  z-index: 4;
+  width: 180px;
+  height: 58px;
+  border: 1px solid rgba(255,255,255,.8);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  cursor: pointer;
+  transition: transform .25s ease, background .25s ease, color .25s ease;
+  animation: fadeUp .9s .25s ease both;
+  overflow: hidden;
+}
+
+.enter-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: white;
+  transform: translateX(-105%);
+  transition: transform .35s cubic-bezier(.2,.8,.2,1);
+  z-index: -1;
+}
+
+.enter-btn:hover::before {
+  transform: translateX(0);
+}
+
+.enter-btn:hover {
+  color: #000;
+  transform: scale(1.03);
+}
+
+.enter-btn:active {
+  transform: scale(.94);
+}
+
+.btn-text {
+  font-size: .76rem;
+  letter-spacing: .23em;
+  font-weight: 800;
+}
+
+.btn-arrow {
+  font-size: 1.1rem;
+}
+
+.intro-note {
+  margin-top: 2.2rem;
+  font-size: .58rem;
+  letter-spacing: .35em;
+  color: #6d6d69;
+  animation: fadeUp .9s .35s ease both;
+}
+
+.corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  opacity: .35;
+}
+
+.corner-tl { left: 24px; top: 24px; border-left: 1px solid white; border-top: 1px solid white; }
+.corner-tr { right: 24px; top: 24px; border-right: 1px solid white; border-top: 1px solid white; }
+.corner-bl { left: 24px; bottom: 24px; border-left: 1px solid white; border-bottom: 1px solid white; }
+.corner-br { right: 24px; bottom: 24px; border-right: 1px solid white; border-bottom: 1px solid white; }
+
+.transition-orb {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: 21;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intro.entering .intro-content {
+  animation: introCollapse .62s cubic-bezier(.7,0,.3,1) forwards;
+}
+
+.intro.entering .transition-orb {
+  animation: orbExpand 1.02s cubic-bezier(.76,0,.24,1) .18s forwards;
+}
+
+.intro.entering .flash {
+  animation: flashBang .72s ease .75s forwards;
+}
+
+.intro.finished {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dashboard {
+  min-height: 100vh;
+  opacity: 0;
+  transform: scale(1.035);
+  filter: blur(12px);
+  transition: opacity .8s ease, transform 1s cubic-bezier(.2,.8,.2,1), filter .8s ease;
+  padding: 24px;
+}
+
+.dashboard.visible {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+.topbar {
+  max-width: 1240px;
+  margin: 0 auto;
+  min-height: 80px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--white);
+  display: grid;
+  place-items: center;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+}
+
+.brand strong,
+.brand span {
+  display: block;
+}
+
+.brand strong {
+  font-size: .82rem;
+  letter-spacing: .08em;
+}
+
+.brand span {
+  color: var(--gray);
+  font-size: .57rem;
+  letter-spacing: .2em;
+  margin-top: 3px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .6rem;
+  letter-spacing: .16em;
+  color: #b9b9b5;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 12px rgba(255,255,255,.8);
+  animation: pulse 1.8s infinite;
+}
+
+.hero {
+  max-width: 1240px;
+  margin: 0 auto;
+  min-height: 470px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 72px 0 58px;
+  border-bottom: 1px solid var(--line);
+  gap: 2rem;
+}
+
+.section-kicker {
+  font-size: .64rem;
+  letter-spacing: .32em;
+  color: var(--gray);
+  margin-bottom: 1.2rem;
+}
+
+.hero h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(3.2rem, 7vw, 6.2rem);
+  line-height: .9;
+  letter-spacing: -.055em;
+  max-width: 700px;
+}
+
+.hero-text {
+  margin-top: 2rem;
+  color: #a7a7a2;
+  max-width: 560px;
+  line-height: 1.7;
+  font-size: .95rem;
+}
+
+.hero-number {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(5rem, 15vw, 11rem);
+  line-height: .63;
+  font-weight: 700;
+  letter-spacing: -.12em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.24);
+  text-align: right;
+  margin-right: .07em;
+}
+
+.hero-number span {
+  display: block;
+}
+
+.cards {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  border-left: 1px solid var(--line);
+}
+
+.card {
+  min-height: 310px;
+  padding: 28px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background .25s ease, color .25s ease;
+}
+
+.card:hover {
+  background: #f0f0ed;
+  color: #050505;
+}
+
+.card:hover p,
+.card:hover .card-top {
+  color: #444;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  color: #777;
+  font-size: .58rem;
+  letter-spacing: .2em;
+}
+
+.card h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.45rem;
+  margin-bottom: .75rem;
+}
+
+.card p {
+  color: #92928d;
+  line-height: 1.6;
+  font-size: .82rem;
+  max-width: 330px;
+}
+
+.ghost-btn {
+  align-self: flex-start;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: .55rem;
+  letter-spacing: .18em;
+}
+
+.mini-line {
+  height: 1px;
+  width: 48px;
+  background: currentColor;
+  opacity: .5;
+}
+
+.footer-strip {
+  max-width: 1240px;
+  margin: 0 auto;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #666;
+  font-size: .55rem;
+  letter-spacing: .18em;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%,100% { opacity: .4; }
+  50% { opacity: 1; }
+}
+
+@keyframes introCollapse {
+  0% { opacity: 1; transform: scale(1); filter: blur(0); }
+  55% { opacity: 1; transform: scale(.9); filter: blur(1px); }
+  100% { opacity: 0; transform: scale(1.18); filter: blur(14px); }
+}
+
+@keyframes orbExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    box-shadow: 0 0 0 rgba(255,255,255,0);
+  }
+  45% {
+    box-shadow: 0 0 80px rgba(255,255,255,.95);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(180);
+    box-shadow: 0 0 0 rgba(255,255,255,0);
+  }
+}
+
+@keyframes flashBang {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (max-width: 860px) {
+  .dashboard { padding: 16px; }
+
+  .hero {
+    min-height: 520px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .hero-number {
+    position: absolute;
+    right: 22px;
+    top: 140px;
+    opacity: .6;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 240px;
+  }
+
+  .footer-strip {
+    flex-wrap: wrap;
+    padding: 20px 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .status { display: none; }
+
+  .intro h1 {
+    font-size: clamp(3.5rem, 18vw, 5.3rem);
+  }
+
+  .legacy-wrap {
+    width: 86vw;
+  }
+
+  .hero {
+    padding-top: 150px;
+  }
+
+  .hero h3 {
+    font-size: 3.5rem;
+  }
+
+  .hero-number {
+    font-size: 6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+
+/* COMODINES FOLDER */
+.folder-preview {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.folder-icon {
+  position: relative;
+  width: 72px;
+  height: 52px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.folder-tab {
+  position: absolute;
+  left: -1px;
+  top: -13px;
+  width: 34px;
+  height: 13px;
+  border: 1px solid currentColor;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+}
+
+.open-folder-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform .2s ease;
+}
+
+.open-folder-btn:hover {
+  transform: translateX(4px);
+}
+
+.folder-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.folder-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.folder-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+
+.folder-modal.open .folder-backdrop {
+  opacity: 1;
+}
+
+.folder-window {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(820px, 88vh);
+  overflow: auto;
+  background: #f2f2ef;
+  color: #050505;
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: 0 30px 100px rgba(0,0,0,.55);
+  transform: translateY(22px) scale(.96);
+  opacity: 0;
+  transition:
+    transform .42s cubic-bezier(.2,.8,.2,1),
+    opacity .32s ease;
+}
+
+.folder-modal.open .folder-window {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.folder-header {
+  min-height: 92px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.17);
+}
+
+.folder-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.folder-title-wrap p {
+  color: #777;
+  font-size: .53rem;
+  letter-spacing: .23em;
+  margin-bottom: 4px;
+}
+
+.folder-title-wrap h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: .08em;
+}
+
+.folder-symbol {
+  width: 45px;
+  height: 34px;
+  border: 1px solid #050505;
+  position: relative;
+}
+
+.folder-symbol span {
+  position: absolute;
+  width: 22px;
+  height: 9px;
+  top: -9px;
+  left: -1px;
+  border: 1px solid #050505;
+  border-bottom: 0;
+}
+
+.folder-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #050505;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.folder-close:hover {
+  background: #050505;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.folder-path {
+  padding: 12px 22px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  display: flex;
+  gap: 10px;
+  font-size: .56rem;
+  letter-spacing: .17em;
+  color: #81817c;
+}
+
+.folder-path strong {
+  color: #050505;
+}
+
+.comodines-list {
+  padding: 0 22px;
+}
+
+.comodin-item {
+  min-height: 92px;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,.13);
+  transition: padding-left .2s ease, background .2s ease;
+}
+
+.comodin-item:hover {
+  background: #050505;
+  color: white;
+  padding-left: 12px;
+}
+
+.comodin-index {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .65rem;
+  color: #8b8b86;
+}
+
+.comodin-item p {
+  font-size: clamp(.95rem, 2vw, 1.15rem);
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.emoji-row {
+  margin-top: 7px;
+  font-size: 1.25rem;
+  letter-spacing: .08em;
+}
+
+.emoji-row.large {
+  margin-top: 0;
+  font-size: 1.55rem;
+}
+
+.folder-footer {
+  min-height: 64px;
+  padding: 0 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  color: #7f7f7a;
+  font-size: .52rem;
+  letter-spacing: .18em;
+}
+
+body.folder-open {
+  overflow: hidden;
+}
+
+@media (max-width: 560px) {
+  .folder-modal {
+    padding: 10px;
+  }
+
+  .folder-window {
+    max-height: 92vh;
+  }
+
+  .folder-header {
+    padding: 17px;
+  }
+
+  .comodines-list {
+    padding: 0 17px;
+  }
+
+  .comodin-item {
+    grid-template-columns: 38px 1fr;
+    min-height: 86px;
+  }
+
+  .folder-footer {
+    padding: 0 17px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
+}
+
+
+/* FOUND STATE */
+.comodin-item {
+  position: relative;
+  grid-template-columns: 50px 1fr auto;
+  column-gap: 16px;
+}
+
+.comodin-found-btn {
+  min-width: 178px;
+  border: 1px solid rgba(0,0,0,.45);
+  background: transparent;
+  color: #050505;
+  padding: 11px 13px;
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.comodin-found-btn:hover {
+  background: #050505;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.comodin-item:hover .comodin-found-btn {
+  border-color: rgba(255,255,255,.55);
+  color: white;
+}
+
+.comodin-item:hover .comodin-found-btn:hover {
+  background: white;
+  color: #050505;
+}
+
+.comodin-item.found {
+  background: #173d2b;
+  color: #f7fff9;
+  padding-left: 12px;
+}
+
+.comodin-item.found .comodin-index {
+  color: #a7c9b6;
+}
+
+.comodin-item.found .comodin-found-btn {
+  background: #0e2d1e;
+  color: #dff8e8;
+  border-color: #6e9f82;
+}
+
+.comodin-item.found .found-label::before {
+  content: "ENCONTRADO";
+  font-size: .54rem;
+}
+
+.comodin-item.found .found-label {
+  font-size: 0;
+}
+
+.comodin-item.found .found-icon {
+  font-size: .9rem;
+}
+
+.comodin-item.found:hover {
+  background: #173d2b;
+}
+
+.comodin-item.found:hover .comodin-found-btn {
+  background: #0e2d1e;
+  color: #dff8e8;
+  border-color: #6e9f82;
+}
+
+.comodin-item.found:hover .comodin-found-btn:hover {
+  background: #244f39;
+  color: white;
+}
+
+@media (max-width: 700px) {
+  .comodin-item {
+    grid-template-columns: 38px 1fr;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .comodin-found-btn {
+    grid-column: 2;
+    margin-top: 10px;
+    justify-self: start;
+    min-width: 0;
+  }
+}
+
+
+/* CRONOGRAMA */
+.open-cronograma-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.schedule-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 910;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.schedule-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.schedule-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+
+.schedule-modal.open .schedule-backdrop {
+  opacity: 1;
+}
+
+.schedule-window {
+  position: relative;
+  width: min(980px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #f2f2ef;
+  color: #050505;
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: 0 30px 100px rgba(0,0,0,.6);
+  opacity: 0;
+  transform: translateY(24px) scale(.97);
+  transition: opacity .3s ease, transform .42s cubic-bezier(.2,.8,.2,1);
+}
+
+.schedule-modal.open .schedule-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.schedule-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-height: 96px;
+  padding: 22px 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(242,242,239,.96);
+  border-bottom: 1px solid rgba(0,0,0,.17);
+  backdrop-filter: blur(10px);
+}
+
+.schedule-eyebrow {
+  font-size: .52rem;
+  color: #777;
+  letter-spacing: .22em;
+  margin-bottom: 5px;
+}
+
+.schedule-header h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.65rem;
+  letter-spacing: .06em;
+}
+
+.schedule-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.schedule-close:hover {
+  background: #050505;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.schedule-intro {
+  padding: 14px 26px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  color: #777;
+  font-size: .53rem;
+  letter-spacing: .18em;
+}
+
+.schedule-days {
+  padding: 0 26px;
+}
+
+.schedule-day {
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  gap: 22px;
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+}
+
+.schedule-date {
+  position: sticky;
+  top: 112px;
+  align-self: start;
+}
+
+.schedule-date strong {
+  display: block;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 3.25rem;
+  line-height: .85;
+  letter-spacing: -.06em;
+}
+
+.schedule-date span {
+  display: block;
+  margin-top: 9px;
+  font-size: .58rem;
+  letter-spacing: .18em;
+  color: #777;
+}
+
+.schedule-events {
+  border-left: 1px solid rgba(0,0,0,.18);
+}
+
+.schedule-event {
+  display: grid;
+  grid-template-columns: 115px 1fr;
+  gap: 18px;
+  padding: 15px 0 15px 20px;
+  border-bottom: 1px solid rgba(0,0,0,.09);
+  transition: background .2s ease, padding-left .2s ease, color .2s ease;
+}
+
+.schedule-event:last-child {
+  border-bottom: 0;
+}
+
+.schedule-event:hover {
+  background: #050505;
+  color: white;
+  padding-left: 28px;
+}
+
+.schedule-event time {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.schedule-event h5 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.schedule-event p {
+  color: #777;
+  font-size: .76rem;
+  line-height: 1.5;
+}
+
+.schedule-event:hover p {
+  color: #b9b9b5;
+}
+
+.schedule-footer {
+  min-height: 68px;
+  padding: 0 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: #777;
+  font-size: .52rem;
+  letter-spacing: .18em;
+}
+
+body.schedule-open {
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  .schedule-modal {
+    padding: 8px;
+  }
+
+  .schedule-window {
+    max-height: 94vh;
+  }
+
+  .schedule-header {
+    padding: 18px;
+  }
+
+  .schedule-intro,
+  .schedule-days {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .schedule-day {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .schedule-date {
+    position: static;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .schedule-date strong {
+    font-size: 2.5rem;
+  }
+
+  .schedule-events {
+    border-left: 0;
+    border-top: 1px solid rgba(0,0,0,.18);
+  }
+
+  .schedule-event {
+    grid-template-columns: 96px 1fr;
+    padding-left: 0;
+  }
+
+  .schedule-event:hover {
+    padding-left: 10px;
+  }
+
+  .schedule-footer {
+    padding: 18px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+
+/* ARCHIVO CRUD */
+.cards {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.archivo-preview {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.archivo-folder-icon {
+  width: 62px;
+  height: 45px;
+  border: 1px solid currentColor;
+  position: relative;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.archivo-folder-icon span {
+  position: absolute;
+  left: -1px;
+  top: -11px;
+  width: 30px;
+  height: 11px;
+  border: 1px solid currentColor;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+}
+
+.open-archivo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.archivo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 920;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.archivo-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.archivo-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.archivo-modal.open .archivo-backdrop {
+  opacity: 1;
+}
+
+.archivo-window {
+  position: relative;
+  width: min(1040px, 100%);
+  max-height: 91vh;
+  overflow: auto;
+  background: #f2f2ef;
+  color: #050505;
+  border: 1px solid rgba(255,255,255,.3);
+  box-shadow: 0 30px 100px rgba(0,0,0,.6);
+  opacity: 0;
+  transform: translateY(24px) scale(.97);
+  transition: opacity .3s ease, transform .42s cubic-bezier(.2,.8,.2,1);
+}
+
+.archivo-modal.open .archivo-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.archivo-header {
+  min-height: 92px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(242,242,239,.97);
+  backdrop-filter: blur(10px);
+}
+
+.archivo-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.archivo-title-group p {
+  font-size: .52rem;
+  letter-spacing: .2em;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+.archivo-title-group h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: .08em;
+}
+
+.archivo-folder-symbol {
+  width: 46px;
+  height: 34px;
+  border: 1px solid #050505;
+  position: relative;
+}
+
+.archivo-folder-symbol span {
+  position: absolute;
+  left: -1px;
+  top: -9px;
+  width: 23px;
+  height: 9px;
+  border: 1px solid #050505;
+  border-bottom: 0;
+}
+
+.archivo-close,
+.item-editor-window header button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.archivo-close:hover,
+.item-editor-window header button:hover {
+  background: #050505;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.archivo-toolbar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+.archivo-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.archivo-tab {
+  border: 1px solid rgba(0,0,0,.28);
+  background: transparent;
+  color: #050505;
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: .55rem;
+  letter-spacing: .14em;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.archivo-tab:hover,
+.archivo-tab.active {
+  background: #050505;
+  color: white;
+}
+
+.archivo-add-btn {
+  border: 1px solid #050505;
+  background: #050505;
+  color: white;
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: .55rem;
+  letter-spacing: .14em;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.archivo-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 24px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+.archivo-path {
+  display: block;
+  font-size: .48rem;
+  letter-spacing: .17em;
+  color: #777;
+  margin-bottom: 7px;
+}
+
+.archivo-section-head h5 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2rem;
+  letter-spacing: -.03em;
+}
+
+.archivo-section-head > span {
+  color: #777;
+  font-size: .52rem;
+  letter-spacing: .15em;
+}
+
+.archivo-items {
+  padding: 0 24px;
+}
+
+.archivo-item {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 94px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  transition: background .2s ease, color .2s ease, padding .2s ease;
+}
+
+.archivo-item:hover {
+  background: #050505;
+  color: white;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.archivo-item-index {
+  font-family: "Space Grotesk", sans-serif;
+  color: #888;
+  font-size: .64rem;
+}
+
+.archivo-item h6 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+.archivo-item p {
+  color: #777;
+  font-size: .75rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.archivo-item:hover p {
+  color: #b9b9b5;
+}
+
+.archivo-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.archivo-edit-btn,
+.archivo-delete-btn {
+  border: 1px solid rgba(0,0,0,.35);
+  background: transparent;
+  color: inherit;
+  padding: 9px 11px;
+  font-size: .5rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+}
+
+.archivo-item:hover .archivo-edit-btn,
+.archivo-item:hover .archivo-delete-btn {
+  border-color: rgba(255,255,255,.4);
+}
+
+.archivo-edit-btn:hover {
+  background: white;
+  color: #050505;
+}
+
+.archivo-delete-btn:hover {
+  background: #4d1010;
+  color: white;
+  border-color: #4d1010;
+}
+
+.archivo-empty {
+  min-height: 330px;
+  padding: 50px 24px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.archivo-empty.visible {
+  display: flex;
+}
+
+.archivo-empty-icon {
+  width: 58px;
+  height: 58px;
+  border: 1px solid #050505;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.archivo-empty h5 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
+  margin-bottom: 8px;
+}
+
+.archivo-empty p {
+  color: #777;
+  max-width: 380px;
+  line-height: 1.5;
+  font-size: .8rem;
+}
+
+.archivo-empty button {
+  margin-top: 20px;
+  border: 1px solid #050505;
+  background: #050505;
+  color: white;
+  padding: 11px 15px;
+  font-size: .54rem;
+  letter-spacing: .13em;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.archivo-footer {
+  min-height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+  border-top: 1px solid rgba(0,0,0,.12);
+}
+
+/* ITEM EDITOR */
+.item-editor-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 940;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.item-editor-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.item-editor-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+.item-editor-modal.open .item-editor-backdrop {
+  opacity: 1;
+}
+
+.item-editor-window {
+  position: relative;
+  width: min(620px, 100%);
+  background: #f2f2ef;
+  color: #050505;
+  opacity: 0;
+  transform: translateY(18px) scale(.97);
+  transition: .3s ease;
+  box-shadow: 0 30px 90px rgba(0,0,0,.5);
+}
+
+.item-editor-modal.open .item-editor-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.item-editor-window header {
+  min-height: 88px;
+  padding: 20px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,.14);
+}
+
+.item-editor-window header p {
+  font-size: .5rem;
+  color: #777;
+  letter-spacing: .17em;
+  margin-bottom: 5px;
+}
+
+.item-editor-window header h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
+}
+
+#itemEditorForm {
+  padding: 22px;
+}
+
+#itemEditorForm label {
+  display: block;
+  margin-bottom: 18px;
+}
+
+#itemEditorForm label > span {
+  display: block;
+  font-size: .52rem;
+  letter-spacing: .15em;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+#itemEditorForm input,
+#itemEditorForm textarea {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.3);
+  background: white;
+  color: #050505;
+  padding: 13px 14px;
+  font: inherit;
+  outline: none;
+}
+
+#itemEditorForm input:focus,
+#itemEditorForm textarea:focus {
+  border-color: #050505;
+}
+
+#itemEditorForm textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.item-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.item-cancel-btn,
+.item-save-btn {
+  border: 1px solid #050505;
+  padding: 11px 16px;
+  font-size: .54rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  cursor: pointer;
+}
+
+.item-cancel-btn {
+  background: transparent;
+  color: #050505;
+}
+
+.item-save-btn {
+  background: #050505;
+  color: white;
+}
+
+body.archivo-open,
+body.item-editor-open {
+  overflow: hidden;
+}
+
+@media (max-width: 1050px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .archivo-modal,
+  .item-editor-modal {
+    padding: 8px;
+  }
+
+  .archivo-window {
+    max-height: 94vh;
+  }
+
+  .archivo-toolbar {
+    flex-direction: column;
+    padding: 14px 16px;
+  }
+
+  .archivo-add-btn {
+    align-self: stretch;
+  }
+
+  .archivo-header,
+  .archivo-section-head,
+  .archivo-items,
+  .archivo-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .archivo-item {
+    grid-template-columns: 34px minmax(0, 1fr);
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .archivo-item-actions {
+    grid-column: 2;
+  }
+
+  .archivo-footer {
+    padding-top: 16px;
+    padding-bottom: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 560px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .archivo-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .archivo-tab {
+    width: 100%;
+  }
+
+  .archivo-section-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .item-editor-actions {
+    flex-direction: column-reverse;
+  }
+
+  .item-cancel-btn,
+  .item-save-btn {
+    width: 100%;
+  }
+}
+
+
+/* STAFF IDENTITY GATE */
+.staff-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: #050505;
+  color: #f5f5f2;
+  display: none;
+  overflow-y: auto;
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity .65s ease, transform .8s cubic-bezier(.2,.8,.2,1);
+}
+
+.staff-gate.visible {
+  display: block;
+}
+
+.staff-gate.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.staff-gate-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 49.9%, rgba(255,255,255,.035) 50%, transparent 50.1%),
+    radial-gradient(circle at 75% 15%, rgba(255,255,255,.065), transparent 28%),
+    #050505;
+}
+
+.staff-gate-shell {
+  position: relative;
+  width: min(1220px, calc(100% - 40px));
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-gate-header {
+  min-height: 100px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.staff-gate-header p,
+.staff-gate-header > span {
+  color: #777;
+  font-size: .55rem;
+  letter-spacing: .22em;
+}
+
+.staff-gate-header h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  letter-spacing: -.04em;
+  margin-top: 4px;
+}
+
+.staff-gate-copy {
+  padding: 42px 0 28px;
+  max-width: 700px;
+}
+
+.staff-gate-copy > p:first-child {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+}
+
+.staff-gate-note {
+  color: #777;
+  margin-top: 8px;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-left: 1px solid rgba(255,255,255,.15);
+  border-top: 1px solid rgba(255,255,255,.15);
+}
+
+.staff-profile-card {
+  min-height: 300px;
+  padding: 22px;
+  border-right: 1px solid rgba(255,255,255,.15);
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background .22s ease, color .22s ease;
+}
+
+.staff-profile-card:hover {
+  background: #f2f2ef;
+  color: #050505;
+}
+
+.staff-profile-top {
+  display: flex;
+  justify-content: space-between;
+  color: #777;
+  font-size: .54rem;
+  letter-spacing: .16em;
+}
+
+.staff-profile-card h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.65rem;
+  margin: 18px 0 7px;
+}
+
+.staff-profile-card p {
+  color: #8b8b86;
+  font-size: .78rem;
+  line-height: 1.55;
+  min-height: 46px;
+}
+
+.staff-profile-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.staff-select-btn,
+.staff-edit-btn {
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  padding: 10px 12px;
+  font-size: .52rem;
+  letter-spacing: .12em;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.staff-select-btn {
+  flex: 1;
+  background: #f2f2ef;
+  color: #050505;
+}
+
+.staff-profile-card:hover .staff-select-btn {
+  background: #050505;
+  color: white;
+}
+
+.staff-profile-card:hover .staff-edit-btn {
+  border-color: rgba(0,0,0,.4);
+}
+
+.staff-gate-footer {
+  margin-top: auto;
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,.15);
+  color: #666;
+  font-size: .52rem;
+  letter-spacing: .18em;
+}
+
+.staff-login-panel {
+  display: none;
+  width: min(760px, 100%);
+  margin: 58px auto auto;
+  border: 1px solid rgba(255,255,255,.18);
+  padding: 28px;
+  background: rgba(255,255,255,.025);
+}
+
+.staff-login-panel.visible {
+  display: block;
+  animation: fadeUp .35s ease both;
+}
+
+.staff-login-back {
+  border: 0;
+  background: transparent;
+  color: #888;
+  font-size: .54rem;
+  letter-spacing: .15em;
+  cursor: pointer;
+  padding: 0 0 24px;
+}
+
+.staff-login-identity {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 18px;
+  align-items: center;
+  padding-bottom: 25px;
+  border-bottom: 1px solid rgba(255,255,255,.13);
+}
+
+.staff-login-identity > span {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2.6rem;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.5);
+}
+
+.staff-login-identity p {
+  font-size: .5rem;
+  color: #777;
+  letter-spacing: .17em;
+}
+
+.staff-login-identity h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.85rem;
+  margin: 3px 0;
+}
+
+.staff-login-identity div > span {
+  color: #888;
+  font-size: .73rem;
+}
+
+#staffLoginForm {
+  padding-top: 24px;
+}
+
+#staffLoginForm label {
+  display: block;
+  font-size: .52rem;
+  letter-spacing: .15em;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+#staffGmailInput {
+  width: 100%;
+  min-height: 54px;
+  border: 1px solid rgba(255,255,255,.3);
+  background: transparent;
+  color: white;
+  padding: 0 15px;
+  font: inherit;
+  outline: none;
+}
+
+#staffGmailInput:focus {
+  border-color: white;
+}
+
+.staff-login-help {
+  color: #777;
+  font-size: .68rem;
+  line-height: 1.5;
+  margin-top: 9px;
+}
+
+.staff-login-error {
+  min-height: 20px;
+  color: #f0a3a3;
+  font-size: .72rem;
+  margin-top: 8px;
+}
+
+.staff-login-submit {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid white;
+  background: white;
+  color: #050505;
+  font-size: .58rem;
+  letter-spacing: .16em;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.staff-session {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.staff-session-id {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.staff-session-id small,
+.staff-session-id strong {
+  display: block;
+}
+
+.staff-session-id small {
+  color: #777;
+  font-size: .45rem;
+  letter-spacing: .16em;
+}
+
+.staff-session-id strong {
+  font-size: .66rem;
+  letter-spacing: .08em;
+  margin-top: 2px;
+}
+
+.logout-staff-btn {
+  border: 1px solid rgba(255,255,255,.25);
+  background: transparent;
+  color: #aaa;
+  padding: 8px 10px;
+  font-size: .48rem;
+  letter-spacing: .12em;
+  cursor: pointer;
+}
+
+/* PROFILE EDITOR */
+.profile-editor-modal,
+.export-password-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 980;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.profile-editor-modal.open,
+.export-password-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.profile-editor-backdrop,
+.export-password-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+.profile-editor-modal.open .profile-editor-backdrop,
+.export-password-modal.open .export-password-backdrop {
+  opacity: 1;
+}
+
+.profile-editor-window,
+.export-password-window {
+  position: relative;
+  width: min(580px, 100%);
+  background: #f2f2ef;
+  color: #050505;
+  box-shadow: 0 30px 90px rgba(0,0,0,.55);
+  opacity: 0;
+  transform: translateY(18px) scale(.97);
+  transition: .28s ease;
+}
+
+.profile-editor-modal.open .profile-editor-window,
+.export-password-modal.open .export-password-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.profile-editor-window header,
+.export-password-window header {
+  min-height: 86px;
+  padding: 19px 21px;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-editor-window header p,
+.export-password-window header p {
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+  margin-bottom: 5px;
+}
+
+.profile-editor-window header h4,
+.export-password-window header h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
+}
+
+.profile-editor-window header button,
+.export-password-window header button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+#profileEditorForm,
+#exportPasswordForm {
+  padding: 22px;
+}
+
+#profileEditorForm label,
+#exportPasswordForm label {
+  display: block;
+  margin-bottom: 17px;
+}
+
+#profileEditorForm label span,
+#exportPasswordForm label span {
+  display: block;
+  font-size: .5rem;
+  letter-spacing: .15em;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+#profileEditorForm input,
+#profileEditorForm textarea,
+#exportPasswordForm input {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.3);
+  background: white;
+  color: #050505;
+  padding: 12px 13px;
+  font: inherit;
+  outline: none;
+}
+
+#profileEditorForm textarea {
+  min-height: 115px;
+  resize: vertical;
+}
+
+.profile-editor-actions,
+.export-password-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.profile-editor-actions button,
+.export-password-actions button {
+  border: 1px solid #050505;
+  padding: 10px 14px;
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+  background: transparent;
+  color: #050505;
+}
+
+.profile-editor-actions button[type="submit"],
+.export-password-actions button[type="submit"] {
+  background: #050505;
+  color: white;
+}
+
+.export-password-error {
+  color: #7c1717;
+  min-height: 20px;
+  font-size: .72rem;
+  margin-top: -6px;
+  margin-bottom: 8px;
+}
+
+/* EXPORT BUTTON */
+.archivo-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.archivo-export-btn {
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: .53rem;
+  letter-spacing: .12em;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.archivo-export-btn:hover {
+  background: #050505;
+  color: white;
+}
+
+@media (max-width: 900px) {
+  .staff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .staff-gate-shell {
+    width: min(100% - 24px, 1220px);
+  }
+
+  .staff-gate-header {
+    min-height: 82px;
+  }
+
+  .staff-gate-header > span {
+    display: none;
+  }
+
+  .staff-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-profile-card {
+    min-height: 190px;
+  }
+
+  .staff-login-panel {
+    margin-top: 24px;
+  }
+
+  .staff-session-id {
+    display: none;
+  }
+
+  .archivo-toolbar-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .archivo-export-btn,
+  .archivo-add-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .archivo-toolbar-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-editor-actions,
+  .export-password-actions {
+    flex-direction: column-reverse;
+  }
+
+  .profile-editor-actions button,
+  .export-password-actions button {
+    width: 100%;
+  }
+}
+
+
+/* LEAGUE SCOREBOARD */
+.open-score-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.score-modal,
+.score-password-modal,
+.sanctions-modal,
+.sanction-editor-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.score-modal { z-index: 915; }
+.sanctions-modal { z-index: 960; }
+.score-password-modal { z-index: 970; }
+.sanction-editor-modal { z-index: 975; }
+
+.score-modal.open,
+.score-password-modal.open,
+.sanctions-modal.open,
+.sanction-editor-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.score-backdrop,
+.score-password-backdrop,
+.sanctions-backdrop,
+.sanction-editor-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.score-modal.open .score-backdrop,
+.score-password-modal.open .score-password-backdrop,
+.sanctions-modal.open .sanctions-backdrop,
+.sanction-editor-modal.open .sanction-editor-backdrop {
+  opacity: 1;
+}
+
+.score-window,
+.score-password-window,
+.sanctions-window,
+.sanction-editor-window {
+  position: relative;
+  background: #f2f2ef;
+  color: #050505;
+  border: 1px solid rgba(255,255,255,.3);
+  box-shadow: 0 30px 100px rgba(0,0,0,.6);
+  opacity: 0;
+  transform: translateY(22px) scale(.97);
+  transition: opacity .3s ease, transform .42s cubic-bezier(.2,.8,.2,1);
+}
+
+.score-window {
+  width: min(1180px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+}
+
+.score-password-window,
+.sanction-editor-window {
+  width: min(560px, 100%);
+}
+
+.sanctions-window {
+  width: min(820px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.score-modal.open .score-window,
+.score-password-modal.open .score-password-window,
+.sanctions-modal.open .sanctions-window,
+.sanction-editor-modal.open .sanction-editor-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.score-header,
+.score-password-window header,
+.sanctions-header,
+.sanction-editor-window header {
+  min-height: 92px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+}
+
+.score-header p,
+.score-password-window header p,
+.sanctions-header p,
+.sanction-editor-window header p {
+  color: #777;
+  font-size: .52rem;
+  letter-spacing: .2em;
+  margin-bottom: 5px;
+}
+
+.score-header h4,
+.score-password-window header h4,
+.sanctions-header h4,
+.sanction-editor-window header h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: .05em;
+}
+
+.score-close,
+#closeScorePassword,
+#closeSanctions,
+#closeSanctionEditor {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.score-close:hover,
+#closeScorePassword:hover,
+#closeSanctions:hover,
+#closeSanctionEditor:hover {
+  background: #050505;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.score-summary {
+  padding: 13px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+.score-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.score-summary span {
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+}
+
+.score-lock-state {
+  color: #741b1b !important;
+  font-weight: 800;
+}
+
+.score-lock-state.unlocked {
+  color: #1d5a39 !important;
+}
+
+.unlock-score-btn {
+  border: 1px solid #050505;
+  background: #050505;
+  color: white;
+  padding: 10px 14px;
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  cursor: pointer;
+}
+
+.unlock-score-btn.unlocked {
+  background: #173d2b;
+  border-color: #173d2b;
+}
+
+.league-table-wrap {
+  padding: 24px;
+  overflow-x: auto;
+}
+
+.league-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 940px;
+}
+
+.league-table thead th {
+  text-align: left;
+  padding: 12px 10px;
+  border-top: 1px solid #050505;
+  border-bottom: 1px solid #050505;
+  font-size: .48rem;
+  letter-spacing: .13em;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.league-table thead th:nth-child(1) { width: 62px; }
+.league-table thead th:nth-child(2) { min-width: 180px; }
+.league-table thead th:nth-child(3) { width: 92px; }
+.league-table thead th:nth-child(4) { width: 120px; }
+.league-table thead th:nth-child(5) { width: 120px; }
+.league-table thead th:nth-child(6) { width: 82px; text-align: center; }
+.league-table thead th:nth-child(7) { width: 86px; text-align: center; }
+.league-table thead th:nth-child(8) { width: 115px; text-align: center; }
+
+.league-row td {
+  padding: 15px 10px;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  vertical-align: middle;
+}
+
+.league-position {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #888;
+}
+
+.league-team-input,
+.league-score-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: #050505;
+  outline: none;
+  transition: border-color .2s ease, background .2s ease, opacity .2s ease;
+}
+
+.league-team-input {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  padding: 8px 4px;
+}
+
+.league-score-input {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 4px;
+}
+
+.league-score-input:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.league-team-input:focus,
+.league-score-input:not(:disabled):focus {
+  border-color: #050505;
+  background: rgba(0,0,0,.035);
+}
+
+.sanction-count-cell,
+.sanction-deduction-cell {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sanction-deduction-cell {
+  color: #741b1b;
+}
+
+.open-sanctions-btn {
+  display: block;
+  width: 100%;
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  padding: 8px 9px;
+  font-size: .47rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+
+.open-sanctions-btn:hover {
+  background: #050505;
+  color: white;
+}
+
+.score-note {
+  padding: 0 24px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  color: #777;
+  font-size: .49rem;
+  letter-spacing: .12em;
+}
+
+.reset-score-btn {
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  padding: 9px 12px;
+  font-size: .49rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+}
+
+.reset-score-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.reset-score-btn:not(:disabled):hover {
+  background: #050505;
+  color: white;
+}
+
+.score-footer,
+.sanctions-footer {
+  min-height: 64px;
+  padding: 0 24px;
+  border-top: 1px solid rgba(0,0,0,.12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+}
+
+/* SCORE PASSWORD */
+#scorePasswordForm,
+#sanctionEditorForm {
+  padding: 22px;
+}
+
+#scorePasswordForm label,
+#sanctionEditorForm label {
+  display: block;
+  margin-bottom: 17px;
+}
+
+#scorePasswordForm label span,
+#sanctionEditorForm label span {
+  display: block;
+  font-size: .5rem;
+  letter-spacing: .15em;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+#scorePasswordForm input,
+#sanctionEditorForm input {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.3);
+  background: white;
+  color: #050505;
+  padding: 12px 13px;
+  font: inherit;
+  outline: none;
+}
+
+.score-password-error {
+  min-height: 20px;
+  color: #7c1717;
+  font-size: .72rem;
+}
+
+.score-password-actions,
+.sanction-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.score-password-actions button,
+.sanction-editor-actions button {
+  border: 1px solid #050505;
+  padding: 10px 14px;
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+  background: transparent;
+  color: #050505;
+}
+
+.score-password-actions button[type="submit"],
+.sanction-editor-actions button[type="submit"] {
+  background: #050505;
+  color: white;
+}
+
+/* SANCTIONS */
+.sanctions-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+.sanctions-summary > div {
+  padding: 18px 22px;
+  border-right: 1px solid rgba(0,0,0,.12);
+}
+
+.sanctions-summary span {
+  display: block;
+  color: #777;
+  font-size: .48rem;
+  letter-spacing: .13em;
+  margin-bottom: 5px;
+}
+
+.sanctions-summary strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.7rem;
+}
+
+.add-sanction-btn {
+  margin: 16px;
+  align-self: center;
+  border: 1px solid #050505;
+  background: #050505;
+  color: white;
+  padding: 10px 13px;
+  font-size: .5rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+
+.add-sanction-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.sanctions-list {
+  padding: 0 22px;
+}
+
+.sanction-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 95px auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 70px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+.sanction-index {
+  color: #888;
+  font-size: .6rem;
+}
+
+.sanction-reason {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .92rem;
+}
+
+.sanction-points {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  color: #741b1b;
+  text-align: center;
+}
+
+.sanction-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.sanction-actions button {
+  border: 1px solid rgba(0,0,0,.35);
+  background: transparent;
+  padding: 8px 9px;
+  font-size: .46rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sanction-actions button:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+}
+
+.sanctions-empty {
+  display: none;
+  padding: 50px 22px;
+  text-align: center;
+  color: #777;
+  font-size: .78rem;
+}
+
+.sanctions-empty.visible {
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .score-modal,
+  .score-password-modal,
+  .sanctions-modal,
+  .sanction-editor-modal {
+    padding: 8px;
+  }
+
+  .score-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .unlock-score-btn {
+    width: 100%;
+  }
+
+  .league-table-wrap {
+    padding: 14px;
+  }
+
+  .score-note {
+    padding: 0 14px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sanctions-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .add-sanction-btn {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .sanction-row {
+    grid-template-columns: 32px minmax(0, 1fr) 70px;
+    padding: 12px 0;
+  }
+
+  .sanction-actions {
+    grid-column: 2 / -1;
+  }
+
+  .score-footer,
+  .sanctions-footer {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+
+  .score-password-actions,
+  .sanction-editor-actions {
+    flex-direction: column-reverse;
+  }
+
+  .score-password-actions button,
+  .sanction-editor-actions button {
+    width: 100%;
+  }
+}
+
+/* LEADERS DIRECTORY */
+.open-leaders-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.leaders-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 918;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.leaders-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.leaders-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.leaders-modal.open .leaders-backdrop {
+  opacity: 1;
+}
+
+.leaders-window {
+  position: relative;
+  width: min(980px, 100%);
+  max-height: 91vh;
+  overflow: auto;
+  background: #f2f2ef;
+  color: #050505;
+  border: 1px solid rgba(255,255,255,.3);
+  box-shadow: 0 30px 100px rgba(0,0,0,.6);
+  opacity: 0;
+  transform: translateY(22px) scale(.97);
+  transition: opacity .3s ease, transform .42s cubic-bezier(.2,.8,.2,1);
+}
+
+.leaders-modal.open .leaders-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.leaders-header {
+  min-height: 96px;
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(242,242,239,.97);
+  backdrop-filter: blur(10px);
+}
+
+.leaders-header p {
+  color: #777;
+  font-size: .52rem;
+  letter-spacing: .2em;
+  margin-bottom: 5px;
+}
+
+.leaders-header h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.55rem;
+  letter-spacing: .06em;
+}
+
+.leaders-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.leaders-close:hover {
+  background: #050505;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.leaders-summary {
+  padding: 13px 26px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+}
+
+.leaders-groups {
+  padding: 0 26px;
+}
+
+.leaders-group {
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+}
+
+.leaders-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.leaders-group-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.leaders-group-label {
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+}
+
+.leaders-group-name {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2rem;
+  letter-spacing: -.03em;
+}
+
+.add-leader-btn {
+  border: 1px solid #050505;
+  background: #050505;
+  color: white;
+  padding: 10px 13px;
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+}
+
+.leaders-list {
+  border-top: 1px solid #050505;
+}
+
+.leader-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 62px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  transition: background .2s ease, color .2s ease, padding .2s ease;
+}
+
+.leader-row:hover {
+  background: #050505;
+  color: white;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.leader-index {
+  color: #888;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .62rem;
+}
+
+.leader-name {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .96rem;
+}
+
+.leader-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.leader-edit-btn,
+.leader-delete-btn {
+  border: 1px solid rgba(0,0,0,.32);
+  background: transparent;
+  color: inherit;
+  padding: 8px 10px;
+  font-size: .48rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+
+.leader-row:hover .leader-edit-btn,
+.leader-row:hover .leader-delete-btn {
+  border-color: rgba(255,255,255,.4);
+}
+
+.leader-edit-btn:hover {
+  background: white;
+  color: #050505;
+}
+
+.leader-delete-btn:hover {
+  background: #4d1010;
+  color: white;
+  border-color: #4d1010;
+}
+
+.leaders-footer {
+  min-height: 65px;
+  padding: 0 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+  border-top: 1px solid rgba(0,0,0,.12);
+}
+
+/* LEADER EDITOR */
+.leader-editor-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.leader-editor-modal.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.leader-editor-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+.leader-editor-modal.open .leader-editor-backdrop {
+  opacity: 1;
+}
+
+.leader-editor-window {
+  position: relative;
+  width: min(560px, 100%);
+  background: #f2f2ef;
+  color: #050505;
+  box-shadow: 0 30px 90px rgba(0,0,0,.55);
+  opacity: 0;
+  transform: translateY(18px) scale(.97);
+  transition: .28s ease;
+}
+
+.leader-editor-modal.open .leader-editor-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.leader-editor-window header {
+  min-height: 86px;
+  padding: 19px 21px;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leader-editor-window header p {
+  color: #777;
+  font-size: .5rem;
+  letter-spacing: .16em;
+  margin-bottom: 5px;
+}
+
+.leader-editor-window header h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
+}
+
+.leader-editor-window header button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #050505;
+  background: transparent;
+  color: #050505;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+#leaderEditorForm {
+  padding: 22px;
+}
+
+#leaderEditorForm label span {
+  display: block;
+  font-size: .5rem;
+  letter-spacing: .15em;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+#leaderEditorForm input {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.3);
+  background: white;
+  color: #050505;
+  padding: 12px 13px;
+  font: inherit;
+  outline: none;
+}
+
+.leader-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.leader-editor-actions button {
+  border: 1px solid #050505;
+  padding: 10px 14px;
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+  background: transparent;
+  color: #050505;
+}
+
+.leader-editor-actions button[type="submit"] {
+  background: #050505;
+  color: white;
+}
+
+body.leaders-open {
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  .leaders-modal {
+    padding: 8px;
+  }
+
+  .leaders-summary {
+    padding-left: 16px;
+    padding-right: 16px;
+    flex-direction: column;
+  }
+
+  .leaders-groups {
+    padding: 0 16px;
+  }
+
+  .leaders-group-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .leader-row {
+    grid-template-columns: 34px minmax(0, 1fr);
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .leader-actions {
+    grid-column: 2;
+  }
+
+  .leaders-footer {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+}
+
+
+/* CINEMATIC FLOW V11 */
+.staff-gate.revealed .staff-gate-header {
+  animation: gateHeaderIn .65s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.staff-gate.revealed .staff-gate-copy {
+  animation: gateCopyIn .7s .08s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.staff-gate.revealed .staff-profile-card {
+  opacity: 0;
+  transform: translateY(28px) scale(.985);
+  animation: staffCardIn .58s cubic-bezier(.2,.8,.2,1) forwards;
+  animation-delay: calc(.13s + (var(--staff-index) * .065s));
+}
+
+.staff-gate.revealed .staff-gate-footer {
+  animation: gateFooterIn .65s .4s ease both;
+}
+
+.staff-profile-card {
+  will-change: transform, opacity, background-color;
+  transition:
+    background .28s ease,
+    color .28s ease,
+    transform .34s cubic-bezier(.2,.8,.2,1),
+    filter .34s ease,
+    opacity .34s ease;
+}
+
+.staff-profile-card:hover {
+  transform: translateY(-5px);
+}
+
+.staff-profile-card.selected {
+  background: #f2f2ef;
+  color: #050505;
+  transform: scale(.96);
+  filter: brightness(1.08);
+}
+
+.staff-profile-card.selected .staff-description-inline {
+  color: #050505;
+  border-color: rgba(0,0,0,.35);
+}
+
+.staff-grid,
+.staff-gate-copy {
+  transition:
+    opacity .34s ease,
+    transform .4s cubic-bezier(.2,.8,.2,1),
+    filter .34s ease;
+}
+
+.staff-grid.leaving {
+  opacity: 0;
+  transform: scale(.985) translateY(-8px);
+  filter: blur(8px);
+}
+
+.staff-gate-copy.leaving {
+  opacity: 0;
+  transform: translateY(-12px);
+  filter: blur(6px);
+}
+
+.staff-grid.returning,
+.staff-gate-copy.returning {
+  animation: gateReturn .42s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.staff-profile-main {
+  margin-top: 8px;
+}
+
+.staff-description-editor {
+  display: block;
+  margin-top: 12px;
+}
+
+.staff-description-editor > span {
+  display: block;
+  margin-bottom: 7px;
+  color: #777;
+  font-size: .48rem;
+  letter-spacing: .16em;
+  font-weight: 800;
+}
+
+.staff-description-inline {
+  width: 100%;
+  min-height: 74px;
+  resize: vertical;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(255,255,255,.025);
+  color: #c5c5c0;
+  padding: 10px 11px;
+  font: inherit;
+  font-size: .75rem;
+  line-height: 1.5;
+  outline: none;
+  transition:
+    border-color .22s ease,
+    background .22s ease,
+    color .22s ease,
+    box-shadow .22s ease;
+}
+
+.staff-description-inline:focus {
+  border-color: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.055);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.04);
+}
+
+.staff-profile-card:hover .staff-description-inline {
+  color: #050505;
+  border-color: rgba(0,0,0,.28);
+  background: rgba(0,0,0,.025);
+}
+
+.staff-profile-card:hover .staff-description-inline:focus {
+  border-color: #050505;
+}
+
+.staff-description-status {
+  min-height: 15px;
+  margin-top: 6px;
+  color: #61615e;
+  font-size: .43rem;
+  letter-spacing: .14em;
+  transition: color .2s ease, transform .2s ease;
+}
+
+.staff-description-status.saved {
+  color: #74a98a;
+  transform: translateX(3px);
+}
+
+.staff-login-panel.visible {
+  animation: loginPanelReveal .52s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.staff-login-panel.leaving {
+  animation: loginPanelLeave .22s ease both;
+}
+
+.staff-login-panel.accepted {
+  animation: loginAccepted .55s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.staff-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 47;
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.staff-transition-orb {
+  position: absolute;
+  left: var(--origin-x, 50%);
+  top: var(--origin-y, 50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.staff-transition-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  color: #050505;
+  opacity: 0;
+  transform: scale(.92);
+}
+
+.staff-transition-label span {
+  font-size: .55rem;
+  letter-spacing: .34em;
+  font-weight: 800;
+}
+
+.staff-transition-label strong {
+  margin-top: 6px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2rem, 7vw, 5.5rem);
+  letter-spacing: .18em;
+  padding-left: .18em;
+}
+
+.staff-transition.active {
+  visibility: visible;
+}
+
+.staff-transition.active .staff-transition-orb {
+  animation: staffOrbExpand 1.05s cubic-bezier(.76,0,.24,1) forwards;
+}
+
+.staff-transition.active .staff-transition-label {
+  animation: staffTransitionLabel 1.2s .35s ease forwards;
+}
+
+.dashboard.visible .topbar {
+  animation: dashboardTopbarIn .65s .12s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.dashboard.visible .hero {
+  animation: dashboardHeroIn .8s .2s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.dashboard.visible .card {
+  animation: dashboardCardIn .62s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.dashboard.visible .card:nth-child(1) { animation-delay: .32s; }
+.dashboard.visible .card:nth-child(2) { animation-delay: .39s; }
+.dashboard.visible .card:nth-child(3) { animation-delay: .46s; }
+.dashboard.visible .card:nth-child(4) { animation-delay: .53s; }
+.dashboard.visible .card:nth-child(5) { animation-delay: .60s; }
+
+.card {
+  transition:
+    transform .28s cubic-bezier(.2,.8,.2,1),
+    background .28s ease,
+    color .28s ease,
+    box-shadow .28s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+}
+
+.folder-window,
+.schedule-window,
+.score-window,
+.archivo-window,
+.leaders-window {
+  transform-origin: 50% 55%;
+}
+
+@keyframes gateHeaderIn {
+  from { opacity: 0; transform: translateY(-18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gateCopyIn {
+  from { opacity: 0; transform: translateY(16px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes staffCardIn {
+  from { opacity: 0; transform: translateY(28px) scale(.985); filter: blur(5px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes gateFooterIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gateReturn {
+  from { opacity: 0; transform: scale(.985) translateY(10px); filter: blur(7px); }
+  to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+@keyframes loginPanelReveal {
+  from { opacity: 0; transform: translateY(28px) scale(.975); filter: blur(7px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes loginPanelLeave {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(18px) scale(.985); }
+}
+
+@keyframes loginAccepted {
+  0% { transform: scale(1); filter: brightness(1); }
+  45% { transform: scale(.975); filter: brightness(1.35); }
+  100% { transform: scale(1.025); filter: blur(10px) brightness(2); opacity: .2; }
+}
+
+@keyframes staffOrbExpand {
+  0% { transform: translate(-50%, -50%) scale(0); }
+  65% { transform: translate(-50%, -50%) scale(125); }
+  100% { transform: translate(-50%, -50%) scale(150); opacity: .96; }
+}
+
+@keyframes staffTransitionLabel {
+  0%, 10% { opacity: 0; transform: scale(.92); }
+  35%, 66% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.08); filter: blur(8px); }
+}
+
+@keyframes dashboardTopbarIn {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dashboardHeroIn {
+  from { opacity: 0; transform: translateY(24px) scale(.985); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes dashboardCardIn {
+  from { opacity: 0; transform: translateY(26px) scale(.975); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staff-gate.revealed .staff-profile-card,
+  .staff-gate.revealed .staff-gate-header,
+  .staff-gate.revealed .staff-gate-copy,
+  .staff-gate.revealed .staff-gate-footer,
+  .dashboard.visible .topbar,
+  .dashboard.visible .hero,
+  .dashboard.visible .card {
+    animation-duration: .01ms !important;
+    animation-delay: 0s !important;
+  }
+
+  .staff-transition.active .staff-transition-orb,
+  .staff-transition.active .staff-transition-label {
+    animation-duration: .01ms !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .staff-description-inline {
+    min-height: 66px;
+  }
+}
+
+</style>
 </head>
 <body>
-  <div id="loading">SAFARI 2026 — LEGACY · CARGANDO…</div>
+  <div class="grain"></div>
+
+  <section id="intro" class="intro">
+    <div class="intro-lines intro-lines-top"></div>
+    <div class="intro-lines intro-lines-bottom"></div>
+
+    <div class="intro-content">
+      <p class="eyebrow">STAFF ACCESS</p>
+      <h1>SAFARI <span>2026</span></h1>
+      <div class="legacy-wrap">
+        <div class="legacy-line"></div>
+        <h2>LEGACY</h2>
+        <div class="legacy-line"></div>
+      </div>
+
+      <button id="enterBtn" class="enter-btn" aria-label="Entrar al panel">
+        <span class="btn-text">ENTRAR</span>
+        <span class="btn-arrow">↗</span>
+      </button>
+
+      <p class="intro-note">STAFF ONLY · 2026</p>
+    </div>
+
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div id="transitionOrb" class="transition-orb"></div>
+    <div id="flash" class="flash"></div>
+  </section>
+
+
+  <section id="staffGate" class="staff-gate" aria-hidden="true">
+    <div class="staff-gate-bg"></div>
+
+    <div class="staff-gate-shell">
+      <header class="staff-gate-header">
+        <div>
+          <p>SAFARI 2026 · LEGACY</p>
+          <h2>¿QUIÉN SOS?</h2>
+        </div>
+        <span>STAFF ACCESS</span>
+      </header>
+
+      <div class="staff-gate-copy">
+        <p>Elegí tu perfil para ingresar al centro de operaciones.</p>
+        <p class="staff-gate-note">Los nombres y descripciones se pueden editar desde esta pantalla, antes de iniciar sesión.</p>
+      </div>
+
+      <div class="staff-grid" id="staffGrid"></div>
+
+      <div class="staff-login-panel" id="staffLoginPanel" aria-hidden="true">
+        <button class="staff-login-back" id="staffLoginBack">← VOLVER</button>
+
+        <div class="staff-login-identity">
+          <span id="selectedStaffIndex">01</span>
+          <div>
+            <p>INGRESAR COMO</p>
+            <h3 id="selectedStaffName">STAFF</h3>
+            <span id="selectedStaffDescription"></span>
+          </div>
+        </div>
+
+        <form id="staffLoginForm">
+          <label for="staffGmailInput">GMAIL DEL STAFF</label>
+          <input
+            id="staffGmailInput"
+            type="email"
+            autocomplete="email"
+            placeholder="tunombre@gmail.com"
+            required
+          />
+          <p class="staff-login-help" id="staffLoginHelp">
+            La primera vez, este navegador asociará ese Gmail al perfil seleccionado.
+          </p>
+          <p class="staff-login-error" id="staffLoginError" aria-live="polite"></p>
+
+          <button type="submit" class="staff-login-submit">
+            INGRESAR AL PANEL <span>↗</span>
+          </button>
+        </form>
+      </div>
+
+      <footer class="staff-gate-footer">
+        <span>LEGACY · STAFF ONLY</span>
+        <span>2026</span>
+      </footer>
+    </div>
+  </section>
+
+  <div class="profile-editor-modal" id="profileEditorModal" aria-hidden="true">
+    <div class="profile-editor-backdrop" id="profileEditorBackdrop"></div>
+    <section class="profile-editor-window" role="dialog" aria-modal="true" aria-labelledby="profileEditorTitle">
+      <header>
+        <div>
+          <p>EDITAR PERFIL</p>
+          <h4 id="profileEditorTitle">STAFF</h4>
+        </div>
+        <button id="closeProfileEditor" aria-label="Cerrar editor">×</button>
+      </header>
+
+      <form id="profileEditorForm">
+        <label>
+          <span>NOMBRE</span>
+          <input id="profileNameInput" type="text" maxlength="40" required />
+        </label>
+
+        <label>
+          <span>DESCRIPCIÓN</span>
+          <textarea id="profileDescriptionInput" maxlength="180" placeholder="Ej.: logística, pruebas, coordinación..."></textarea>
+        </label>
+
+        <div class="profile-editor-actions">
+          <button type="button" id="cancelProfileEditor">CANCELAR</button>
+          <button type="submit">GUARDAR PERFIL</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+
+  <div id="staffTransition" class="staff-transition" aria-hidden="true">
+    <div class="staff-transition-orb"></div>
+    <div class="staff-transition-label">
+      <span>ACCESS GRANTED</span>
+      <strong>LEGACY</strong>
+    </div>
+  </div>
+
+  <main id="dashboard" class="dashboard" aria-hidden="true">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">L</div>
+        <div>
+          <strong>SAFARI 2026</strong>
+          <span>LEGACY · STAFF</span>
+        </div>
+      </div>
+
+      <div class="staff-session">
+        <div class="staff-session-id">
+          <span class="status-dot"></span>
+          <div>
+            <small>SESIÓN</small>
+            <strong id="currentStaffName">STAFF</strong>
+          </div>
+        </div>
+        <button id="logoutStaff" class="logout-staff-btn">CAMBIAR STAFF</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="section-kicker">CENTRO DE OPERACIONES</p>
+        <h3>Todo empieza<br>desde acá.</h3>
+        <p class="hero-text">
+          Panel interno del staff de Safari 2026 Legacy.
+          Esta es la base inicial; desde aquí iremos agregando las herramientas del evento.
+        </p>
+      </div>
+
+      <div class="hero-number">
+        <span>20</span>
+        <span>26</span>
+      </div>
+    </section>
+
+    <section class="cards">
+      <article class="card card-main comodines-card" id="comodinesCard">
+        <div class="card-top">
+          <span>01</span>
+          <span>STAFF</span>
+        </div>
+
+        <div class="folder-preview">
+          <div class="folder-icon" aria-hidden="true">
+            <div class="folder-tab"></div>
+          </div>
+          <div>
+            <h4>Comodines</h4>
+            <p>Carpeta interna con los comodines disponibles para el staff.</p>
+          </div>
+        </div>
+
+        <button class="ghost-btn open-folder-btn" id="openComodines">
+          ABRIR CARPETA <span>↗</span>
+        </button>
+      </article>
+
+      <article class="card cronograma-card">
+        <div class="card-top">
+          <span>02</span>
+          <span>EVENTO</span>
+        </div>
+        <div>
+          <h4>Cronograma</h4>
+          <p>Agenda completa del Safari 2026 Legacy para coordinación del staff.</p>
+        </div>
+        <button class="ghost-btn open-cronograma-btn" id="openCronograma">
+          VER CRONOGRAMA <span>↗</span>
+        </button>
+      </article>
+
+      <article class="card puntajes-card">
+        <div class="card-top">
+          <span>03</span>
+          <span>CONTROL</span>
+        </div>
+        <div>
+          <h4>Puntajes</h4>
+          <p>Tabla de posiciones de los equipos del Safari 2026.</p>
+        </div>
+        <button class="ghost-btn open-score-btn" id="openScoreTable">
+          VER TABLA <span>↗</span>
+        </button>
+      </article>
+      <article class="card archivo-card">
+        <div class="card-top">
+          <span>04</span>
+          <span>ARCHIVO</span>
+        </div>
+        <div class="archivo-preview">
+          <div class="archivo-folder-icon" aria-hidden="true">
+            <span></span>
+          </div>
+          <div>
+            <h4>Carpeta</h4>
+            <p>49 fotos · 50 videos · 25 averigua · 4 traer · 2 audios.</p>
+          </div>
+        </div>
+        <button class="ghost-btn open-archivo-btn" id="openArchivoCarpeta">
+          ABRIR CARPETA <span>↗</span>
+        </button>
+      </article>
+      <article class="card leaders-card">
+        <div class="card-top">
+          <span>05</span>
+          <span>STAFF</span>
+        </div>
+        <div>
+          <h4>Líderes</h4>
+          <p>Listado editable de líderes por grupo: 027, 028 y 029/30.</p>
+        </div>
+        <button class="ghost-btn open-leaders-btn" id="openLeaders">
+          VER LÍDERES <span>↗</span>
+        </button>
+      </article>
+    </section>
+
+
+    <div class="folder-modal" id="comodinesModal" aria-hidden="true">
+      <div class="folder-backdrop" id="folderBackdrop"></div>
+
+      <section class="folder-window" role="dialog" aria-modal="true" aria-labelledby="comodinesTitle">
+        <header class="folder-header">
+          <div class="folder-title-wrap">
+            <div class="folder-symbol" aria-hidden="true">
+              <span></span>
+            </div>
+            <div>
+              <p>SAFARI 2026 · LEGACY</p>
+              <h4 id="comodinesTitle">COMODINES</h4>
+            </div>
+          </div>
+
+          <button class="folder-close" id="closeComodines" aria-label="Cerrar carpeta">×</button>
+        </header>
+
+        <div class="folder-path">
+          <span>STAFF</span>
+          <span>/</span>
+          <strong>COMODINES</strong>
+        </div>
+
+        <div class="comodines-list">
+          <article class="comodin-item" data-comodin-id="1">
+            <span class="comodin-index">01</span>
+            <div>
+              <p>Tizi, Rami y Bolaños ya están ocupados</p>
+              <div class="emoji-row">🦹‍♀️ &nbsp; 🔜</div>
+            </div>
+            <button class="comodin-found-btn" type="button">
+              <span class="found-label">MARCAR COMO ENCONTRADO</span>
+              <span class="found-icon">✓</span>
+            </button>
+          </article>
+
+          <article class="comodin-item" data-comodin-id="2">
+            <span class="comodin-index">02</span>
+            <div>
+              <p>A12</p>
+              <div class="emoji-row">🧾 &nbsp; 💕</div>
+            </div>
+            <button class="comodin-found-btn" type="button">
+              <span class="found-label">MARCAR COMO ENCONTRADO</span>
+              <span class="found-icon">✓</span>
+            </button>
+          </article>
+
+          <article class="comodin-item" data-comodin-id="3">
+            <span class="comodin-index">03</span>
+            <div>
+              <div class="emoji-row large">🦹‍♀️ &nbsp; 6️⃣ &nbsp; 🗿</div>
+            </div>
+            <button class="comodin-found-btn" type="button">
+              <span class="found-label">MARCAR COMO ENCONTRADO</span>
+              <span class="found-icon">✓</span>
+            </button>
+          </article>
+
+          <article class="comodin-item" data-comodin-id="4">
+            <span class="comodin-index">04</span>
+            <div>
+              <p>el abecedario y marcar las letras brc/vrs</p>
+            </div>
+            <button class="comodin-found-btn" type="button">
+              <span class="found-label">MARCAR COMO ENCONTRADO</span>
+              <span class="found-icon">✓</span>
+            </button>
+          </article>
+
+          <article class="comodin-item" data-comodin-id="5">
+            <span class="comodin-index">05</span>
+            <div>
+              <p>100 🛡️</p>
+            </div>
+            <button class="comodin-found-btn" type="button">
+              <span class="found-label">MARCAR COMO ENCONTRADO</span>
+              <span class="found-icon">✓</span>
+            </button>
+          </article>
+
+          <article class="comodin-item" data-comodin-id="6">
+            <span class="comodin-index">06</span>
+            <div>
+              <div class="emoji-row large">🧂 &nbsp; 🤜🏻</div>
+            </div>
+            <button class="comodin-found-btn" type="button">
+              <span class="found-label">MARCAR COMO ENCONTRADO</span>
+              <span class="found-icon">✓</span>
+            </button>
+          </article>
+
+          <article class="comodin-item" data-comodin-id="7">
+            <span class="comodin-index">07</span>
+            <div>
+              <p>te gusta nio</p>
+              <div class="emoji-row">🍇 &nbsp; 🏞️</div>
+            </div>
+            <button class="comodin-found-btn" type="button">
+              <span class="found-label">MARCAR COMO ENCONTRADO</span>
+              <span class="found-icon">✓</span>
+            </button>
+          </article>
+        </div>
+
+        <footer class="folder-footer">
+          <span>7 ELEMENTOS</span>
+          <span>LEGACY STAFF ARCHIVE</span>
+        </footer>
+      </section>
+    </div>
+
+
+    <div class="schedule-modal" id="cronogramaModal" aria-hidden="true">
+      <div class="schedule-backdrop" id="scheduleBackdrop"></div>
+
+      <section class="schedule-window" role="dialog" aria-modal="true" aria-labelledby="cronogramaTitle">
+        <header class="schedule-header">
+          <div>
+            <p class="schedule-eyebrow">SAFARI 2026 · LEGACY · STAFF</p>
+            <h4 id="cronogramaTitle">CRONOGRAMA</h4>
+          </div>
+          <button class="schedule-close" id="closeCronograma" aria-label="Cerrar cronograma">×</button>
+        </header>
+
+        <div class="schedule-intro">
+          <span>AGENDA OPERATIVA</span>
+          <span>16 → 28</span>
+        </div>
+
+        <div class="schedule-days">
+
+          <section class="schedule-day">
+            <div class="schedule-date">
+              <strong>16</strong>
+              <span>MIÉRCOLES</span>
+            </div>
+            <div class="schedule-events">
+              <article class="schedule-event">
+                <time>—</time>
+                <div>
+                  <h5>Desafío digital</h5>
+                  <p>Likes, fotos con objetos randoms.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="schedule-day">
+            <div class="schedule-date">
+              <strong>17</strong>
+              <span>JUEVES</span>
+            </div>
+            <div class="schedule-events">
+              <article class="schedule-event">
+                <time>—</time>
+                <div>
+                  <h5>Recrear portadas</h5>
+                  <p>Portadas de álbum y vestuarios de famosos.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="schedule-day">
+            <div class="schedule-date">
+              <strong>24</strong>
+              <span>JUEVES</span>
+            </div>
+            <div class="schedule-events">
+              <article class="schedule-event">
+                <time>15:40</time>
+                <div>
+                  <h5>Comodín run</h5>
+                  <p>A la salida nos vamos a lo de Bolaños y de ahí corremos cada uno con un comodín a donde sea.</p>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>19:00</time>
+                <div>
+                  <h5>Entrada de noche</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>20:00</time>
+                <div>
+                  <h5>Insólitos</h5>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="schedule-day">
+            <div class="schedule-date">
+              <strong>25</strong>
+              <span>VIERNES</span>
+            </div>
+            <div class="schedule-events">
+              <article class="schedule-event">
+                <time>OFF</time>
+                <div>
+                  <h5>Colegio</h5>
+                  <p>Nos vamos a esconder comodines.</p>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>17:00</time>
+                <div>
+                  <h5>Comodines</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>19:00</time>
+                <div>
+                  <h5>Parque de la Salud</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>00:00</time>
+                <div>
+                  <h5>Anormal · Vértigo · Cherry · GMAS</h5>
+                  <p>Solo líderes · comodín carpeta.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="schedule-day">
+            <div class="schedule-date">
+              <strong>26</strong>
+              <span>SÁBADO</span>
+            </div>
+            <div class="schedule-events">
+              <article class="schedule-event">
+                <time>09:00</time>
+                <div>
+                  <h5>Comodines al fallo</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>11:30</time>
+                <div>
+                  <h5>Pasada por las PC · MasterChef</h5>
+                  <p>Media hora por promo.</p>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>14:00–15:00</time>
+                <div>
+                  <h5>Comodín colectivo</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>15:30–18:00</time>
+                <div>
+                  <h5>Comodín móvil</h5>
+                  <p>Seis móviles, idea. Punto de reunión: casa de Bolaños o Mati.</p>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>19:00–21:00</time>
+                <div>
+                  <h5>Fogón</h5>
+                  <p>Batalla de otakus, freestyle, imita al staff, hacer reír al staff. 2 comodines en la casa del fogón.</p>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>DESPUÉS</time>
+                <div>
+                  <h5>Participantes a sus casas</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>12:00–02:00</time>
+                <div>
+                  <h5>Tirar comodines</h5>
+                  <p>Solo líderes.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="schedule-day">
+            <div class="schedule-date">
+              <strong>27</strong>
+              <span>DOMINGO</span>
+            </div>
+            <div class="schedule-events">
+              <article class="schedule-event">
+                <time>10:30–12:00</time>
+                <div>
+                  <h5>Comodines normales</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>14:00–16:00</time>
+                <div>
+                  <h5>Encontrar al staff</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>17:00–18:00</time>
+                <div>
+                  <h5>Paintball</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>19:30–21:00</time>
+                <div>
+                  <h5>Cena de staff</h5>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="schedule-day">
+            <div class="schedule-date">
+              <strong>28</strong>
+              <span>LUNES</span>
+            </div>
+            <div class="schedule-events">
+              <article class="schedule-event">
+                <time>10:00–12:00</time>
+                <div>
+                  <h5>Ñu Guazú</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>14:00–16:00</time>
+                <div>
+                  <h5>Comodín</h5>
+                </div>
+              </article>
+              <article class="schedule-event">
+                <time>19:00</time>
+                <div>
+                  <h5>Traer la carpeta al staff</h5>
+                </div>
+              </article>
+            </div>
+          </section>
+
+        </div>
+
+        <footer class="schedule-footer">
+          <span>LEGACY STAFF SCHEDULE</span>
+          <span>SAFARI 2026</span>
+        </footer>
+      </section>
+    </div>
+
+
+
+
+    <div class="leaders-modal" id="leadersModal" aria-hidden="true">
+      <div class="leaders-backdrop" id="leadersBackdrop"></div>
+
+      <section class="leaders-window" role="dialog" aria-modal="true" aria-labelledby="leadersTitle">
+        <header class="leaders-header">
+          <div>
+            <p>SAFARI 2026 · LEGACY · STAFF</p>
+            <h4 id="leadersTitle">LÍDERES</h4>
+          </div>
+          <button class="leaders-close" id="closeLeaders" aria-label="Cerrar líderes">×</button>
+        </header>
+
+        <div class="leaders-summary">
+          <span>3 GRUPOS</span>
+          <span>EDITABLE · GUARDADO AUTOMÁTICO</span>
+        </div>
+
+        <div class="leaders-groups" id="leadersGroups"></div>
+
+        <footer class="leaders-footer">
+          <span>LEGACY LEADERS DIRECTORY</span>
+          <span>SAFARI 2026</span>
+        </footer>
+      </section>
+    </div>
+
+    <div class="leader-editor-modal" id="leaderEditorModal" aria-hidden="true">
+      <div class="leader-editor-backdrop" id="leaderEditorBackdrop"></div>
+
+      <section class="leader-editor-window" role="dialog" aria-modal="true" aria-labelledby="leaderEditorTitle">
+        <header>
+          <div>
+            <p id="leaderEditorMode">NUEVO LÍDER</p>
+            <h4 id="leaderEditorTitle">GRUPO 027</h4>
+          </div>
+          <button id="closeLeaderEditor" aria-label="Cerrar editor">×</button>
+        </header>
+
+        <form id="leaderEditorForm">
+          <label>
+            <span>NOMBRE</span>
+            <input id="leaderNameInput" type="text" maxlength="80" required placeholder="Nombre y apellido" />
+          </label>
+
+          <div class="leader-editor-actions">
+            <button type="button" id="cancelLeaderEditor">CANCELAR</button>
+            <button type="submit">GUARDAR</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div class="score-modal" id="scoreModal" aria-hidden="true">
+      <div class="score-backdrop" id="scoreBackdrop"></div>
+
+      <section class="score-window" role="dialog" aria-modal="true" aria-labelledby="scoreTitle">
+        <header class="score-header">
+          <div>
+            <p>SAFARI 2026 · LEGACY · STAFF</p>
+            <h4 id="scoreTitle">TABLA DE POSICIONES</h4>
+          </div>
+          <button class="score-close" id="closeScoreTable" aria-label="Cerrar tabla">×</button>
+        </header>
+
+        <div class="score-summary">
+          <div>
+            <span>LIGA · 3 EQUIPOS</span>
+            <span id="scoreLockState" class="score-lock-state">PUNTAJES BLOQUEADOS</span>
+          </div>
+
+          <button id="unlockScoreEdit" class="unlock-score-btn">
+            EDITAR PUNTAJES
+          </button>
+        </div>
+
+        <div class="league-table-wrap">
+          <table class="league-table">
+            <thead>
+              <tr>
+                <th>POS</th>
+                <th>EQUIPO</th>
+                <th>PTS</th>
+                <th>COMODINES</th>
+                <th>DESAFÍOS</th>
+                <th>SANC.</th>
+                <th>- PTS</th>
+                <th>DETALLE</th>
+              </tr>
+            </thead>
+            <tbody id="leagueTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="score-note">
+          <span>
+            EL TOTAL, COMODINES, DESAFÍOS Y SANCIONES SOLO SE PUEDEN MODIFICAR CON CONTRASEÑA.
+          </span>
+          <button id="resetScoreTable" class="reset-score-btn">RESTABLECER</button>
+        </div>
+
+        <footer class="score-footer">
+          <span>LEGACY SCOREBOARD</span>
+          <span>SAFARI 2026</span>
+        </footer>
+      </section>
+    </div>
+
+    <div class="score-password-modal" id="scorePasswordModal" aria-hidden="true">
+      <div class="score-password-backdrop" id="scorePasswordBackdrop"></div>
+      <section class="score-password-window" role="dialog" aria-modal="true" aria-labelledby="scorePasswordTitle">
+        <header>
+          <div>
+            <p>ACCESO PROTEGIDO</p>
+            <h4 id="scorePasswordTitle">EDITAR PUNTAJES</h4>
+          </div>
+          <button id="closeScorePassword" aria-label="Cerrar">×</button>
+        </header>
+
+        <form id="scorePasswordForm">
+          <label>
+            <span>CONTRASEÑA</span>
+            <input id="scorePasswordInput" type="password" autocomplete="off" placeholder="••••••••" required />
+          </label>
+          <p id="scorePasswordError" class="score-password-error" aria-live="polite"></p>
+          <div class="score-password-actions">
+            <button type="button" id="cancelScorePassword">CANCELAR</button>
+            <button type="submit">DESBLOQUEAR</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div class="sanctions-modal" id="sanctionsModal" aria-hidden="true">
+      <div class="sanctions-backdrop" id="sanctionsBackdrop"></div>
+
+      <section class="sanctions-window" role="dialog" aria-modal="true" aria-labelledby="sanctionsTitle">
+        <header class="sanctions-header">
+          <div>
+            <p>SAFARI 2026 · LEGACY</p>
+            <h4 id="sanctionsTitle">SANCIONES · <span id="sanctionsTeamName">027</span></h4>
+          </div>
+          <button id="closeSanctions" aria-label="Cerrar sanciones">×</button>
+        </header>
+
+        <div class="sanctions-summary">
+          <div>
+            <span>CANTIDAD</span>
+            <strong id="sanctionsCount">0</strong>
+          </div>
+          <div>
+            <span>PUNTOS DESCONTADOS</span>
+            <strong id="sanctionsDeduction">0</strong>
+          </div>
+          <button id="addSanctionBtn" class="add-sanction-btn">＋ AÑADIR SANCIÓN</button>
+        </div>
+
+        <div id="sanctionsList" class="sanctions-list"></div>
+
+        <div id="sanctionsEmpty" class="sanctions-empty">
+          <p>Este equipo todavía no tiene sanciones registradas.</p>
+        </div>
+
+        <footer class="sanctions-footer">
+          <span>DETALLE DE PENALIZACIONES</span>
+          <span>LEGACY STAFF</span>
+        </footer>
+      </section>
+    </div>
+
+    <div class="sanction-editor-modal" id="sanctionEditorModal" aria-hidden="true">
+      <div class="sanction-editor-backdrop" id="sanctionEditorBackdrop"></div>
+      <section class="sanction-editor-window" role="dialog" aria-modal="true" aria-labelledby="sanctionEditorTitle">
+        <header>
+          <div>
+            <p id="sanctionEditorMode">NUEVA SANCIÓN</p>
+            <h4 id="sanctionEditorTitle">SANCIÓN</h4>
+          </div>
+          <button id="closeSanctionEditor" aria-label="Cerrar">×</button>
+        </header>
+
+        <form id="sanctionEditorForm">
+          <label>
+            <span>MOTIVO</span>
+            <input id="sanctionReasonInput" type="text" maxlength="160" placeholder="Ej.: Llegada tarde" required />
+          </label>
+
+          <label>
+            <span>PUNTOS A DESCONTAR</span>
+            <input id="sanctionPointsInput" type="number" min="0" step="1" value="0" required />
+          </label>
+
+          <div class="sanction-editor-actions">
+            <button type="button" id="cancelSanctionEditor">CANCELAR</button>
+            <button type="submit">GUARDAR</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    
+
+    <div class="archivo-modal" id="archivoModal" aria-hidden="true">
+      <div class="archivo-backdrop" id="archivoBackdrop"></div>
+
+      <section class="archivo-window" role="dialog" aria-modal="true" aria-labelledby="archivoTitle">
+        <header class="archivo-header">
+          <div class="archivo-title-group">
+            <div class="archivo-folder-symbol" aria-hidden="true"><span></span></div>
+            <div>
+              <p>SAFARI 2026 · LEGACY · STAFF</p>
+              <h4 id="archivoTitle">CARPETA</h4>
+            </div>
+          </div>
+          <button class="archivo-close" id="closeArchivo" aria-label="Cerrar carpeta">×</button>
+        </header>
+
+        <div class="archivo-toolbar">
+          <nav class="archivo-tabs" aria-label="Secciones de carpeta">
+            <button class="archivo-tab active" data-category="fotos">FOTOS</button>
+            <button class="archivo-tab" data-category="videos">VIDEOS</button>
+            <button class="archivo-tab" data-category="averigua">AVERIGUA</button>
+            <button class="archivo-tab" data-category="traer">TRAER</button>
+            <button class="archivo-tab" data-category="audios">AUDIOS</button>
+          </nav>
+
+          <div class="archivo-toolbar-actions">
+            <button class="archivo-export-btn" id="exportArchivoBtn">
+              <span>⇩</span> EXPORTAR CARPETA
+            </button>
+            <button class="archivo-add-btn" id="addArchivoItem">
+              <span>＋</span> AÑADIR ÍTEM
+            </button>
+          </div>
+        </div>
+
+        <div class="archivo-section-head">
+          <div>
+            <span class="archivo-path">STAFF / CARPETA /</span>
+            <h5 id="archivoCategoryTitle">FOTOS</h5>
+          </div>
+          <span id="archivoCount">0 ÍTEMS</span>
+        </div>
+
+        <div class="archivo-items" id="archivoItems"></div>
+
+        <div class="archivo-empty" id="archivoEmpty">
+          <div class="archivo-empty-icon">＋</div>
+          <h5>Sin ítems todavía</h5>
+          <p>Podés empezar agregando el primer elemento de esta categoría.</p>
+          <button id="addArchivoItemEmpty">AÑADIR PRIMER ÍTEM</button>
+        </div>
+
+        <footer class="archivo-footer">
+          <span>LEGACY STAFF ARCHIVE</span>
+          <span>DATOS GUARDADOS LOCALMENTE</span>
+        </footer>
+      </section>
+    </div>
+
+    <div class="item-editor-modal" id="itemEditorModal" aria-hidden="true">
+      <div class="item-editor-backdrop" id="itemEditorBackdrop"></div>
+      <section class="item-editor-window" role="dialog" aria-modal="true" aria-labelledby="itemEditorTitle">
+        <header>
+          <div>
+            <p id="itemEditorMode">NUEVO ÍTEM</p>
+            <h4 id="itemEditorTitle">FOTOS</h4>
+          </div>
+          <button id="closeItemEditor" aria-label="Cerrar editor">×</button>
+        </header>
+
+        <form id="itemEditorForm">
+          <label>
+            <span>TÍTULO / ÍTEM</span>
+            <input id="itemTitleInput" type="text" placeholder="Ej.: Foto del staff completo" required maxlength="140" />
+          </label>
+
+          <label>
+            <span>DETALLE OPCIONAL</span>
+            <textarea id="itemDetailInput" placeholder="Notas, pista, ubicación, persona, enlace, etc." maxlength="500"></textarea>
+          </label>
+
+          <div class="item-editor-actions">
+            <button type="button" class="item-cancel-btn" id="cancelItemEditor">CANCELAR</button>
+            <button type="submit" class="item-save-btn">GUARDAR</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+
+    <div class="export-password-modal" id="exportPasswordModal" aria-hidden="true">
+      <div class="export-password-backdrop" id="exportPasswordBackdrop"></div>
+      <section class="export-password-window" role="dialog" aria-modal="true" aria-labelledby="exportPasswordTitle">
+        <header>
+          <div>
+            <p>EXPORTACIÓN PROTEGIDA</p>
+            <h4 id="exportPasswordTitle">EXPORTAR CARPETA</h4>
+          </div>
+          <button id="closeExportPassword" aria-label="Cerrar">×</button>
+        </header>
+
+        <form id="exportPasswordForm">
+          <label>
+            <span>CONTRASEÑA</span>
+            <input id="exportPasswordInput" type="password" autocomplete="off" placeholder="••••••••" required />
+          </label>
+          <p id="exportPasswordError" class="export-password-error" aria-live="polite"></p>
+          <div class="export-password-actions">
+            <button type="button" id="cancelExportPassword">CANCELAR</button>
+            <button type="submit">EXPORTAR</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <section class="footer-strip">
+      <span>SAFARI 2026 — LEGACY</span>
+      <span>STAFF COMMAND CENTER</span>
+      <span id="liveClock">--:--:--</span>
+    </section>
+  </main>
+
   <script>
-    async function gunzip(bytes){
-      if('DecompressionStream' in window){
-        const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-        return await new Response(stream).text();
-      }
-      await new Promise((resolve,reject)=>{
-        const s=document.createElement('script');
-        s.src='https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js';
-        s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
-      });
-      return new TextDecoder().decode(window.pako.ungzip(bytes));
-    }
+const intro = document.getElementById("intro");
+const enterBtn = document.getElementById("enterBtn");
+const dashboard = document.getElementById("dashboard");
+const clock = document.getElementById("liveClock");
 
-    async function loadLegacy(){
-      const r=await fetch('./legacy-v11.html.gz?v=5',{cache:'no-store'});
-      if(!r.ok) throw new Error('No se pudo cargar legacy-v11.html.gz');
-      const bytes=new Uint8Array(await r.arrayBuffer());
-      let html;
+let entering = false;
 
-      if(bytes.length>=2 && bytes[0]===0x1f && bytes[1]===0x8b){
-        html=await gunzip(bytes);
-      }else{
-        html=new TextDecoder().decode(bytes);
-      }
+enterBtn.addEventListener("click", () => {
+  if (entering) return;
+  entering = true;
 
-      const normalized=html.trimStart().toLowerCase();
-      if(!normalized.startsWith('<!doctype html') && !normalized.startsWith('<html')){
-        throw new Error('El contenido recibido no es HTML válido');
-      }
+  const rect = enterBtn.getBoundingClientRect();
+  const orb = document.getElementById("transitionOrb");
+  orb.style.left = `${rect.left + rect.width / 2}px`;
+  orb.style.top = `${rect.top + rect.height / 2}px`;
 
-      document.open();
-      document.write(html);
-      document.close();
-    }
+  intro.classList.add("entering");
 
-    loadLegacy().catch(err=>{
-      console.error(err);
-      const el=document.getElementById('loading');
-      el.textContent='ERROR AL CARGAR SAFARI 2026 — LEGACY';
-      el.title=String(err && err.message ? err.message : err);
+  setTimeout(() => {
+    showStaffGate();
+  }, 820);
+
+  setTimeout(() => {
+    intro.classList.add("finished");
+  }, 1450);
+});
+
+function updateClock() {
+  const now = new Date();
+  clock.textContent = now.toLocaleTimeString("es-PY", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+
+// =========================
+// STAFF IDENTITY / LOCAL ACCESS
+// =========================
+const staffGate = document.getElementById("staffGate");
+const staffGrid = document.getElementById("staffGrid");
+const staffLoginPanel = document.getElementById("staffLoginPanel");
+const staffLoginBack = document.getElementById("staffLoginBack");
+const staffLoginForm = document.getElementById("staffLoginForm");
+const staffGmailInput = document.getElementById("staffGmailInput");
+const staffLoginHelp = document.getElementById("staffLoginHelp");
+const staffLoginError = document.getElementById("staffLoginError");
+const selectedStaffIndex = document.getElementById("selectedStaffIndex");
+const selectedStaffName = document.getElementById("selectedStaffName");
+const selectedStaffDescription = document.getElementById("selectedStaffDescription");
+const currentStaffName = document.getElementById("currentStaffName");
+const logoutStaff = document.getElementById("logoutStaff");
+
+const profileEditorModal = document.getElementById("profileEditorModal");
+const profileEditorBackdrop = document.getElementById("profileEditorBackdrop");
+const profileEditorForm = document.getElementById("profileEditorForm");
+const profileNameInput = document.getElementById("profileNameInput");
+const profileDescriptionInput = document.getElementById("profileDescriptionInput");
+const profileEditorTitle = document.getElementById("profileEditorTitle");
+const closeProfileEditor = document.getElementById("closeProfileEditor");
+const cancelProfileEditor = document.getElementById("cancelProfileEditor");
+
+const STAFF_PROFILES_KEY = "legacyStaffProfilesV1";
+const STAFF_EMAILS_KEY = "legacyStaffEmailsV1";
+const STAFF_SESSION_KEY = "legacyCurrentStaffV1";
+
+const defaultStaffProfiles = [
+  { id: "staff-1", name: "Bolaños", description: "Staff · descripción editable" },
+  { id: "staff-2", name: "Rami", description: "Staff · descripción editable" },
+  { id: "staff-3", name: "Tizi", description: "Staff · descripción editable" },
+  { id: "staff-4", name: "Rafa Martínez", description: "Staff · descripción editable" },
+  { id: "staff-5", name: "Mati", description: "Staff · descripción editable" },
+  { id: "staff-6", name: "Staff 6", description: "Editá este perfil con el nombre y función del sexto staff" }
+];
+
+let staffProfiles = loadStaffProfiles();
+let staffEmailBindings = loadStaffEmailBindings();
+let selectedStaffId = null;
+let editingStaffId = null;
+
+function loadStaffProfiles() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STAFF_PROFILES_KEY) || "null");
+    if (Array.isArray(stored) && stored.length) return stored;
+  } catch (error) {}
+  localStorage.setItem(STAFF_PROFILES_KEY, JSON.stringify(defaultStaffProfiles));
+  return JSON.parse(JSON.stringify(defaultStaffProfiles));
+}
+
+function saveStaffProfiles() {
+  localStorage.setItem(STAFF_PROFILES_KEY, JSON.stringify(staffProfiles));
+}
+
+function loadStaffEmailBindings() {
+  try {
+    return JSON.parse(localStorage.getItem(STAFF_EMAILS_KEY) || "{}") || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveStaffEmailBindings() {
+  localStorage.setItem(STAFF_EMAILS_KEY, JSON.stringify(staffEmailBindings));
+}
+
+function normalizeGmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function isGmail(value) {
+  return /^[a-z0-9._%+-]+@gmail\.com$/i.test(normalizeGmail(value));
+}
+
+function encodeLocalEmail(value) {
+  try {
+    return btoa(unescape(encodeURIComponent(normalizeGmail(value))));
+  } catch (error) {
+    return normalizeGmail(value);
+  }
+}
+
+function getStaffById(id) {
+  return staffProfiles.find(profile => profile.id === id);
+}
+
+function renderStaffProfiles() {
+  staffGrid.innerHTML = staffProfiles.map((profile, index) => {
+    const bound = Boolean(staffEmailBindings[profile.id]);
+    return `
+      <article
+        class="staff-profile-card"
+        data-staff-id="${profile.id}"
+        style="--staff-index:${index}"
+      >
+        <div class="staff-profile-top">
+          <span>${String(index + 1).padStart(2, "0")}</span>
+          <span>${bound ? "GMAIL VINCULADO" : "SIN VINCULAR"}</span>
+        </div>
+
+        <div class="staff-profile-main">
+          <h3>${escapeHtml(profile.name)}</h3>
+
+          <label class="staff-description-editor">
+            <span>DESCRIPCIÓN</span>
+            <textarea
+              class="staff-description-inline"
+              data-staff-id="${profile.id}"
+              maxlength="180"
+              rows="3"
+              placeholder="Escribí una descripción para este staff..."
+            >${escapeHtml(profile.description || "")}</textarea>
+          </label>
+
+          <div class="staff-description-status" data-status-for="${profile.id}">
+            EDITABLE DESDE ACÁ
+          </div>
+        </div>
+
+        <div class="staff-profile-actions">
+          <button class="staff-select-btn" data-action="select-staff" data-id="${profile.id}">
+            SOY YO
+          </button>
+          <button class="staff-edit-btn" data-action="edit-staff" data-id="${profile.id}">
+            EDITAR NOMBRE
+          </button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function showStaffGate() {
+  dashboard.classList.remove("visible");
+  dashboard.setAttribute("aria-hidden", "true");
+  staffGate.classList.add("visible");
+  staffGate.setAttribute("aria-hidden", "false");
+  renderStaffProfiles();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => staffGate.classList.add("revealed"));
+  });
+}
+
+function hideStaffGate() {
+  staffGate.classList.remove("revealed");
+  setTimeout(() => {
+    staffGate.classList.remove("visible");
+    staffGate.setAttribute("aria-hidden", "true");
+  }, 360);
+}
+
+function openStaffLogin(id) {
+  const profile = getStaffById(id);
+  if (!profile) return;
+
+  selectedStaffId = id;
+  const index = staffProfiles.findIndex(item => item.id === id);
+  const selectedCard = staffGrid.querySelector(`[data-staff-id="${id}"]`);
+
+  selectedStaffIndex.textContent = String(index + 1).padStart(2, "0");
+  selectedStaffName.textContent = profile.name;
+  selectedStaffDescription.textContent = profile.description || "";
+  staffGmailInput.value = "";
+  staffLoginError.textContent = "";
+
+  if (staffEmailBindings[id]) {
+    staffLoginHelp.textContent = "Este perfil ya tiene un Gmail vinculado. Ingresá con el mismo Gmail para continuar.";
+  } else {
+    staffLoginHelp.textContent = "La primera vez, este navegador asociará ese Gmail al perfil seleccionado.";
+  }
+
+  if (selectedCard) selectedCard.classList.add("selected");
+  staffGrid.classList.add("leaving");
+  document.querySelector(".staff-gate-copy").classList.add("leaving");
+
+  setTimeout(() => {
+    staffGrid.style.display = "none";
+    document.querySelector(".staff-gate-copy").style.display = "none";
+    staffGrid.classList.remove("leaving");
+    document.querySelector(".staff-gate-copy").classList.remove("leaving");
+
+    staffLoginPanel.classList.add("visible");
+    staffLoginPanel.setAttribute("aria-hidden", "false");
+    setTimeout(() => staffGmailInput.focus(), 120);
+  }, 360);
+}
+
+function closeStaffLogin() {
+  selectedStaffId = null;
+  staffLoginPanel.classList.add("leaving");
+
+  setTimeout(() => {
+    staffLoginPanel.classList.remove("visible", "leaving");
+    staffLoginPanel.setAttribute("aria-hidden", "true");
+
+    staffGrid.style.display = "";
+    document.querySelector(".staff-gate-copy").style.display = "";
+    staffLoginError.textContent = "";
+
+    requestAnimationFrame(() => {
+      staffGrid.classList.add("returning");
+      document.querySelector(".staff-gate-copy").classList.add("returning");
+
+      setTimeout(() => {
+        staffGrid.classList.remove("returning");
+        document.querySelector(".staff-gate-copy").classList.remove("returning");
+        staffGrid.querySelectorAll(".staff-profile-card.selected").forEach(card => {
+          card.classList.remove("selected");
+        });
+      }, 460);
     });
-  </script>
+  }, 220);
+}
+
+function openProfileEditorFor(id) {
+  const profile = getStaffById(id);
+  if (!profile) return;
+
+  editingStaffId = id;
+  profileEditorTitle.textContent = profile.name;
+  profileNameInput.value = profile.name;
+  profileDescriptionInput.value = profile.description || "";
+  profileEditorModal.classList.add("open");
+  profileEditorModal.setAttribute("aria-hidden", "false");
+  setTimeout(() => profileNameInput.focus(), 60);
+}
+
+function closeProfileEditorModal() {
+  editingStaffId = null;
+  profileEditorModal.classList.remove("open");
+  profileEditorModal.setAttribute("aria-hidden", "true");
+  profileEditorForm.reset();
+}
+
+function enterDashboardAsStaff(profile) {
+  localStorage.setItem(STAFF_SESSION_KEY, profile.id);
+  currentStaffName.textContent = profile.name;
+
+  const transition = document.getElementById("staffTransition");
+  const submitButton = document.querySelector(".staff-login-submit");
+  const rect = submitButton ? submitButton.getBoundingClientRect() : {
+    left: innerWidth / 2,
+    top: innerHeight / 2,
+    width: 0,
+    height: 0
+  };
+
+  transition.style.setProperty("--origin-x", `${rect.left + rect.width / 2}px`);
+  transition.style.setProperty("--origin-y", `${rect.top + rect.height / 2}px`);
+  transition.classList.add("active");
+  staffLoginPanel.classList.add("accepted");
+
+  setTimeout(() => {
+    dashboard.classList.add("visible");
+    dashboard.setAttribute("aria-hidden", "false");
+  }, 680);
+
+  setTimeout(() => {
+    hideStaffGate();
+  }, 820);
+
+  setTimeout(() => {
+    transition.classList.remove("active");
+    staffLoginPanel.classList.remove("accepted");
+  }, 1650);
+}
+
+staffGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+  if (button.dataset.action === "select-staff") openStaffLogin(id);
+  if (button.dataset.action === "edit-staff") openProfileEditorFor(id);
+});
+
+staffGrid.addEventListener("input", (event) => {
+  const textarea = event.target.closest(".staff-description-inline");
+  if (!textarea) return;
+
+  const profile = getStaffById(textarea.dataset.staffId);
+  if (!profile) return;
+
+  profile.description = textarea.value;
+  saveStaffProfiles();
+
+  const status = staffGrid.querySelector(
+    `[data-status-for="${textarea.dataset.staffId}"]`
+  );
+
+  if (status) {
+    status.textContent = "GUARDADO";
+    status.classList.add("saved");
+    clearTimeout(status._saveTimer);
+    status._saveTimer = setTimeout(() => {
+      status.textContent = "EDITABLE DESDE ACÁ";
+      status.classList.remove("saved");
+    }, 1200);
+  }
+});
+
+staffGrid.addEventListener("click", (event) => {
+  if (event.target.closest(".staff-description-inline")) {
+    event.stopPropagation();
+  }
+});
+
+staffLoginBack.addEventListener("click", closeStaffLogin);
+
+staffLoginForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const profile = getStaffById(selectedStaffId);
+  const email = normalizeGmail(staffGmailInput.value);
+
+  if (!profile) return;
+
+  if (!isGmail(email)) {
+    staffLoginError.textContent = "Ingresá una dirección @gmail.com válida.";
+    return;
+  }
+
+  const encodedEmail = encodeLocalEmail(email);
+  const existingBinding = staffEmailBindings[profile.id];
+
+  if (existingBinding && existingBinding !== encodedEmail) {
+    staffLoginError.textContent = "Ese Gmail no corresponde a este staff.";
+    return;
+  }
+
+  if (!existingBinding) {
+    staffEmailBindings[profile.id] = encodedEmail;
+    saveStaffEmailBindings();
+  }
+
+  staffLoginError.textContent = "";
+  enterDashboardAsStaff(profile);
+});
+
+profileEditorForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const profile = getStaffById(editingStaffId);
+  if (!profile) return;
+
+  profile.name = profileNameInput.value.trim() || profile.name;
+  profile.description = profileDescriptionInput.value.trim();
+  saveStaffProfiles();
+  renderStaffProfiles();
+  closeProfileEditorModal();
+});
+
+closeProfileEditor.addEventListener("click", closeProfileEditorModal);
+cancelProfileEditor.addEventListener("click", closeProfileEditorModal);
+profileEditorBackdrop.addEventListener("click", closeProfileEditorModal);
+
+logoutStaff.addEventListener("click", () => {
+  localStorage.removeItem(STAFF_SESSION_KEY);
+  closeStaffLogin();
+  showStaffGate();
+});
+
+renderStaffProfiles();
+
+
+
+const comodinesModal = document.getElementById("comodinesModal");
+const openComodines = document.getElementById("openComodines");
+const closeComodines = document.getElementById("closeComodines");
+const folderBackdrop = document.getElementById("folderBackdrop");
+
+function showComodines() {
+  comodinesModal.classList.add("open");
+  comodinesModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("folder-open");
+}
+
+function hideComodines() {
+  comodinesModal.classList.remove("open");
+  comodinesModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("folder-open");
+}
+
+openComodines.addEventListener("click", showComodines);
+closeComodines.addEventListener("click", hideComodines);
+folderBackdrop.addEventListener("click", hideComodines);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && comodinesModal.classList.contains("open")) {
+    hideComodines();
+  }
+});
+
+
+// Persistent "found" state for comodines.
+const comodinItems = document.querySelectorAll(".comodin-item");
+
+function loadFoundComodines() {
+  const stored = JSON.parse(localStorage.getItem("legacyFoundComodines") || "[]");
+  comodinItems.forEach((item) => {
+    const id = item.dataset.comodinId;
+    if (stored.includes(id)) {
+      item.classList.add("found");
+    }
+  });
+}
+
+function saveFoundComodines() {
+  const foundIds = [...comodinItems]
+    .filter((item) => item.classList.contains("found"))
+    .map((item) => item.dataset.comodinId);
+
+  localStorage.setItem("legacyFoundComodines", JSON.stringify(foundIds));
+}
+
+comodinItems.forEach((item) => {
+  const button = item.querySelector(".comodin-found-btn");
+  if (!button) return;
+
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    item.classList.toggle("found");
+    saveFoundComodines();
+  });
+});
+
+loadFoundComodines();
+
+
+const cronogramaModal = document.getElementById("cronogramaModal");
+const openCronograma = document.getElementById("openCronograma");
+const closeCronograma = document.getElementById("closeCronograma");
+const scheduleBackdrop = document.getElementById("scheduleBackdrop");
+
+function showCronograma() {
+  cronogramaModal.classList.add("open");
+  cronogramaModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("schedule-open");
+}
+
+function hideCronograma() {
+  cronogramaModal.classList.remove("open");
+  cronogramaModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("schedule-open");
+}
+
+openCronograma.addEventListener("click", showCronograma);
+closeCronograma.addEventListener("click", hideCronograma);
+scheduleBackdrop.addEventListener("click", hideCronograma);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && cronogramaModal.classList.contains("open")) {
+    hideCronograma();
+  }
+});
+
+
+// =========================
+// CARPETA / ARCHIVO CRUD
+// =========================
+const archivoModal = document.getElementById("archivoModal");
+const archivoBackdrop = document.getElementById("archivoBackdrop");
+const openArchivoCarpeta = document.getElementById("openArchivoCarpeta");
+const closeArchivo = document.getElementById("closeArchivo");
+
+const archivoTabs = document.querySelectorAll(".archivo-tab");
+const archivoItems = document.getElementById("archivoItems");
+const archivoEmpty = document.getElementById("archivoEmpty");
+const archivoCategoryTitle = document.getElementById("archivoCategoryTitle");
+const archivoCount = document.getElementById("archivoCount");
+
+const addArchivoItem = document.getElementById("addArchivoItem");
+const addArchivoItemEmpty = document.getElementById("addArchivoItemEmpty");
+
+const itemEditorModal = document.getElementById("itemEditorModal");
+const itemEditorBackdrop = document.getElementById("itemEditorBackdrop");
+const itemEditorForm = document.getElementById("itemEditorForm");
+const itemTitleInput = document.getElementById("itemTitleInput");
+const itemDetailInput = document.getElementById("itemDetailInput");
+const itemEditorMode = document.getElementById("itemEditorMode");
+const itemEditorTitle = document.getElementById("itemEditorTitle");
+const closeItemEditor = document.getElementById("closeItemEditor");
+const cancelItemEditor = document.getElementById("cancelItemEditor");
+
+const ARCHIVO_STORAGE_KEY = "legacyArchivoDataV2";
+const LEGACY_ARCHIVO_STORAGE_KEY = "legacyArchivoData";
+
+const defaultArchivoData = {
+  "fotos": [
+    {
+      "id": "seed-fotos-001",
+      "title": "con largo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-002",
+      "title": "con laura gayoso",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-003",
+      "title": "con el peinado de roberto de 2022",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-004",
+      "title": "comiendo bk en el local de mc",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-005",
+      "title": "3 miembros del equipo que hagan 5k y mostrar la foto al final del tramo con strava",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-006",
+      "title": "con un enano",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-007",
+      "title": "10 hombres con pollera y tacones",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-008",
+      "title": "con mínimo 5 animales de granja",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-009",
+      "title": "con 5 brainrots",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-010",
+      "title": "peinado más loco",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-011",
+      "title": "en una carnicería vestido de carnicero atajando una costilla enorme",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-012",
+      "title": "con fabri gavilán",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-013",
+      "title": "foto con mínimo 2 de los panchos",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-014",
+      "title": "con mellis",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-015",
+      "title": "los travestis de mcal lópez de noche",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-016",
+      "title": "en el lugar de \"la noche de los huevos\"",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-017",
+      "title": "en palma de barra como si fuese que paraguay ganó el mundial",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-018",
+      "title": "vestidos de los personajes de my little pony",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-019",
+      "title": "con los seis staffs al mismo tiempo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-020",
+      "title": "en la comisaría con la bolsa en la cabeza",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-021",
+      "title": "con gnomos en una cafetería",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-022",
+      "title": "cambiando una rueda en un taller",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-023",
+      "title": "siendo binguero",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-024",
+      "title": "en el cabildo vestido de diputado",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-025",
+      "title": "foto en 7 calles con nombre de países (con algo del país)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-026",
+      "title": "con un pesebre armado",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-027",
+      "title": "vestido de monaguillo enfrente a la catedral",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-028",
+      "title": "vestido de científico en un laboratorio",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-029",
+      "title": "en el hospital nacional tres miembros con guardapolvo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-030",
+      "title": "con el cartel de ñemby, MRA y lambare",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-031",
+      "title": "en un carrito de golf en el yacht",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-032",
+      "title": "en una lancha en el río",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-033",
+      "title": "vestido de próceres en el palacio de justicia",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-034",
+      "title": "Foto haciendo inversiones",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-035",
+      "title": "Siete personas vestidas totalmente de un color del arcoíris",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-036",
+      "title": "10 pitufos con gargamel y azrael(el gato)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-037",
+      "title": "Un varón haciendo una pose de danza en patricia fiando",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-038",
+      "title": "Foto escena del titanic",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-039",
+      "title": "En el curda con equipación de rugby",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-040",
+      "title": "en el aeropuerto con cosas de playa (sombrilla, pelota...)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-041",
+      "title": "foto de un condón con la mayor cantidad de cosas posibles adentro",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-042",
+      "title": "hacer parodia de portadas de álbumes (vale ia)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-043",
+      "title": "en una casita de techo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-044",
+      "title": "con un carpincho",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-045",
+      "title": "collage en frente de la casa de todos los staff",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-046",
+      "title": "foto con un auto deportivo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-047",
+      "title": "torre de sandwich más alta",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-048",
+      "title": "foto con el árbitro de futsal del inter colegial",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-fotos-049",
+      "title": "5 hombres vestidos y maquillados de dragqueen en el cit",
+      "detail": "",
+      "seed": true
+    }
+  ],
+  "videos": [
+    {
+      "id": "seed-videos-001",
+      "title": "bailando umbrella en el paseo la galería donde está la cascada",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-002",
+      "title": "mujer haciendo 10 flexiones completas",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-003",
+      "title": "que un hombre le llame a su mamá y le diga que le dejó a alguien embarazada",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-004",
+      "title": "bailando jetski en la curva de la muerte",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-005",
+      "title": "menstruación te hicimos el desayuno",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-006",
+      "title": "ir al shopping vestidos de las cartas de clash royal",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-007",
+      "title": "ir a la caja del súper con una caja de huevo y cantarle el pollito pío completo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-008",
+      "title": "comprar algo y pagar con billetes caseros",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-009",
+      "title": "preguntar por ropa en zara vestidos de trava",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-010",
+      "title": "incomodar al cajero",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-011",
+      "title": "t/n y el CEO de la mafia",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-012",
+      "title": "en el bolt poner el audio de kunno",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-013",
+      "title": "rutina del staff",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-014",
+      "title": "intercambio de fidget toys",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-015",
+      "title": "hacer un tiktok de 2020 vestido de indeikid",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-016",
+      "title": "encara messi",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-017",
+      "title": "un día normal en patifi",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-018",
+      "title": "idol reaction (https://vt.tiktok.com/ZS47hEK8o/)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-019",
+      "title": "john pork calling",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-020",
+      "title": "imitar un video de masivo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-021",
+      "title": "haciendo un baile de descendientes",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-022",
+      "title": "troce entre pablito pintos y shirleyboom",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-023",
+      "title": "batalla de rap en el mercado 4",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-024",
+      "title": "no respetaba a nadie, excepto al capitán",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-025",
+      "title": "tocar la casa de un extraño y hacer de mariachis",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-026",
+      "title": "llamar a tu ex y decir que le extrañas",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-027",
+      "title": "hacer un roast yourself",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-028",
+      "title": "easter bunny (https://vt.tiktok.com/ZS4cU6AjU/)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-029",
+      "title": "hacer un video de las novelas de frutas",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-030",
+      "title": "recrear polémica entre onichan y luana alonso",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-031",
+      "title": "hacer un muckbang en un auto",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-032",
+      "title": "Entrar en una sexshop, comprar el dildo más grande y mandarle el qr a tu mamá",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-033",
+      "title": "saltando 15 minutos la cuerda en cámara rápida",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-034",
+      "title": "recrear el video de jinglebells de meangirls",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-035",
+      "title": "llamar a estos números y preguntar por (mathi-984524200) (bolaños-) (rami-983289009) (tizi-983658494) (rafa martinez-994955255)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-036",
+      "title": "tía paola",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-037",
+      "title": "comprar un carrito entero de la misma cosa",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-038",
+      "title": "un cortometraje de terror",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-039",
+      "title": "pedir trabajo en una obra",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-040",
+      "title": "pedir motobolt y decirle que vas a manejar",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-041",
+      "title": "GTA 6 Live Action",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-042",
+      "title": "pedirle un favor y gritarle en la cara a un extraño",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-043",
+      "title": "podcast (producido) con una vendedora del mercado sanlo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-044",
+      "title": "metiendo la mayor cantidad de comida al cine",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-045",
+      "title": "recrear cuando a diego le echaron del tajeyrand",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-046",
+      "title": "contando cuantos gramos de arroz en medio kilo de arroz",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-047",
+      "title": "diciendo 100 dígitos de pi de memoria",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-048",
+      "title": "imitando una clase de nestor y su opinión sobre las mujeres",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-049",
+      "title": "haciendo un paso de fortnite en el techo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-videos-050",
+      "title": "robar pico a cada staff",
+      "detail": "",
+      "seed": true
+    }
+  ],
+  "averigua": [
+    {
+      "id": "seed-averigua-001",
+      "title": "teoría de que pasó con el grupito de sofi filo tizi y paz",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-002",
+      "title": "cuál es el clásico de 3ro cbt y la lista de participantes",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-003",
+      "title": "cuántas veces volvieron joha y diego",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-004",
+      "title": "como se rompió el foco de 3ro cbt",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-005",
+      "title": "que pasó en la clase de 6to A",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-006",
+      "title": "todos los apodos de paz",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-007",
+      "title": "lista de las mascotas de bolaños (con nombre)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-008",
+      "title": "que pasó el día del ensayo de proyecto emblemático en 2024",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-009",
+      "title": "comida favorita de cada staff",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-010",
+      "title": "kiss count del staff",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-011",
+      "title": "que le pasó a ricar y jime flores en sanber",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-012",
+      "title": "cuantos 2009 y 2008 hay en la promo (nombre)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-013",
+      "title": "porque se le expulsó a pablo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-014",
+      "title": "internas de la promo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-015",
+      "title": "averiguar el plato más caro de la josefina",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-016",
+      "title": "hora de nacimiento del staff",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-017",
+      "title": "cuál es el objeto apreciado de cbt (citar que tiene)",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-018",
+      "title": "cuenta de ig con más seguidores",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-019",
+      "title": "cuenta de ig con menos seguidores",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-020",
+      "title": "teoría de porque se le bajó a claudia resquin a primaria",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-021",
+      "title": "que vendía rami cuando recién llegó al cole",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-022",
+      "title": "cuántas especies de animales hay en el botánico",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-023",
+      "title": "que tiraron en el techo de patifi los de cbt",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-024",
+      "title": "que pasó en la casa de roberto después de la despedida de 2024",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-averigua-025",
+      "title": "lista de quienes tiraron huevo después del partido de Paraguay",
+      "detail": "",
+      "seed": true
+    }
+  ],
+  "traer": [
+    {
+      "id": "seed-traer-001",
+      "title": "miembro favorito de 1D de joha y tizi",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-traer-002",
+      "title": "el amor de cada staff",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-traer-003",
+      "title": "2 álbumes del mundial completo",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-traer-004",
+      "title": "lo que compraron de la sex shop",
+      "detail": "",
+      "seed": true
+    }
+  ],
+  "audios": [
+    {
+      "id": "seed-audios-001",
+      "title": "el audio de virginia",
+      "detail": "",
+      "seed": true
+    },
+    {
+      "id": "seed-audios-002",
+      "title": "la mitad de mi cara no la mitad de mi tatu",
+      "detail": "",
+      "seed": true
+    }
+  ]
+};
+
+let archivoData = loadArchivoData();
+let currentArchivoCategory = "fotos";
+let editingArchivoId = null;
+
+function cloneDefaultArchivoData() {
+  return JSON.parse(JSON.stringify(defaultArchivoData));
+}
+
+function mergeArchivoData(baseData, extraData) {
+  const merged = cloneDefaultArchivoData();
+
+  Object.keys(merged).forEach((category) => {
+    const existing = Array.isArray(extraData?.[category]) ? extraData[category] : [];
+    const existingTitles = new Set(
+      merged[category].map(item => String(item.title || "").trim().toLowerCase())
+    );
+
+    existing.forEach((item) => {
+      const normalized = String(item?.title || "").trim().toLowerCase();
+      if (!normalized || existingTitles.has(normalized)) return;
+      merged[category].push(item);
+      existingTitles.add(normalized);
+    });
+  });
+
+  return merged;
+}
+
+function loadArchivoData() {
+  try {
+    const currentRaw = localStorage.getItem(ARCHIVO_STORAGE_KEY);
+    if (currentRaw) {
+      const current = JSON.parse(currentRaw);
+      return {
+        fotos: Array.isArray(current.fotos) ? current.fotos : cloneDefaultArchivoData().fotos,
+        videos: Array.isArray(current.videos) ? current.videos : cloneDefaultArchivoData().videos,
+        averigua: Array.isArray(current.averigua) ? current.averigua : cloneDefaultArchivoData().averigua,
+        traer: Array.isArray(current.traer) ? current.traer : cloneDefaultArchivoData().traer,
+        audios: Array.isArray(current.audios) ? current.audios : cloneDefaultArchivoData().audios
+      };
+    }
+
+    const legacyRaw = localStorage.getItem(LEGACY_ARCHIVO_STORAGE_KEY);
+    const legacy = legacyRaw ? JSON.parse(legacyRaw) : null;
+    const initial = legacy ? mergeArchivoData(defaultArchivoData, legacy) : cloneDefaultArchivoData();
+    localStorage.setItem(ARCHIVO_STORAGE_KEY, JSON.stringify(initial));
+    return initial;
+  } catch (error) {
+    return cloneDefaultArchivoData();
+  }
+}
+
+function saveArchivoData() {
+  localStorage.setItem(ARCHIVO_STORAGE_KEY, JSON.stringify(archivoData));
+}
+
+function categoryLabel(category) {
+  const labels = {
+    fotos: "FOTOS",
+    videos: "VIDEOS",
+    averigua: "AVERIGUA",
+    traer: "TRAER",
+    audios: "AUDIOS"
+  };
+  return labels[category] || category.toUpperCase();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderArchivo() {
+  const items = archivoData[currentArchivoCategory] || [];
+  archivoCategoryTitle.textContent = categoryLabel(currentArchivoCategory);
+  archivoCount.textContent = `${items.length} ${items.length === 1 ? "ÍTEM" : "ÍTEMS"}`;
+
+  archivoTabs.forEach(tab => {
+    tab.classList.toggle("active", tab.dataset.category === currentArchivoCategory);
+  });
+
+  archivoItems.innerHTML = items.map((item, index) => `
+    <article class="archivo-item" data-id="${item.id}">
+      <span class="archivo-item-index">${String(index + 1).padStart(2, "0")}</span>
+      <div>
+        <h6>${escapeHtml(item.title)}</h6>
+        ${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ""}
+      </div>
+      <div class="archivo-item-actions">
+        <button class="archivo-edit-btn" data-action="edit" data-id="${item.id}">EDITAR</button>
+        <button class="archivo-delete-btn" data-action="delete" data-id="${item.id}">QUITAR</button>
+      </div>
+    </article>
+  `).join("");
+
+  archivoEmpty.classList.toggle("visible", items.length === 0);
+  archivoItems.style.display = items.length === 0 ? "none" : "block";
+}
+
+function showArchivo() {
+  archivoModal.classList.add("open");
+  archivoModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("archivo-open");
+  renderArchivo();
+}
+
+function hideArchivo() {
+  archivoModal.classList.remove("open");
+  archivoModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("archivo-open");
+}
+
+function openItemEditor(itemId = null) {
+  editingArchivoId = itemId;
+
+  if (itemId) {
+    const item = (archivoData[currentArchivoCategory] || []).find(i => i.id === itemId);
+    if (!item) return;
+
+    itemEditorMode.textContent = "EDITAR ÍTEM";
+    itemTitleInput.value = item.title || "";
+    itemDetailInput.value = item.detail || "";
+  } else {
+    itemEditorMode.textContent = "NUEVO ÍTEM";
+    itemTitleInput.value = "";
+    itemDetailInput.value = "";
+  }
+
+  itemEditorTitle.textContent = categoryLabel(currentArchivoCategory);
+  itemEditorModal.classList.add("open");
+  itemEditorModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("item-editor-open");
+
+  setTimeout(() => itemTitleInput.focus(), 80);
+}
+
+function hideItemEditor() {
+  itemEditorModal.classList.remove("open");
+  itemEditorModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("item-editor-open");
+  editingArchivoId = null;
+  itemEditorForm.reset();
+}
+
+function makeId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function deleteArchivoItem(id) {
+  const items = archivoData[currentArchivoCategory] || [];
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  const ok = confirm(`¿Quitar "${item.title}" de ${categoryLabel(currentArchivoCategory)}?`);
+  if (!ok) return;
+
+  archivoData[currentArchivoCategory] = items.filter(i => i.id !== id);
+  saveArchivoData();
+  renderArchivo();
+}
+
+openArchivoCarpeta.addEventListener("click", showArchivo);
+closeArchivo.addEventListener("click", hideArchivo);
+archivoBackdrop.addEventListener("click", hideArchivo);
+
+archivoTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    currentArchivoCategory = tab.dataset.category;
+    renderArchivo();
+  });
+});
+
+addArchivoItem.addEventListener("click", () => openItemEditor());
+addArchivoItemEmpty.addEventListener("click", () => openItemEditor());
+
+archivoItems.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+  const action = button.dataset.action;
+
+  if (action === "edit") openItemEditor(id);
+  if (action === "delete") deleteArchivoItem(id);
+});
+
+itemEditorForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const title = itemTitleInput.value.trim();
+  const detail = itemDetailInput.value.trim();
+
+  if (!title) return;
+
+  const items = archivoData[currentArchivoCategory] || [];
+
+  if (editingArchivoId) {
+    const item = items.find(i => i.id === editingArchivoId);
+    if (item) {
+      item.title = title;
+      item.detail = detail;
+      item.updatedAt = new Date().toISOString();
+    }
+  } else {
+    items.push({
+      id: makeId(),
+      title,
+      detail,
+      createdAt: new Date().toISOString()
+    });
+    archivoData[currentArchivoCategory] = items;
+  }
+
+  saveArchivoData();
+  hideItemEditor();
+  renderArchivo();
+});
+
+closeItemEditor.addEventListener("click", hideItemEditor);
+cancelItemEditor.addEventListener("click", hideItemEditor);
+itemEditorBackdrop.addEventListener("click", hideItemEditor);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+
+  if (itemEditorModal.classList.contains("open")) {
+    hideItemEditor();
+    return;
+  }
+
+  if (archivoModal.classList.contains("open")) {
+    hideArchivo();
+  }
+});
+
+renderArchivo();
+
+
+// =========================
+// EXPORTAR CARPETA
+// =========================
+const exportArchivoBtn = document.getElementById("exportArchivoBtn");
+const exportPasswordModal = document.getElementById("exportPasswordModal");
+const exportPasswordBackdrop = document.getElementById("exportPasswordBackdrop");
+const exportPasswordForm = document.getElementById("exportPasswordForm");
+const exportPasswordInput = document.getElementById("exportPasswordInput");
+const exportPasswordError = document.getElementById("exportPasswordError");
+const closeExportPassword = document.getElementById("closeExportPassword");
+const cancelExportPassword = document.getElementById("cancelExportPassword");
+
+const EXPORT_PASSWORD = "bolaños";
+
+function showExportPassword() {
+  exportPasswordInput.value = "";
+  exportPasswordError.textContent = "";
+  exportPasswordModal.classList.add("open");
+  exportPasswordModal.setAttribute("aria-hidden", "false");
+  setTimeout(() => exportPasswordInput.focus(), 60);
+}
+
+function hideExportPassword() {
+  exportPasswordModal.classList.remove("open");
+  exportPasswordModal.setAttribute("aria-hidden", "true");
+  exportPasswordInput.value = "";
+  exportPasswordError.textContent = "";
+}
+
+function exportLegacyFolder() {
+  const currentProfileId = localStorage.getItem(STAFF_SESSION_KEY);
+  const currentProfile = staffProfiles.find(profile => profile.id === currentProfileId);
+
+  const payload = {
+    safari: "SAFARI 2026 — LEGACY",
+    exportedAt: new Date().toISOString(),
+    exportedBy: currentProfile ? currentProfile.name : "Staff",
+    carpeta: archivoData
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(payload, null, 2)],
+    { type: "application/json;charset=utf-8" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0, 10);
+
+  anchor.href = url;
+  anchor.download = `SAFARI_2026_LEGACY_CARPETA_${stamp}.json`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+exportArchivoBtn.addEventListener("click", showExportPassword);
+
+exportPasswordForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  if (exportPasswordInput.value !== EXPORT_PASSWORD) {
+    exportPasswordError.textContent = "Contraseña incorrecta.";
+    exportPasswordInput.select();
+    return;
+  }
+
+  exportPasswordError.textContent = "";
+  exportLegacyFolder();
+  hideExportPassword();
+});
+
+closeExportPassword.addEventListener("click", hideExportPassword);
+cancelExportPassword.addEventListener("click", hideExportPassword);
+exportPasswordBackdrop.addEventListener("click", hideExportPassword);
+
+
+// =========================
+// TABLA DE PUNTAJES
+// =========================
+const scoreModal = document.getElementById("scoreModal");
+const scoreBackdrop = document.getElementById("scoreBackdrop");
+const openScoreTable = document.getElementById("openScoreTable");
+const closeScoreTable = document.getElementById("closeScoreTable");
+const leagueTableBody = document.getElementById("leagueTableBody");
+const resetScoreTable = document.getElementById("resetScoreTable");
+const unlockScoreEdit = document.getElementById("unlockScoreEdit");
+const scoreLockState = document.getElementById("scoreLockState");
+
+const scorePasswordModal = document.getElementById("scorePasswordModal");
+const scorePasswordBackdrop = document.getElementById("scorePasswordBackdrop");
+const scorePasswordForm = document.getElementById("scorePasswordForm");
+const scorePasswordInput = document.getElementById("scorePasswordInput");
+const scorePasswordError = document.getElementById("scorePasswordError");
+const closeScorePassword = document.getElementById("closeScorePassword");
+const cancelScorePassword = document.getElementById("cancelScorePassword");
+
+const sanctionsModal = document.getElementById("sanctionsModal");
+const sanctionsBackdrop = document.getElementById("sanctionsBackdrop");
+const closeSanctions = document.getElementById("closeSanctions");
+const sanctionsTeamName = document.getElementById("sanctionsTeamName");
+const sanctionsCount = document.getElementById("sanctionsCount");
+const sanctionsDeduction = document.getElementById("sanctionsDeduction");
+const sanctionsList = document.getElementById("sanctionsList");
+const sanctionsEmpty = document.getElementById("sanctionsEmpty");
+const addSanctionBtn = document.getElementById("addSanctionBtn");
+
+const sanctionEditorModal = document.getElementById("sanctionEditorModal");
+const sanctionEditorBackdrop = document.getElementById("sanctionEditorBackdrop");
+const sanctionEditorForm = document.getElementById("sanctionEditorForm");
+const sanctionEditorMode = document.getElementById("sanctionEditorMode");
+const sanctionEditorTitle = document.getElementById("sanctionEditorTitle");
+const sanctionReasonInput = document.getElementById("sanctionReasonInput");
+const sanctionPointsInput = document.getElementById("sanctionPointsInput");
+const closeSanctionEditor = document.getElementById("closeSanctionEditor");
+const cancelSanctionEditor = document.getElementById("cancelSanctionEditor");
+
+const SCORE_TABLE_KEY = "legacyScoreTableV2";
+const SCORE_PASSWORD = "bolaños";
+
+const defaultScoreTeams = [
+  { id: "team-027", name: "027", points: 0, comodines: 0, desafios: 0, sanctions: [] },
+  { id: "team-028", name: "028", points: 0, comodines: 0, desafios: 0, sanctions: [] },
+  { id: "team-02930", name: "029/30", points: 0, comodines: 0, desafios: 0, sanctions: [] }
+];
+
+let scoreTeams = loadScoreTeams();
+let scoreEditUnlocked = false;
+let currentSanctionsTeamId = null;
+let editingSanctionId = null;
+
+function loadScoreTeams() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(SCORE_TABLE_KEY) || "null");
+    if (Array.isArray(stored) && stored.length === 3) {
+      return stored.map((team, index) => ({
+        id: team.id || defaultScoreTeams[index].id,
+        name: team.name || defaultScoreTeams[index].name,
+        points: Number(team.points || 0),
+        comodines: Number(team.comodines || 0),
+        desafios: Number(team.desafios || 0),
+        sanctions: Array.isArray(team.sanctions) ? team.sanctions : []
+      }));
+    }
+
+    const legacy = JSON.parse(localStorage.getItem("legacyScoreTableV1") || "null");
+    if (Array.isArray(legacy) && legacy.length === 3) {
+      const migrated = legacy.map((team, index) => ({
+        id: team.id || defaultScoreTeams[index].id,
+        name: team.name || defaultScoreTeams[index].name,
+        points: Number(team.points || 0),
+        comodines: 0,
+        desafios: 0,
+        sanctions: []
+      }));
+      localStorage.setItem(SCORE_TABLE_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+  } catch (error) {}
+
+  localStorage.setItem(SCORE_TABLE_KEY, JSON.stringify(defaultScoreTeams));
+  return JSON.parse(JSON.stringify(defaultScoreTeams));
+}
+
+function saveScoreTeams() {
+  localStorage.setItem(SCORE_TABLE_KEY, JSON.stringify(scoreTeams));
+}
+
+function getTeamById(id) {
+  return scoreTeams.find(team => team.id === id);
+}
+
+function sanctionTotal(team) {
+  return (team.sanctions || []).reduce((sum, sanction) => {
+    return sum + Math.max(0, Number(sanction.points || 0));
+  }, 0);
+}
+
+function sortedScoreTeams() {
+  return [...scoreTeams].sort((a, b) => {
+    const pointDiff = Number(b.points || 0) - Number(a.points || 0);
+    if (pointDiff !== 0) return pointDiff;
+    return scoreTeams.findIndex(team => team.id === a.id) - scoreTeams.findIndex(team => team.id === b.id);
+  });
+}
+
+function renderScoreTable() {
+  leagueTableBody.innerHTML = sortedScoreTeams().map((team, index) => {
+    const sanctionCount = (team.sanctions || []).length;
+    const deducted = sanctionTotal(team);
+
+    return `
+      <tr class="league-row" data-team-id="${team.id}">
+        <td><span class="league-position">${String(index + 1).padStart(2, "0")}</span></td>
+        <td>
+          <input
+            class="league-team-input"
+            data-field="name"
+            data-team-id="${team.id}"
+            type="text"
+            value="${escapeHtml(team.name)}"
+            maxlength="30"
+            aria-label="Nombre del equipo"
+          />
+        </td>
+        <td>
+          <input
+            class="league-score-input"
+            data-field="points"
+            data-team-id="${team.id}"
+            type="number"
+            min="0"
+            step="1"
+            value="${Number(team.points || 0)}"
+            ${scoreEditUnlocked ? "" : "disabled"}
+            aria-label="Puntos totales"
+          />
+        </td>
+        <td>
+          <input
+            class="league-score-input"
+            data-field="comodines"
+            data-team-id="${team.id}"
+            type="number"
+            min="0"
+            step="1"
+            value="${Number(team.comodines || 0)}"
+            ${scoreEditUnlocked ? "" : "disabled"}
+            aria-label="Puntos por comodines"
+          />
+        </td>
+        <td>
+          <input
+            class="league-score-input"
+            data-field="desafios"
+            data-team-id="${team.id}"
+            type="number"
+            min="0"
+            step="1"
+            value="${Number(team.desafios || 0)}"
+            ${scoreEditUnlocked ? "" : "disabled"}
+            aria-label="Puntos por desafíos"
+          />
+        </td>
+        <td class="sanction-count-cell">${sanctionCount}</td>
+        <td class="sanction-deduction-cell">-${deducted}</td>
+        <td>
+          <button class="open-sanctions-btn" data-team-id="${team.id}">
+            SANCIONES
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  resetScoreTable.disabled = !scoreEditUnlocked;
+  scoreLockState.textContent = scoreEditUnlocked ? "EDICIÓN DESBLOQUEADA" : "PUNTAJES BLOQUEADOS";
+  scoreLockState.classList.toggle("unlocked", scoreEditUnlocked);
+  unlockScoreEdit.textContent = scoreEditUnlocked ? "BLOQUEAR PUNTAJES" : "EDITAR PUNTAJES";
+  unlockScoreEdit.classList.toggle("unlocked", scoreEditUnlocked);
+}
+
+function showScoreTable() {
+  scoreEditUnlocked = false;
+  renderScoreTable();
+  scoreModal.classList.add("open");
+  scoreModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("score-open");
+}
+
+function hideScoreTable() {
+  scoreEditUnlocked = false;
+  scoreModal.classList.remove("open");
+  scoreModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("score-open");
+}
+
+function showScorePassword() {
+  scorePasswordInput.value = "";
+  scorePasswordError.textContent = "";
+  scorePasswordModal.classList.add("open");
+  scorePasswordModal.setAttribute("aria-hidden", "false");
+  setTimeout(() => scorePasswordInput.focus(), 50);
+}
+
+function hideScorePassword() {
+  scorePasswordModal.classList.remove("open");
+  scorePasswordModal.setAttribute("aria-hidden", "true");
+  scorePasswordInput.value = "";
+  scorePasswordError.textContent = "";
+}
+
+unlockScoreEdit.addEventListener("click", () => {
+  if (scoreEditUnlocked) {
+    scoreEditUnlocked = false;
+    renderScoreTable();
+  } else {
+    showScorePassword();
+  }
+});
+
+scorePasswordForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  if (scorePasswordInput.value !== SCORE_PASSWORD) {
+    scorePasswordError.textContent = "Contraseña incorrecta.";
+    scorePasswordInput.select();
+    return;
+  }
+
+  scoreEditUnlocked = true;
+  hideScorePassword();
+  renderScoreTable();
+});
+
+closeScorePassword.addEventListener("click", hideScorePassword);
+cancelScorePassword.addEventListener("click", hideScorePassword);
+scorePasswordBackdrop.addEventListener("click", hideScorePassword);
+
+openScoreTable.addEventListener("click", showScoreTable);
+closeScoreTable.addEventListener("click", hideScoreTable);
+scoreBackdrop.addEventListener("click", hideScoreTable);
+
+leagueTableBody.addEventListener("input", (event) => {
+  const input = event.target.closest("input[data-team-id]");
+  if (!input) return;
+
+  const team = getTeamById(input.dataset.teamId);
+  if (!team) return;
+
+  if (input.dataset.field === "name") {
+    team.name = input.value;
+    saveScoreTeams();
+    return;
+  }
+
+  if (!scoreEditUnlocked) return;
+
+  if (["points", "comodines", "desafios"].includes(input.dataset.field)) {
+    team[input.dataset.field] = Math.max(0, Number.parseInt(input.value, 10) || 0);
+    saveScoreTeams();
+  }
+});
+
+leagueTableBody.addEventListener("change", (event) => {
+  const input = event.target.closest("input[data-team-id]");
+  if (!input) return;
+
+  const team = getTeamById(input.dataset.teamId);
+  if (!team) return;
+
+  if (input.dataset.field === "name") {
+    team.name = input.value.trim() || team.name;
+    saveScoreTeams();
+    renderScoreTable();
+    return;
+  }
+
+  if (scoreEditUnlocked && ["points", "comodines", "desafios"].includes(input.dataset.field)) {
+    team[input.dataset.field] = Math.max(0, Number.parseInt(input.value, 10) || 0);
+    saveScoreTeams();
+    renderScoreTable();
+  }
+});
+
+resetScoreTable.addEventListener("click", () => {
+  if (!scoreEditUnlocked) return;
+
+  const ok = confirm("¿Restablecer equipos, puntajes, desglose y sanciones?");
+  if (!ok) return;
+
+  scoreTeams = JSON.parse(JSON.stringify(defaultScoreTeams));
+  saveScoreTeams();
+  renderScoreTable();
+});
+
+function showSanctions(teamId) {
+  const team = getTeamById(teamId);
+  if (!team) return;
+
+  currentSanctionsTeamId = teamId;
+  sanctionsTeamName.textContent = team.name;
+  renderSanctions();
+
+  sanctionsModal.classList.add("open");
+  sanctionsModal.setAttribute("aria-hidden", "false");
+}
+
+function hideSanctions() {
+  sanctionsModal.classList.remove("open");
+  sanctionsModal.setAttribute("aria-hidden", "true");
+  currentSanctionsTeamId = null;
+}
+
+function renderSanctions() {
+  const team = getTeamById(currentSanctionsTeamId);
+  if (!team) return;
+
+  const teamSanctions = Array.isArray(team.sanctions) ? team.sanctions : [];
+  sanctionsTeamName.textContent = team.name;
+  sanctionsCount.textContent = teamSanctions.length;
+  sanctionsDeduction.textContent = `-${sanctionTotal(team)}`;
+  addSanctionBtn.disabled = !scoreEditUnlocked;
+
+  sanctionsList.innerHTML = teamSanctions.map((sanction, index) => `
+    <article class="sanction-row">
+      <span class="sanction-index">${String(index + 1).padStart(2, "0")}</span>
+      <span class="sanction-reason">${escapeHtml(sanction.reason)}</span>
+      <span class="sanction-points">-${Math.max(0, Number(sanction.points || 0))} pts</span>
+      <div class="sanction-actions">
+        <button data-action="edit-sanction" data-id="${sanction.id}" ${scoreEditUnlocked ? "" : "disabled"}>EDITAR</button>
+        <button data-action="delete-sanction" data-id="${sanction.id}" ${scoreEditUnlocked ? "" : "disabled"}>QUITAR</button>
+      </div>
+    </article>
+  `).join("");
+
+  sanctionsEmpty.classList.toggle("visible", teamSanctions.length === 0);
+}
+
+leagueTableBody.addEventListener("click", (event) => {
+  const button = event.target.closest(".open-sanctions-btn");
+  if (!button) return;
+  showSanctions(button.dataset.teamId);
+});
+
+closeSanctions.addEventListener("click", hideSanctions);
+sanctionsBackdrop.addEventListener("click", hideSanctions);
+
+function makeSanctionId() {
+  return `sanction-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function openSanctionEditor(id = null) {
+  if (!scoreEditUnlocked) return;
+
+  const team = getTeamById(currentSanctionsTeamId);
+  if (!team) return;
+
+  editingSanctionId = id;
+  sanctionEditorTitle.textContent = `SANCIÓN · ${team.name}`;
+
+  if (id) {
+    const sanction = (team.sanctions || []).find(item => item.id === id);
+    if (!sanction) return;
+
+    sanctionEditorMode.textContent = "EDITAR SANCIÓN";
+    sanctionReasonInput.value = sanction.reason || "";
+    sanctionPointsInput.value = Math.max(0, Number(sanction.points || 0));
+  } else {
+    sanctionEditorMode.textContent = "NUEVA SANCIÓN";
+    sanctionReasonInput.value = "";
+    sanctionPointsInput.value = 0;
+  }
+
+  sanctionEditorModal.classList.add("open");
+  sanctionEditorModal.setAttribute("aria-hidden", "false");
+  setTimeout(() => sanctionReasonInput.focus(), 50);
+}
+
+function hideSanctionEditor() {
+  sanctionEditorModal.classList.remove("open");
+  sanctionEditorModal.setAttribute("aria-hidden", "true");
+  editingSanctionId = null;
+  sanctionEditorForm.reset();
+}
+
+addSanctionBtn.addEventListener("click", () => openSanctionEditor());
+
+sanctionsList.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button || !scoreEditUnlocked) return;
+
+  const team = getTeamById(currentSanctionsTeamId);
+  if (!team) return;
+
+  const id = button.dataset.id;
+
+  if (button.dataset.action === "edit-sanction") {
+    openSanctionEditor(id);
+  }
+
+  if (button.dataset.action === "delete-sanction") {
+    const sanction = (team.sanctions || []).find(item => item.id === id);
+    if (!sanction) return;
+
+    const ok = confirm(`¿Quitar la sanción "${sanction.reason}"?`);
+    if (!ok) return;
+
+    team.sanctions = team.sanctions.filter(item => item.id !== id);
+    saveScoreTeams();
+    renderSanctions();
+    renderScoreTable();
+  }
+});
+
+sanctionEditorForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!scoreEditUnlocked) return;
+
+  const team = getTeamById(currentSanctionsTeamId);
+  if (!team) return;
+
+  const reason = sanctionReasonInput.value.trim();
+  const points = Math.max(0, Number.parseInt(sanctionPointsInput.value, 10) || 0);
+  if (!reason) return;
+
+  if (!Array.isArray(team.sanctions)) team.sanctions = [];
+
+  if (editingSanctionId) {
+    const sanction = team.sanctions.find(item => item.id === editingSanctionId);
+    if (sanction) {
+      sanction.reason = reason;
+      sanction.points = points;
+    }
+  } else {
+    team.sanctions.push({
+      id: makeSanctionId(),
+      reason,
+      points
+    });
+  }
+
+  saveScoreTeams();
+  hideSanctionEditor();
+  renderSanctions();
+  renderScoreTable();
+});
+
+closeSanctionEditor.addEventListener("click", hideSanctionEditor);
+cancelSanctionEditor.addEventListener("click", hideSanctionEditor);
+sanctionEditorBackdrop.addEventListener("click", hideSanctionEditor);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+
+  if (sanctionEditorModal.classList.contains("open")) {
+    hideSanctionEditor();
+    return;
+  }
+
+  if (sanctionsModal.classList.contains("open")) {
+    hideSanctions();
+    return;
+  }
+
+  if (scorePasswordModal.classList.contains("open")) {
+    hideScorePassword();
+    return;
+  }
+
+  if (scoreModal.classList.contains("open")) {
+    hideScoreTable();
+  }
+});
+
+renderScoreTable();
+
+// =========================
+// LÍDERES
+// =========================
+const leadersModal = document.getElementById("leadersModal");
+const leadersBackdrop = document.getElementById("leadersBackdrop");
+const openLeaders = document.getElementById("openLeaders");
+const closeLeaders = document.getElementById("closeLeaders");
+const leadersGroups = document.getElementById("leadersGroups");
+
+const leaderEditorModal = document.getElementById("leaderEditorModal");
+const leaderEditorBackdrop = document.getElementById("leaderEditorBackdrop");
+const leaderEditorForm = document.getElementById("leaderEditorForm");
+const leaderEditorMode = document.getElementById("leaderEditorMode");
+const leaderEditorTitle = document.getElementById("leaderEditorTitle");
+const leaderNameInput = document.getElementById("leaderNameInput");
+const closeLeaderEditor = document.getElementById("closeLeaderEditor");
+const cancelLeaderEditor = document.getElementById("cancelLeaderEditor");
+
+const LEADERS_STORAGE_KEY = "legacyLeadersV1";
+const defaultLeadersData = {"027": [{"id": "027-1", "name": "Pablo Maciel"}, {"id": "027-2", "name": "Juanjo González"}, {"id": "027-3", "name": "Tobías López"}, {"id": "027-4", "name": "Luciano Molinas"}, {"id": "027-5", "name": "Lua Figueredo"}, {"id": "027-6", "name": "Ricardo Samaniego"}, {"id": "027-7", "name": "Fernanda Recalde"}, {"id": "027-8", "name": "Danna García"}, {"id": "027-9", "name": "Luana Jara"}, {"id": "027-10", "name": "Bruno Samaniego"}, {"id": "027-11", "name": "Gonzalo Sanabria"}, {"id": "027-12", "name": "Alan Montiel"}], "028": [{"id": "028-1", "name": "Sebastián Paredes"}, {"id": "028-2", "name": "César Franco"}, {"id": "028-3", "name": "Leandro Barboza"}, {"id": "028-4", "name": "Enzo Ayala"}, {"id": "028-5", "name": "Paz Orue"}, {"id": "028-6", "name": "Cecilia Colman"}, {"id": "028-7", "name": "Karissa Galeano"}, {"id": "028-8", "name": "Roberto Saldívar"}, {"id": "028-9", "name": "Alejandra Rolon"}, {"id": "028-10", "name": "Enrique Baumann"}, {"id": "028-11", "name": "Sophia Buzo"}], "029/30": [{"id": "02930-1", "name": "Micaela Castiñeira"}, {"id": "02930-2", "name": "Diego Galván"}, {"id": "02930-3", "name": "Marce García"}, {"id": "02930-4", "name": "Fiorella Gamarra"}, {"id": "02930-5", "name": "Martina Ciz"}, {"id": "02930-6", "name": "Octavio Giménez"}, {"id": "02930-7", "name": "Luis Maldonado"}, {"id": "02930-8", "name": "Virginia Velázquez"}, {"id": "02930-9", "name": "Alejandro Medina"}, {"id": "02930-10", "name": "Raúl Román"}, {"id": "02930-11", "name": "Tiziano Caballero"}]};
+
+let leadersData = loadLeadersData();
+let editingLeaderGroup = null;
+let editingLeaderId = null;
+
+function loadLeadersData() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LEADERS_STORAGE_KEY) || "null");
+    if (stored && typeof stored === "object") return stored;
+  } catch (error) {}
+
+  localStorage.setItem(LEADERS_STORAGE_KEY, JSON.stringify(defaultLeadersData));
+  return JSON.parse(JSON.stringify(defaultLeadersData));
+}
+
+function saveLeadersData() {
+  localStorage.setItem(LEADERS_STORAGE_KEY, JSON.stringify(leadersData));
+}
+
+function renderLeaders() {
+  const groupOrder = ["027", "028", "029/30"];
+
+  leadersGroups.innerHTML = groupOrder.map(group => {
+    const items = Array.isArray(leadersData[group]) ? leadersData[group] : [];
+
+    return `
+      <section class="leaders-group" data-group="${group}">
+        <div class="leaders-group-head">
+          <div class="leaders-group-title-wrap">
+            <span class="leaders-group-label">GRUPO</span>
+            <h5 class="leaders-group-name">${escapeHtml(group)}</h5>
+          </div>
+          <button class="add-leader-btn" data-action="add-leader" data-group="${group}">
+            ＋ AÑADIR LÍDER
+          </button>
+        </div>
+
+        <div class="leaders-list">
+          ${items.map((item, index) => `
+            <article class="leader-row">
+              <span class="leader-index">${String(index + 1).padStart(2, "0")}</span>
+              <span class="leader-name">${escapeHtml(item.name)}</span>
+              <div class="leader-actions">
+                <button class="leader-edit-btn" data-action="edit-leader" data-group="${group}" data-id="${item.id}">EDITAR</button>
+                <button class="leader-delete-btn" data-action="delete-leader" data-group="${group}" data-id="${item.id}">QUITAR</button>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    `;
+  }).join("");
+}
+
+function showLeaders() {
+  renderLeaders();
+  leadersModal.classList.add("open");
+  leadersModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("leaders-open");
+}
+
+function hideLeaders() {
+  leadersModal.classList.remove("open");
+  leadersModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("leaders-open");
+}
+
+function makeLeaderId(group) {
+  return `leader-${group.replaceAll("/", "")}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function openLeaderEditorFor(group, id = null) {
+  editingLeaderGroup = group;
+  editingLeaderId = id;
+
+  leaderEditorTitle.textContent = `GRUPO ${group}`;
+
+  if (id) {
+    const leader = (leadersData[group] || []).find(item => item.id === id);
+    if (!leader) return;
+    leaderEditorMode.textContent = "EDITAR LÍDER";
+    leaderNameInput.value = leader.name;
+  } else {
+    leaderEditorMode.textContent = "NUEVO LÍDER";
+    leaderNameInput.value = "";
+  }
+
+  leaderEditorModal.classList.add("open");
+  leaderEditorModal.setAttribute("aria-hidden", "false");
+  setTimeout(() => leaderNameInput.focus(), 60);
+}
+
+function hideLeaderEditor() {
+  leaderEditorModal.classList.remove("open");
+  leaderEditorModal.setAttribute("aria-hidden", "true");
+  editingLeaderGroup = null;
+  editingLeaderId = null;
+  leaderEditorForm.reset();
+}
+
+leadersGroups.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+
+  const action = button.dataset.action;
+  const group = button.dataset.group;
+  const id = button.dataset.id;
+
+  if (action === "add-leader") {
+    openLeaderEditorFor(group);
+  }
+
+  if (action === "edit-leader") {
+    openLeaderEditorFor(group, id);
+  }
+
+  if (action === "delete-leader") {
+    const leader = (leadersData[group] || []).find(item => item.id === id);
+    if (!leader) return;
+
+    const ok = confirm(`¿Quitar a "${leader.name}" del grupo ${group}?`);
+    if (!ok) return;
+
+    leadersData[group] = leadersData[group].filter(item => item.id !== id);
+    saveLeadersData();
+    renderLeaders();
+  }
+});
+
+leaderEditorForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const name = leaderNameInput.value.trim();
+  if (!name || !editingLeaderGroup) return;
+
+  if (!Array.isArray(leadersData[editingLeaderGroup])) {
+    leadersData[editingLeaderGroup] = [];
+  }
+
+  if (editingLeaderId) {
+    const leader = leadersData[editingLeaderGroup].find(item => item.id === editingLeaderId);
+    if (leader) leader.name = name;
+  } else {
+    leadersData[editingLeaderGroup].push({
+      id: makeLeaderId(editingLeaderGroup),
+      name
+    });
+  }
+
+  saveLeadersData();
+  hideLeaderEditor();
+  renderLeaders();
+});
+
+openLeaders.addEventListener("click", showLeaders);
+closeLeaders.addEventListener("click", hideLeaders);
+leadersBackdrop.addEventListener("click", hideLeaders);
+
+closeLeaderEditor.addEventListener("click", hideLeaderEditor);
+cancelLeaderEditor.addEventListener("click", hideLeaderEditor);
+leaderEditorBackdrop.addEventListener("click", hideLeaderEditor);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+
+  if (leaderEditorModal.classList.contains("open")) {
+    hideLeaderEditor();
+    return;
+  }
+
+  if (leadersModal.classList.contains("open")) {
+    hideLeaders();
+  }
+});
+
+renderLeaders();
+
+</script>
 </body>
 </html>
