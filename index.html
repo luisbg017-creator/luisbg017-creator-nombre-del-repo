@@ -1,16 +1,43 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SAFARI 2026 — LEGACY</title></head>
-<body style="margin:0;background:#000;color:#fff;font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh">
-<div id="loading">SAFARI 2026 — LEGACY · CARGANDO…</div>
-<script>
-(async()=>{
-  const files=['parts/part01.txt','parts/part02.txt','parts/part03.txt','parts/part04.txt','parts/part05.txt','parts/part06.txt','parts/part07.txt','parts/part08.txt','parts/part09.txt','parts/part10.txt','parts/part11.txt','parts/part12.txt','parts/part13.txt'];
-  try{
-    const parts=await Promise.all(files.map(f=>fetch(f,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(f);return r.text()})));
-    const html=parts.join('');
-    document.open();document.write(html);document.close();
-  }catch(e){document.getElementById('loading').textContent='ERROR AL CARGAR LEGACY';console.error(e)}
-})();
-</script>
-</body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <title>SAFARI 2026 — LEGACY</title>
+  <style>
+    html,body{margin:0;min-height:100%;background:#000;color:#fff;font-family:Arial,sans-serif}
+    body{display:grid;place-items:center;min-height:100vh}
+    #loading{font-size:12px;letter-spacing:.28em;opacity:.65;text-align:center;padding:24px}
+  </style>
+</head>
+<body>
+  <div id="loading">SAFARI 2026 — LEGACY · CARGANDO…</div>
+  <script>
+    async function loadLegacy(){
+      const response=await fetch('./legacy-v11.html.gz',{cache:'no-store'});
+      if(!response.ok) throw new Error('No se pudo cargar Legacy');
+      let html;
+      if('DecompressionStream' in window){
+        const stream=response.body.pipeThrough(new DecompressionStream('gzip'));
+        html=await new Response(stream).text();
+      }else{
+        await new Promise((resolve,reject)=>{
+          const s=document.createElement('script');
+          s.src='https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js';
+          s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
+        });
+        const bytes=new Uint8Array(await response.arrayBuffer());
+        html=new TextDecoder().decode(window.pako.ungzip(bytes));
+      }
+      document.open();
+      document.write(html);
+      document.close();
+    }
+    loadLegacy().catch(err=>{
+      console.error(err);
+      document.getElementById('loading').textContent='ERROR AL CARGAR SAFARI 2026 — LEGACY';
+    });
+  </script>
+</body>
+</html>
