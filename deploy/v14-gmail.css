@@ -1,0 +1,49 @@
+/* Safari 2026 Legacy · Gmail binding v14 */
+.staff-binding-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.staff-binding-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .55;
+}
+.staff-binding-badge.linked { color: #8cc99a; }
+.staff-binding-badge.unlinked { color: #777; }
+.staff-binding-badge.checking { color: #9a9a9a; }
+
+.staff-binding-live {
+  margin-top: 13px;
+  min-height: 34px;
+  border: 1px solid rgba(255,255,255,.14);
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: .5rem;
+  letter-spacing: .12em;
+  color: #888;
+}
+.staff-binding-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+.staff-binding-live.linked {
+  color: #9fd1aa;
+  border-color: rgba(159,209,170,.3);
+}
+.staff-binding-live.unlinked { color: #aaa; }
+.staff-binding-live.unknown { color: #a9a18d; }
+
+.staff-login-submit:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+.staff-login-submit.loading { letter-spacing: .11em; }
