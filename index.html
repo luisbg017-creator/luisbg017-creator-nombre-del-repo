@@ -14,41 +14,46 @@
 <body>
   <div id="loading">SAFARI 2026 — LEGACY · CARGANDO…</div>
   <script>
-    async function loadLegacy(){
-      const files=[
-        './payload/legacy-v11-01.txt',
-        './payload/legacy-v11-02.txt',
-        './payload/legacy-v11-03.txt',
-        './payload/legacy-v11-04.txt'
-      ];
-      const parts=await Promise.all(files.map(async f=>{
-        const r=await fetch(f,{cache:'no-store'});
-        if(!r.ok) throw new Error('No se pudo cargar '+f);
-        return (await r.text()).trim();
-      }));
-      const b64=parts.join('');
-      const raw=atob(b64);
-      const bytes=new Uint8Array(raw.length);
-      for(let i=0;i<raw.length;i++) bytes[i]=raw.charCodeAt(i);
-      let html;
+    async function gunzip(bytes){
       if('DecompressionStream' in window){
         const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-        html=await new Response(stream).text();
-      }else{
-        await new Promise((resolve,reject)=>{
-          const s=document.createElement('script');
-          s.src='https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js';
-          s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
-        });
-        html=new TextDecoder().decode(window.pako.ungzip(bytes));
+        return await new Response(stream).text();
       }
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js';
+        s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
+      });
+      return new TextDecoder().decode(window.pako.ungzip(bytes));
+    }
+
+    async function loadLegacy(){
+      const r=await fetch('./legacy-v11.html.gz?v=5',{cache:'no-store'});
+      if(!r.ok) throw new Error('No se pudo cargar legacy-v11.html.gz');
+      const bytes=new Uint8Array(await r.arrayBuffer());
+      let html;
+
+      if(bytes.length>=2 && bytes[0]===0x1f && bytes[1]===0x8b){
+        html=await gunzip(bytes);
+      }else{
+        html=new TextDecoder().decode(bytes);
+      }
+
+      const normalized=html.trimStart().toLowerCase();
+      if(!normalized.startsWith('<!doctype html') && !normalized.startsWith('<html')){
+        throw new Error('El contenido recibido no es HTML válido');
+      }
+
       document.open();
       document.write(html);
       document.close();
     }
+
     loadLegacy().catch(err=>{
       console.error(err);
-      document.getElementById('loading').textContent='ERROR AL CARGAR SAFARI 2026 — LEGACY';
+      const el=document.getElementById('loading');
+      el.textContent='ERROR AL CARGAR SAFARI 2026 — LEGACY';
+      el.title=String(err && err.message ? err.message : err);
     });
   </script>
 </body>
