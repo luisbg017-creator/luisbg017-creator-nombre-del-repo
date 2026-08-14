@@ -1,0 +1,44 @@
+name: Enable Safari v15 map
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'deploy/v15-map-loader.js'
+
+permissions:
+  contents: write
+
+jobs:
+  enable-v15-map:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add v15 map loader to index
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          tag = '<script src="./deploy/v15-map-loader.js?v=15"></script>'
+          if 'deploy/v15-map-loader.js' not in s:
+              s = s.replace('</body>', f'  {tag}\n</body>', 1)
+              p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit loader reference
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "v15 loader already enabled"
+          else
+            git commit -m "Enable Safari 2026 Legacy v15 map [skip ci]"
+            git push
+          fi
