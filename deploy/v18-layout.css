@@ -1,0 +1,402 @@
+/* ==========================================================
+   SAFARI 2026 LEGACY · V18 VIEWPORT FIT
+   Keeps every section inside the real visible viewport.
+   ========================================================== */
+:root {
+  --legacy-vh: 100dvh;
+  --legacy-vw: 100vw;
+  --legacy-modal-gap: clamp(6px, 1.2vw, 16px);
+}
+
+html,
+body {
+  max-width: 100%;
+}
+
+.dashboard {
+  min-height: var(--legacy-vh) !important;
+}
+
+.staff-gate {
+  height: var(--legacy-vh) !important;
+  min-height: var(--legacy-vh) !important;
+}
+
+.staff-gate-shell {
+  min-height: var(--legacy-vh) !important;
+}
+
+/* Every overlay uses the *visible* viewport, not a stale 100vh. */
+.folder-modal,
+.schedule-modal,
+.archivo-modal,
+.item-editor-modal,
+.profile-editor-modal,
+.export-password-modal,
+.score-modal,
+.score-password-modal,
+.sanctions-modal,
+.sanction-editor-modal,
+.leaders-modal,
+.leader-editor-modal,
+.comodin-editor-modal,
+.map-modal,
+.map-point-editor-modal {
+  inset: 0 0 auto 0 !important;
+  width: var(--legacy-vw) !important;
+  height: var(--legacy-vh) !important;
+  max-width: var(--legacy-vw) !important;
+  max-height: var(--legacy-vh) !important;
+  padding: var(--legacy-modal-gap) !important;
+  overflow: hidden !important;
+  align-items: center !important;
+  justify-items: center !important;
+}
+
+/* Long sections scroll internally; their close/header always remains reachable. */
+.folder-window,
+.schedule-window,
+.archivo-window,
+.score-window,
+.sanctions-window,
+.leaders-window {
+  max-height: calc(var(--legacy-vh) - (var(--legacy-modal-gap) * 2)) !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.item-editor-window,
+.profile-editor-window,
+.export-password-window,
+.score-password-window,
+.sanction-editor-window,
+.leader-editor-window,
+.comodin-editor-window,
+.map-point-editor-window {
+  max-width: calc(var(--legacy-vw) - (var(--legacy-modal-gap) * 2)) !important;
+  max-height: calc(var(--legacy-vh) - (var(--legacy-modal-gap) * 2)) !important;
+  overflow: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Make every main close bar sticky. */
+.folder-header,
+.schedule-header,
+.archivo-header,
+.score-header,
+.sanctions-header,
+.leaders-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  background: rgba(242,242,239,.985) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.folder-footer,
+.schedule-footer,
+.archivo-footer,
+.score-footer,
+.sanctions-footer,
+.leaders-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 18;
+  background: rgba(242,242,239,.985);
+}
+
+/* CARPETA: keep category controls available without consuming extra viewport. */
+.archivo-toolbar {
+  position: sticky;
+  top: 92px;
+  z-index: 22;
+  background: rgba(242,242,239,.985);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Puntajes: horizontal table must not force the modal beyond the screen. */
+.league-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==========================================================
+   MAP V18 FIT
+   ========================================================== */
+.map-window-v17,
+.map-window-v16 {
+  width: min(1540px, calc(var(--legacy-vw) - (var(--legacy-modal-gap) * 2))) !important;
+  height: calc(var(--legacy-vh) - (var(--legacy-modal-gap) * 2)) !important;
+  max-width: calc(var(--legacy-vw) - (var(--legacy-modal-gap) * 2)) !important;
+  max-height: calc(var(--legacy-vh) - (var(--legacy-modal-gap) * 2)) !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  overflow: hidden !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+}
+
+.map-layout-v16,
+.map-layout-v15,
+.map-layout {
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.map-canvas-wrap-v16,
+.map-canvas-wrap,
+.legacy-map-v16,
+.legacy-map-v15,
+.legacy-map {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.map-sidebar-v16,
+.map-sidebar-v15,
+.map-sidebar {
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Don't fight Leaflet's +/- buttons. */
+@media (min-width: 821px) {
+  .map-floating-actions {
+    left: 62px !important;
+    top: 12px !important;
+    right: auto !important;
+    bottom: auto !important;
+    grid-template-columns: repeat(3, max-content) !important;
+    gap: 6px !important;
+  }
+
+  .map-floating-actions .map-list-toggle {
+    display: none !important;
+  }
+
+  .map-fab {
+    min-width: 0 !important;
+    min-height: 48px !important;
+    padding: 7px 10px !important;
+  }
+
+  .map-search-shell {
+    left: 62px !important;
+    top: 72px !important;
+    width: min(500px, calc(100% - 76px)) !important;
+  }
+
+  /* When a route is active, its editor stays in the lower-right corner
+     instead of covering PUNTO / RUTA. */
+  .route-floating-panel {
+    top: auto !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    left: auto !important;
+    width: min(420px, calc(100% - 24px)) !important;
+    max-height: min(360px, calc(100% - 90px)) !important;
+    overflow: auto !important;
+  }
+
+  .map-canvas-wrap-v16:has(.route-floating-panel.visible) .map-action-hint {
+    display: none !important;
+  }
+}
+
+@media (min-width: 821px) and (max-width: 1100px) {
+  .map-fab-copy small {
+    display: none !important;
+  }
+
+  .map-fab {
+    min-height: 42px !important;
+  }
+
+  .map-fab-icon {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .map-search-shell {
+    top: 64px !important;
+    width: min(410px, calc(100% - 76px)) !important;
+  }
+}
+
+/* Mobile: map is truly full-screen and core actions never leave the screen. */
+@media (max-width: 820px) {
+  :root {
+    --legacy-modal-gap: 0px;
+  }
+
+  .map-modal {
+    padding: 0 !important;
+  }
+
+  .map-window-v17,
+  .map-window-v16 {
+    width: var(--legacy-vw) !important;
+    height: var(--legacy-vh) !important;
+    max-width: var(--legacy-vw) !important;
+    max-height: var(--legacy-vh) !important;
+    border: 0 !important;
+  }
+
+  .map-header-v16 {
+    min-height: 50px !important;
+    padding: max(8px, env(safe-area-inset-top)) 10px 8px !important;
+  }
+
+  .map-floating-actions {
+    position: absolute !important;
+    left: max(7px, env(safe-area-inset-left)) !important;
+    right: max(7px, env(safe-area-inset-right)) !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    top: auto !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+
+  .map-fab {
+    min-width: 0 !important;
+    min-height: 54px !important;
+    padding: 6px 3px !important;
+  }
+
+  .map-search-shell {
+    left: 7px !important;
+    right: 7px !important;
+    top: 7px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  .map-search-results {
+    max-height: min(300px, 36vh) !important;
+  }
+
+  .route-floating-panel {
+    left: 7px !important;
+    right: 7px !important;
+    top: 100px !important;
+    bottom: auto !important;
+    width: auto !important;
+    max-height: calc(var(--legacy-vh) - 190px) !important;
+    overflow: auto !important;
+  }
+
+  .map-action-hint {
+    left: 7px !important;
+    right: 7px !important;
+    bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+    max-width: none !important;
+  }
+
+  .map-sidebar-v16 {
+    height: min(68vh, calc(var(--legacy-vh) - 58px)) !important;
+    max-height: calc(var(--legacy-vh) - 58px) !important;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .archivo-toolbar {
+    top: 76px;
+  }
+}
+
+/* Low-height laptops / browser zoom: compress chrome before hiding controls. */
+@media (max-height: 700px) and (min-width: 821px) {
+  .folder-header,
+  .schedule-header,
+  .archivo-header,
+  .score-header,
+  .sanctions-header,
+  .leaders-header {
+    min-height: 68px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .archivo-toolbar {
+    top: 68px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .map-header-v16 {
+    min-height: 48px !important;
+    padding: 7px 12px !important;
+  }
+
+  .map-header-v16 p,
+  .map-fab-copy small,
+  .map-search-types {
+    display: none !important;
+  }
+
+  .map-floating-actions {
+    top: 8px !important;
+  }
+
+  .map-search-shell {
+    top: 60px !important;
+  }
+
+  .map-search-form {
+    min-height: 42px !important;
+  }
+
+  .map-footer-v16 {
+    min-height: 25px !important;
+    padding: 5px 9px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .folder-header,
+  .schedule-header,
+  .archivo-header,
+  .score-header,
+  .sanctions-header,
+  .leaders-header {
+    min-height: 76px !important;
+    padding: 12px 14px !important;
+  }
+
+  .folder-window,
+  .schedule-window,
+  .archivo-window,
+  .score-window,
+  .sanctions-window,
+  .leaders-window {
+    width: calc(var(--legacy-vw) - 12px) !important;
+    max-height: calc(var(--legacy-vh) - 12px) !important;
+  }
+
+  .archivo-toolbar {
+    top: 76px !important;
+  }
+
+  .archivo-tabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    width: 100%;
+  }
+
+  .archivo-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .archivo-tab {
+    flex: 0 0 auto;
+  }
+}
