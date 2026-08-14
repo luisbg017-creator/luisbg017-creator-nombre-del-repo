@@ -1,17 +1,17 @@
-name: Apply Safari v14 patch
+name: Install Safari v14 Gmail module
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'deploy/safari-v14.patch'
+      - 'deploy/v14-gmail.js'
 
 permissions:
   contents: write
 
 jobs:
-  apply-v14:
+  install-v14:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
@@ -19,15 +19,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify and apply v14 patch
+      - name: Inject v14 module into index
         run: |
-          git apply --check deploy/safari-v14.patch
-          git apply deploy/safari-v14.patch
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          css = '<link rel="stylesheet" href="./deploy/v14-gmail.css?v=14" />'
+          js = '<script src="./deploy/v14-gmail.js?v=14"></script>'
+          if 'deploy/v14-gmail.css' not in s:
+              s = s.replace('</head>', f'  {css}\n</head>', 1)
+          if 'deploy/v14-gmail.js' not in s:
+              s = s.replace('</body>', f'  {js}\n</body>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
 
-      - name: Commit v14
+      - name: Commit v14 references
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Publish Safari 2026 Legacy v14 [skip ci]"
+          git commit -m "Enable Safari 2026 Legacy v14 Gmail binding [skip ci]"
           git push
