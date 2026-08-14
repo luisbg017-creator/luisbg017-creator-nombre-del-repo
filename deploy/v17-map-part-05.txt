@@ -1,0 +1,284 @@
+ttribute("aria-pressed", routeMode ? "true" : "false");
+
+  routeComposer.classList.toggle("visible", routeMode);
+  routeComposer.setAttribute("aria-hidden", routeMode ? "false" : "true");
+
+  legacyMapEl.classList.toggle("map-point-mode", pointMode);
+  legacyMapEl.classList.toggle("map-route-mode", routeMode);
+
+  routeStopsSummary.textContent =
+    `${draftRouteWaypoints.length} ${draftRouteWaypoints.length === 1 ? "PARADA" : "PARADAS"}`;
+
+  if (routeMode) {
+    if (draftRouteIsValid) {
+      routeStats.textContent = `${formatDistance(draftRouteDistance)} · ${formatDuration(draftRouteDuration)}`;
+      setMapHint("route", "RUTA LISTA", "Podés mover las paradas o guardar la ruta.");
+    } else if (draftRouteWaypoints.length >= 2) {
+      routeStats.textContent = "CALCULANDO…";
+      setMapHint("route", "CALCULANDO RUTA", "Buscando el recorrido por calles.", true);
+    } else {
+      routeStats.textContent = "MARCÁ DOS LUGARES";
+      setMapHint("route", "TRAZANDO RUTA", "Tocá lugares, buscá destinos o usá puntos guardados.");
+    }
+  } else if (pointMode) {
+    setMapHint("point", "AÑADIR PUNTO", "Tocá exactamente el lugar que querés guardar.");
+  } else {
+    setMapHint("explore", "MAPA LISTO", "Buscá un lugar o elegí PUNTO / RUTA.");
+  }
+
+  undoMapRoute.disabled = !routeMode || draftRouteWaypoints.length === 0;
+  clearMapRoute.disabled = !routeMode || draftRouteWaypoints.length === 0;
+  saveMapRoute.disabled = !routeMode || !draftRouteIsValid || draftRouteWaypoints.length < 2;
+}
+
+function setRouteBusy(busy) {
+  if (busy) {
+    setMapHint("route", "CALCULANDO RUTA", "Buscando el recorrido por calles.", true);
+    routeStats.textContent = "CALCULANDO…";
+    saveMapRoute.disabled = true;
+  } else {
+    updateMapModeUI();
+  }
+}
+
+function addDraftRouteWaypoint(lat, lng, label = "") {
+  if (mapMode !== "route") {
+    mapMode = "route";
+    updateMapModeUI();
+  }
+
+  draftRouteWaypoints.push({
+    lat: Number(lat),
+    lng: Number(lng),
+    label: label || ""
+  });
+
+  draftRouteIsValid = false;
+
+  renderDraftWaypointMarkers();
+  renderDraftGuide();
+  renderDraftRouteSidebar();
+  updateMapModeUI();
+
+  if (draftRouteWaypoints.length >= 2) {
+    scheduleRouteCalculation(120);
+  }
+}
+
+function renderDraftWaypointMarkers() {
+  if (!legacyMapInstance || !mapDraftWaypointLayer) return;
+
+  mapDraftWaypointLayer.clearLayers();
+
+  draftRouteWaypoints.forEach((point, index) => {
+    const marker = L.marker([point.lat, point.lng], {
+      draggable: true,
+      icon: createRouteWaypointIcon(index),
+      autoPan: true,
+      keyboard: true,
+      zIndexOffset: 1000 + index
+    }).addTo(mapDraftWaypointLayer);
+
+    marker.on("dragstart", () => {
+      cancelRouteRequest();
+      draftRouteIsValid = false;
+      setMapHint("route", "MOVIENDO PARADA", "Soltá el punto para recalcular.", true);
+    });
+
+    marker.on("drag", event => {
+      const latlng = event.target.getLatLng();
+      draftRouteWaypoints[index].lat = Number(latlng.lat.toFixed(6));
+      draftRouteWaypoints[index].lng = Number(latlng.lng.toFixed(6));
+      renderDraftGuide();
+    });
+
+    marker.on("dragend", event => {
+      const latlng = event.target.getLatLng();
+
+      draftRouteWaypoints[index].lat = Number(latlng.lat.toFixed(6));
+      draftRouteWaypoints[index].lng = Number(latlng.lng.toFixed(6));
+
+      renderDraftRouteSidebar();
+      scheduleRouteCalculation(60);
+    });
+  });
+}
+
+function renderDraftGuide() {
+  if (!legacyMapInstance) return;
+
+  if (mapDraftGuideLayer) {
+    legacyMapInstance.removeLayer(mapDraftGuideLayer);
+    mapDraftGuideLayer = null;
+  }
+
+  if (draftRouteWaypoints.length >= 2 && !draftRouteIsValid) {
+    mapDraftGuideLayer = L.polyline(
+      draftRouteWaypoints.map(point => [point.lat, point.lng]),
+      {
+        color: "#111111",
+        weight: 3,
+        opacity: .38,
+        dashArray: "7 9",
+        interactive: false
+      }
+    ).addTo(legacyMapInstance);
+  }
+}
+
+function renderDraftRoadRoute() {
+  if (!legacyMapInstance) return;
+
+  if (mapDraftRouteLayer) {
+    legacyMapInstance.removeLayer(mapDraftRouteLayer);
+    mapDraftRouteLayer = null;
+  }
+
+  if (draftRouteGeometry.length >= 2) {
+    mapDraftRouteLayer = L.polyline(draftRouteGeometry, {
+      color: "#050505",
+      weight: 7,
+      opacity: .94,
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: false
+    }).addTo(legacyMapInstance);
+  }
+
+  if (mapDraftGuideLayer) {
+    legacyMapInstance.removeLayer(mapDraftGuideLayer);
+    mapDraftGuideLayer = null;
+  }
+}
+
+function scheduleRouteCalculation(delay = 160) {
+  if (routeRequestTimer) clearTimeout(routeRequestTimer);
+  routeRequestTimer = setTimeout(calculateRoadRoute, delay);
+}
+
+function cancelRouteRequest() {
+  if (routeRequestTimer) {
+    clearTimeout(routeRequestTimer);
+    routeRequestTimer = null;
+  }
+
+  if (routeRequestController) {
+    routeRequestController.abort();
+    routeRequestController = null;
+  }
+}
+
+async function calculateRoadRoute() {
+  if (mapMode !== "route" || draftRouteWaypoints.length < 2) {
+    draftRouteIsValid = false;
+    updateMapModeUI();
+    return;
+  }
+
+  cancelRouteRequest();
+  routeRequestController = new AbortController();
+
+  const mySerial = ++routeRequestSerial;
+  setRouteBusy(true);
+
+  const coords = draftRouteWaypoints
+    .map(point => `${point.lng.toFixed(6)},${point.lat.toFixed(6)}`)
+    .join(";");
+
+  const url =
+    `${OSRM_ROUTE_BASE}/${coords}` +
+    `?overview=full&geometries=geojson&steps=false&alternatives=false`;
+
+  try {
+    const response = await fetch(url, {
+      signal: routeRequestController.signal,
+      cache: "default"
+    });
+
+    if (!response.ok) throw new Error(`OSRM ${response.status}`);
+
+    const result = await response.json();
+    if (mySerial !== routeRequestSerial) return;
+
+    const route = result?.routes?.[0];
+    const coordinates = route?.geometry?.coordinates;
+
+    if (result?.code !== "Ok" || !Array.isArray(coordinates) || coordinates.length < 2) {
+      throw new Error("NoRoute");
+    }
+
+    draftRouteGeometry = coordinates.map(([lng, lat]) => [lat, lng]);
+    draftRouteDistance = Number(route.distance) || 0;
+    draftRouteDuration = Number(route.duration) || 0;
+    draftRouteIsValid = true;
+
+    renderDraftRoadRoute();
+    setRouteBusy(false);
+    renderDraftRouteSidebar();
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+
+    console.warn("No se pudo calcular la ruta por calles:", error);
+
+    draftRouteGeometry = [];
+    draftRouteDistance = 0;
+    draftRouteDuration = 0;
+    draftRouteIsValid = false;
+
+    renderDraftGuide();
+    routeStats.textContent = "SIN RUTA";
+    saveMapRoute.disabled = true;
+
+    setMapHint("route", "NO SE PUDO CALCULAR", "Mové una parada o probá con otro lugar.");
+  } finally {
+    if (mySerial === routeRequestSerial) routeRequestController = null;
+  }
+}
+
+function removeDraftWaypoint(index) {
+  if (index < 0 || index >= draftRouteWaypoints.length) return;
+
+  cancelRouteRequest();
+
+  draftRouteWaypoints.splice(index, 1);
+  draftRouteGeometry = [];
+  draftRouteDistance = 0;
+  draftRouteDuration = 0;
+  draftRouteIsValid = false;
+
+  if (mapDraftRouteLayer && legacyMapInstance) {
+    legacyMapInstance.removeLayer(mapDraftRouteLayer);
+    mapDraftRouteLayer = null;
+  }
+
+  renderDraftWaypointMarkers();
+  renderDraftGuide();
+  renderDraftRouteSidebar();
+  updateMapModeUI();
+
+  if (draftRouteWaypoints.length >= 2) {
+    scheduleRouteCalculation(100);
+  }
+}
+
+function clearDraftRoute({ keepMode = false } = {}) {
+  cancelRouteRequest();
+
+  draftRouteWaypoints = [];
+  draftRouteGeometry = [];
+  draftRouteDistance = 0;
+  draftRouteDuration = 0;
+  draftRouteIsValid = false;
+  routeNameInput.value = "";
+
+  if (mapDraftWaypointLayer) mapDraftWaypointLayer.clearLayers();
+
+  if (mapDraftRouteLayer && legacyMapInstance) {
+    legacyMapInstance.removeLayer(mapDraftRouteLayer);
+    mapDraftRouteLayer = null;
+  }
+
+  if (mapDraftGuideLayer && legacyMapInstance) {
+    legacyMapInstance.removeLayer(mapDraftGuideLayer);
+    mapDraftGuideLayer = null;
+  }
