@@ -1,0 +1,285 @@
+ation = 0;
+let draftRouteIsValid = false;
+let routeRequestController = null;
+let routeRequestTimer = null;
+let routeRequestSerial = 0;
+let mapResizeTimer = null;
+
+let searchRequestController = null;
+let lastSearchRequestAt = 0;
+let activeSearchFeatures = [];
+const searchMemoryCache = new Map();
+
+function sanitizeColor(value) {
+  const color = String(value || "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : "#111111";
+}
+
+function normalizeMapData(value) {
+  const safe = value && typeof value === "object" ? value : {};
+
+  const groups = Array.isArray(safe.groups)
+    ? safe.groups.map(group => ({
+        ...group,
+        id: String(group.id || makeMapObjectId("group")),
+        name: String(group.name || "Grupo"),
+        color: sanitizeColor(group.color)
+      }))
+    : [];
+
+  const validGroupIds = new Set(groups.map(group => group.id));
+
+  const points = Array.isArray(safe.points)
+    ? safe.points.map(point => ({
+        ...point,
+        groupId: validGroupIds.has(point.groupId) ? point.groupId : ""
+      }))
+    : [];
+
+  return {
+    groups,
+    points,
+    routes: Array.isArray(safe.routes) ? safe.routes : []
+  };
+}
+
+function loadMapData() {
+  try {
+    return normalizeMapData(JSON.parse(localStorage.getItem(MAP_STORAGE_KEY) || "null"));
+  } catch (error) {
+    return { groups: [], points: [], routes: [] };
+  }
+}
+
+function saveMapData() {
+  localStorage.setItem(MAP_STORAGE_KEY, JSON.stringify(v17MapData));
+  mapSyncLabel.textContent = "GUARDANDO PARA EL STAFF…";
+
+  try {
+    if (typeof mapData !== "undefined") {
+      mapData = normalizeMapData(v17MapData);
+    }
+    if (typeof scheduleSharedSection === "function") {
+      scheduleSharedSection("map");
+    }
+  } catch (error) {
+    console.warn("No se pudo sincronizar Safari Map V17:", error);
+  }
+
+  setTimeout(() => {
+    if (mapSyncLabel) mapSyncLabel.textContent = "SINCRONIZADO CON STAFF";
+  }, 900);
+}
+
+function makeMapObjectId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function getCurrentStaffDisplayName() {
+  const currentId = localStorage.getItem(STAFF_SESSION_KEY);
+  return staffProfiles.find(profile => profile.id === currentId)?.name || "Staff";
+}
+
+function authorLabel(value) {
+  return String(value || "").trim() || "Staff";
+}
+
+function getMapGroup(groupId) {
+  return v17MapData.groups.find(group => group.id === groupId) || null;
+}
+
+function getPointColor(point) {
+  return sanitizeColor(getMapGroup(point?.groupId)?.color || "#111111");
+}
+
+function getPointGroupName(point) {
+  return getMapGroup(point?.groupId)?.name || "Sin grupo";
+}
+
+function formatDistance(meters) {
+  const value = Number(meters) || 0;
+  if (value < 1000) return `${Math.round(value)} m`;
+  return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)} km`;
+}
+
+function formatDuration(seconds) {
+  const mins = Math.max(1, Math.round((Number(seconds) || 0) / 60));
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const rest = mins % 60;
+  return rest ? `${h} h ${rest} min` : `${h} h`;
+}
+
+function getRouteGeometry(route) {
+  if (Array.isArray(route.geometry) && route.geometry.length >= 2) return route.geometry;
+  if (Array.isArray(route.coordinates) && route.coordinates.length >= 2) return route.coordinates;
+  return [];
+}
+
+function createReferenceIcon(point) {
+  const color = getPointColor(point);
+  return L.divIcon({
+    className: "",
+    html: `<div class="legacy-reference-icon-v17" style="--point-color:${color}"></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -11]
+  });
+}
+
+function createRouteWaypointIcon(index) {
+  const label = index === 0 ? "A" : String(index + 1);
+  return L.divIcon({
+    className: "",
+    html: `<div class="legacy-route-waypoint">${label}</div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+  });
+}
+
+function createUserLocationIcon() {
+  return L.divIcon({
+    className: "",
+    html: '<div class="legacy-user-location"></div>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
+}
+
+function createSearchLocationIcon() {
+  return L.divIcon({
+    className: "",
+    html: '<div class="legacy-search-location"></div>',
+    iconSize: [28, 28],
+    iconAnchor: [14, 24],
+    popupAnchor: [0, -22]
+  });
+}
+
+function setMapHint(kind, title, text, busy = false) {
+  mapActionHint.classList.toggle("point", kind === "point");
+  mapActionHint.classList.toggle("route", kind === "route");
+  mapActionHint.classList.toggle("busy", busy);
+  mapActionHintTitle.textContent = title;
+  mapActionHintText.textContent = text;
+}
+
+function openMapSidebarMobile() {
+  mapSidebar.classList.add("mobile-open");
+  mapSidebarToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeMapSidebarMobileFn() {
+  mapSidebar.classList.remove("mobile-open");
+  mapSidebarToggle.setAttribute("aria-expanded", "false");
+}
+
+function initLegacyMap() {
+  if (legacyMapInstance || !legacyMapEl) return;
+
+  if (!window.L) {
+    mapLoadError.classList.add("visible");
+    return;
+  }
+
+  try {
+    legacyMapInstance = L.map("legacyMap", {
+      preferCanvas: true,
+      zoomControl: true,
+      attributionControl: true,
+      zoomAnimation: true,
+      fadeAnimation: false,
+      markerZoomAnimation: true,
+      wheelDebounceTime: 35,
+      wheelPxPerZoomLevel: 85,
+      tap: true
+    }).setView([-25.2867, -57.5759], 12);
+
+    mapTileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      minZoom: 3,
+      keepBuffer: 3,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      detectRetina: false,
+      crossOrigin: true,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(legacyMapInstance);
+
+    mapPointsLayer = L.layerGroup().addTo(legacyMapInstance);
+    mapRoutesLayer = L.layerGroup().addTo(legacyMapInstance);
+    mapDraftWaypointLayer = L.layerGroup().addTo(legacyMapInstance);
+    mapUserLayer = L.layerGroup().addTo(legacyMapInstance);
+    mapSearchLayer = L.layerGroup().addTo(legacyMapInstance);
+
+    legacyMapInstance.on("click", handleLegacyMapClick);
+
+    renderStoredMapLayers();
+    renderMapSidebar();
+    renderPointGroupOptions();
+    updateMapModeUI();
+
+    setMapHint("explore", "MAPA LISTO", "Buscá un lugar o elegí PUNTO / RUTA.");
+  } catch (error) {
+    console.error("Error al iniciar Leaflet:", error);
+    mapLoadError.classList.add("visible");
+  }
+}
+
+function handleLegacyMapClick(event) {
+  const lat = Number(event.latlng.lat.toFixed(6));
+  const lng = Number(event.latlng.lng.toFixed(6));
+
+  if (mapMode === "point") {
+    pendingPointCoords = { lat, lng };
+    pendingPointSuggestedName = "";
+    pendingPointSuggestedGroupId = "";
+    openMapPointEditor();
+    return;
+  }
+
+  if (mapMode === "route") {
+    addDraftRouteWaypoint(lat, lng);
+  }
+}
+
+function renderStoredMapLayers() {
+  renderMapSidebar();
+
+  if (!legacyMapInstance || !window.L || !mapPointsLayer || !mapRoutesLayer) return;
+
+  mapPointsLayer.clearLayers();
+  mapRoutesLayer.clearLayers();
+
+  for (const route of v17MapData.routes) {
+    const geometry = getRouteGeometry(route);
+    if (geometry.length < 2) continue;
+
+    const line = L.polyline(geometry, {
+      color: "#111111",
+      weight: 5,
+      opacity: .76,
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: true
+    }).addTo(mapRoutesLayer);
+
+    const creator = authorLabel(route.createdBy);
+    const meta = [
+      route.distance ? formatDistance(route.distance) : "",
+      route.duration ? formatDuration(route.duration) : ""
+    ].filter(Boolean).join(" · ");
+
+    line.bindPopup(
+      `<div class="legacy-map-popup">` +
+        `<strong>${escapeHtml(route.name || "Ruta")}</strong>` +
+        (meta ? `<span>${escapeHtml(meta)}</span>` : "") +
+        `<span class="added-by">Añadida por ${escapeHtml(creator)}</span>` +
+      `</div>`
+    );
+  }
+
+  for (const point of v17MapData.points) {
+    const lat = Number(point.lat);
+    const lng = Number(point.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) c
