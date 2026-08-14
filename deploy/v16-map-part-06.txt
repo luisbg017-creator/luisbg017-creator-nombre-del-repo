@@ -1,0 +1,271 @@
+ locateMapUser.disabled = true;
+  setMapHint("explore", "BUSCANDO UBICACIÓN", "Esperando permiso del dispositivo.", true);
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      mapUserLayer.clearLayers();
+
+      L.marker([lat, lng], {
+        icon: createUserLocationIcon(),
+        keyboard: false
+      }).addTo(mapUserLayer)
+        .bindTooltip("Tu ubicación", { direction: "top" });
+
+      legacyMapInstance.flyTo([lat, lng], 16, { duration: .5 });
+
+      locateMapUser.disabled = false;
+      updateMapModeUI();
+    },
+    () => {
+      locateMapUser.disabled = false;
+      setMapHint("explore", "NO SE PUDO OBTENER", "Revisá el permiso de ubicación del navegador.");
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 7000,
+      maximumAge: 30000
+    }
+  );
+}
+
+mapPointEditorForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const name = mapPointNameInput.value.trim();
+  if (!name || !pendingPointCoords) return;
+
+  if (editingMapPointId) {
+    const point = v16MapData.points.find(item => item.id === editingMapPointId);
+
+    if (point) {
+      point.name = name;
+      point.updatedAt = new Date().toISOString();
+    }
+  } else {
+    v16MapData.points.push({
+      id: makeMapObjectId("point"),
+      name,
+      lat: pendingPointCoords.lat,
+      lng: pendingPointCoords.lng,
+      createdBy: getCurrentStaffDisplayName(),
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  saveMapData();
+  hideMapPointEditor();
+  renderStoredMapLayers();
+});
+
+mapPointsList.addEventListener("click", event => {
+  const button = event.target.closest("button[data-map-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+  const action = button.dataset.mapAction;
+
+  if (action === "focus-point") focusMapPoint(id);
+  if (action === "route-add-point") useReferencePointInRoute(id);
+
+  if (action === "edit-point") {
+    const point = v16MapData.points.find(item => item.id === id);
+    if (!point) return;
+
+    pendingPointCoords = {
+      lat: Number(point.lat),
+      lng: Number(point.lng)
+    };
+
+    openMapPointEditor(id);
+  }
+
+  if (action === "delete-point") {
+    const point = v16MapData.points.find(item => item.id === id);
+    if (!point) return;
+
+    if (!confirm(`¿Quitar el punto "${point.name}"?`)) return;
+
+    v16MapData.points = v16MapData.points.filter(item => item.id !== id);
+    saveMapData();
+    renderStoredMapLayers();
+  }
+});
+
+mapRoutesList.addEventListener("click", event => {
+  const button = event.target.closest("button[data-map-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+  const route = v16MapData.routes.find(item => item.id === id);
+  if (!route) return;
+
+  if (button.dataset.mapAction === "focus-route") {
+    focusMapRoute(id);
+  }
+
+  if (button.dataset.mapAction === "rename-route") {
+    const next = prompt("Nombre de la ruta:", route.name || "Ruta");
+    if (next == null) return;
+
+    const name = next.trim();
+    if (!name) return;
+
+    route.name = name;
+    route.updatedAt = new Date().toISOString();
+
+    saveMapData();
+    renderStoredMapLayers();
+  }
+
+  if (button.dataset.mapAction === "delete-route") {
+    if (!confirm(`¿Quitar la ruta "${route.name}"?`)) return;
+
+    v16MapData.routes = v16MapData.routes.filter(item => item.id !== id);
+    saveMapData();
+    renderStoredMapLayers();
+  }
+});
+
+mapDraftStopsList.addEventListener("click", event => {
+  const button = event.target.closest("button[data-draft-action='remove']");
+  if (!button) return;
+
+  removeDraftWaypoint(Number(button.dataset.index));
+});
+
+addMapPoint.addEventListener("click", () => {
+  closeMapSidebarMobileFn();
+
+  if (mapMode === "point") {
+    setMapMode("explore");
+  } else {
+    setMapMode("point");
+  }
+});
+
+startMapRoute.addEventListener("click", () => {
+  closeMapSidebarMobileFn();
+
+  if (mapMode === "route") {
+    setMapMode("explore");
+    return;
+  }
+
+  clearDraftRoute({ keepMode: true });
+  mapMode = "route";
+  updateMapModeUI();
+  renderMapSidebar();
+});
+
+locateMapUser.addEventListener("click", locateCurrentUser);
+
+mapSidebarToggle.addEventListener("click", () => {
+  if (mapSidebar.classList.contains("mobile-open")) {
+    closeMapSidebarMobileFn();
+  } else {
+    openMapSidebarMobile();
+  }
+});
+
+closeMapSidebarMobile.addEventListener("click", closeMapSidebarMobileFn);
+
+undoMapRoute.addEventListener("click", () => {
+  if (!draftRouteWaypoints.length) return;
+  removeDraftWaypoint(draftRouteWaypoints.length - 1);
+});
+
+clearMapRoute.addEventListener("click", () => {
+  if (!draftRouteWaypoints.length) return;
+
+  clearDraftRoute({ keepMode: true });
+  mapMode = "route";
+  updateMapModeUI();
+  renderMapSidebar();
+});
+
+cancelMapMode.addEventListener("click", () => {
+  setMapMode("explore");
+});
+
+saveMapRoute.addEventListener("click", () => {
+  if (!draftRouteIsValid ||
+      draftRouteGeometry.length < 2 ||
+      draftRouteWaypoints.length < 2) return;
+
+  const name = routeNameInput.value.trim() || `Ruta ${v16MapData.routes.length + 1}`;
+
+  v16MapData.routes.push({
+    id: makeMapObjectId("route"),
+    name,
+    waypoints: draftRouteWaypoints.map(point => ({
+      lat: point.lat,
+      lng: point.lng,
+      label: point.label || ""
+    })),
+    geometry: draftRouteGeometry.map(coord => [...coord]),
+    distance: draftRouteDistance,
+    duration: draftRouteDuration,
+    createdBy: getCurrentStaffDisplayName(),
+    createdAt: new Date().toISOString()
+  });
+
+  saveMapData();
+  clearDraftRoute();
+  renderStoredMapLayers();
+
+  setMapHint("explore", "RUTA GUARDADA", `Añadida por ${getCurrentStaffDisplayName()}.`);
+});
+
+openLegacyMap.addEventListener("click", showLegacyMap);
+closeLegacyMap.addEventListener("click", hideLegacyMap);
+mapBackdrop.addEventListener("click", hideLegacyMap);
+
+closeMapPointEditor.addEventListener("click", () => hideMapPointEditor());
+cancelMapPointEditor.addEventListener("click", () => hideMapPointEditor());
+mapPointEditorBackdrop.addEventListener("click", () => hideMapPointEditor());
+
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape") return;
+
+  if (mapPointEditorModal.classList.contains("open")) {
+    hideMapPointEditor();
+    return;
+  }
+
+  if (mapSidebar.classList.contains("mobile-open")) {
+    closeMapSidebarMobileFn();
+    return;
+  }
+
+  if (mapModal.classList.contains("open")) {
+    if (mapMode !== "explore") {
+      setMapMode("explore");
+      return;
+    }
+
+    hideLegacyMap();
+  }
+});
+
+window.addEventListener("resize", () => {
+  if (!mapModal.classList.contains("open") || !legacyMapInstance) return;
+
+  if (window.innerWidth > 820) {
+    closeMapSidebarMobileFn();
+  }
+
+  if (mapResizeTimer) clearTimeout(mapResizeTimer);
+
+  mapResizeTimer = setTimeout(() => {
+    legacyMapInstance.invalidateSize({ pan: false, animate: false });
+  }, 100);
+});
+
+
+// Refresh V16 whenever the existing shared-state synchronizer receives map changes.
+try {
+  renderLegacyMap = function () {
+    try {
