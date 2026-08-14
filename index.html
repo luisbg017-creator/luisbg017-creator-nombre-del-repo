@@ -3635,6 +3635,163 @@ body.leaders-open {
   }
 }
 
+
+
+/* COMODINES CRUD + SHARED */
+.comodines-toolbar {
+  padding: 14px 22px;
+  border-bottom: 1px solid rgba(0,0,0,.13);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.comodines-toolbar > div { display: grid; gap: 4px; }
+.comodines-toolbar span {
+  font-size: .5rem;
+  letter-spacing: .16em;
+  color: #777;
+}
+.comodines-toolbar strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .74rem;
+  letter-spacing: .05em;
+}
+.add-comodin-btn,
+#addComodinEmptyBtn {
+  border: 1px solid #050505;
+  background: #050505;
+  color: #fff;
+  padding: 10px 13px;
+  font-size: .58rem;
+  letter-spacing: .1em;
+  font-weight: 800;
+  cursor: pointer;
+}
+.comodin-item {
+  grid-template-columns: 50px minmax(0,1fr) minmax(190px,auto);
+}
+.comodin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.comodin-edit-btn,
+.comodin-delete-btn {
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  padding: 8px 10px;
+  font-size: .5rem;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+.comodin-delete-btn { opacity: .72; }
+.comodines-empty {
+  display: none;
+  padding: 40px 22px;
+  text-align: center;
+}
+.comodines-empty.visible { display: grid; place-items: center; gap: 15px; }
+
+.comodin-editor-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  display: none;
+  place-items: center;
+  padding: 20px;
+}
+.comodin-editor-modal.open { display: grid; }
+.comodin-editor-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(10px);
+}
+.comodin-editor-window {
+  position: relative;
+  width: min(620px, 96vw);
+  background: #f2f2ef;
+  color: #050505;
+  box-shadow: 0 30px 100px rgba(0,0,0,.35);
+}
+.comodin-editor-window header {
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(0,0,0,.14);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.comodin-editor-window header p {
+  margin: 0 0 4px;
+  font-size: .5rem;
+  letter-spacing: .17em;
+  color: #777;
+}
+.comodin-editor-window header h4 { margin: 0; font-size: 1.35rem; }
+#closeComodinEditor {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #050505;
+  background: transparent;
+  font-size: 1.45rem;
+  cursor: pointer;
+}
+#comodinEditorForm {
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+#comodinEditorForm label { display: grid; gap: 7px; }
+#comodinEditorForm label span {
+  font-size: .52rem;
+  letter-spacing: .14em;
+  font-weight: 800;
+}
+#comodinEditorForm textarea,
+#comodinEditorForm input {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.3);
+  background: #fff;
+  color: #050505;
+  padding: 12px;
+  outline: none;
+}
+.comodin-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.comodin-editor-actions button {
+  border: 1px solid #050505;
+  background: transparent;
+  padding: 10px 14px;
+  font-size: .55rem;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+.comodin-editor-actions button[type="submit"] {
+  background: #050505;
+  color: #fff;
+}
+body.comodin-editor-open { overflow: hidden; }
+
+@media (max-width: 700px) {
+  .comodines-toolbar { align-items: stretch; flex-direction: column; }
+  .add-comodin-btn { width: 100%; }
+  .comodin-item {
+    grid-template-columns: 38px 1fr;
+    padding: 14px 0;
+  }
+  .comodin-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+  .comodin-found-btn { width: 100%; }
+}
+
 </style>
 </head>
 <body>
@@ -3913,92 +4070,53 @@ body.leaders-open {
           <strong>COMODINES</strong>
         </div>
 
-        <div class="comodines-list">
-          <article class="comodin-item" data-comodin-id="1">
-            <span class="comodin-index">01</span>
-            <div>
-              <p>Tizi, Rami y Bolaños ya están ocupados</p>
-              <div class="emoji-row">🦹‍♀️ &nbsp; 🔜</div>
-            </div>
-            <button class="comodin-found-btn" type="button">
-              <span class="found-label">MARCAR COMO ENCONTRADO</span>
-              <span class="found-icon">✓</span>
-            </button>
-          </article>
+        <div class="comodines-toolbar">
+          <div>
+            <span>LISTA EDITABLE</span>
+            <strong id="comodinesCount">7 COMODINES</strong>
+          </div>
+          <button id="addComodinBtn" class="add-comodin-btn" type="button">＋ AÑADIR COMODÍN</button>
+        </div>
 
-          <article class="comodin-item" data-comodin-id="2">
-            <span class="comodin-index">02</span>
-            <div>
-              <p>A12</p>
-              <div class="emoji-row">🧾 &nbsp; 💕</div>
-            </div>
-            <button class="comodin-found-btn" type="button">
-              <span class="found-label">MARCAR COMO ENCONTRADO</span>
-              <span class="found-icon">✓</span>
-            </button>
-          </article>
+        <div class="comodines-list" id="comodinesList"></div>
 
-          <article class="comodin-item" data-comodin-id="3">
-            <span class="comodin-index">03</span>
-            <div>
-              <div class="emoji-row large">🦹‍♀️ &nbsp; 6️⃣ &nbsp; 🗿</div>
-            </div>
-            <button class="comodin-found-btn" type="button">
-              <span class="found-label">MARCAR COMO ENCONTRADO</span>
-              <span class="found-icon">✓</span>
-            </button>
-          </article>
-
-          <article class="comodin-item" data-comodin-id="4">
-            <span class="comodin-index">04</span>
-            <div>
-              <p>el abecedario y marcar las letras brc/vrs</p>
-            </div>
-            <button class="comodin-found-btn" type="button">
-              <span class="found-label">MARCAR COMO ENCONTRADO</span>
-              <span class="found-icon">✓</span>
-            </button>
-          </article>
-
-          <article class="comodin-item" data-comodin-id="5">
-            <span class="comodin-index">05</span>
-            <div>
-              <p>100 🛡️</p>
-            </div>
-            <button class="comodin-found-btn" type="button">
-              <span class="found-label">MARCAR COMO ENCONTRADO</span>
-              <span class="found-icon">✓</span>
-            </button>
-          </article>
-
-          <article class="comodin-item" data-comodin-id="6">
-            <span class="comodin-index">06</span>
-            <div>
-              <div class="emoji-row large">🧂 &nbsp; 🤜🏻</div>
-            </div>
-            <button class="comodin-found-btn" type="button">
-              <span class="found-label">MARCAR COMO ENCONTRADO</span>
-              <span class="found-icon">✓</span>
-            </button>
-          </article>
-
-          <article class="comodin-item" data-comodin-id="7">
-            <span class="comodin-index">07</span>
-            <div>
-              <p>te gusta nio</p>
-              <div class="emoji-row">🍇 &nbsp; 🏞️</div>
-            </div>
-            <button class="comodin-found-btn" type="button">
-              <span class="found-label">MARCAR COMO ENCONTRADO</span>
-              <span class="found-icon">✓</span>
-            </button>
-          </article>
+        <div class="comodines-empty" id="comodinesEmpty">
+          <p>No hay comodines cargados.</p>
+          <button id="addComodinEmptyBtn" type="button">＋ AÑADIR COMODÍN</button>
         </div>
 
         <footer class="folder-footer">
-          <span>7 ELEMENTOS</span>
+          <span id="comodinesFooterCount">7 ELEMENTOS</span>
           <span>LEGACY STAFF ARCHIVE</span>
         </footer>
+      </section>
+    </div>
+
+    <div class="comodin-editor-modal" id="comodinEditorModal" aria-hidden="true">
+      <div class="comodin-editor-backdrop" id="comodinEditorBackdrop"></div>
+      <section class="comodin-editor-window" role="dialog" aria-modal="true" aria-labelledby="comodinEditorTitle">
+        <header>
+          <div>
+            <p id="comodinEditorMode">NUEVO COMODÍN</p>
+            <h4 id="comodinEditorTitle">COMODÍN</h4>
+          </div>
+          <button id="closeComodinEditor" aria-label="Cerrar editor">×</button>
+        </header>
+
+        <form id="comodinEditorForm">
+          <label>
+            <span>TEXTO / PISTA</span>
+            <textarea id="comodinTextInput" maxlength="240" rows="4" placeholder="Escribí el comodín..." required></textarea>
+          </label>
+          <label>
+            <span>EMOJIS / DETALLE OPCIONAL</span>
+            <input id="comodinEmojiInput" type="text" maxlength="120" placeholder="Ej.: 🧾 💕" />
+          </label>
+          <div class="comodin-editor-actions">
+            <button type="button" id="cancelComodinEditor">CANCELAR</button>
+            <button type="submit">GUARDAR</button>
+          </div>
+        </form>
       </section>
     </div>
 
@@ -4644,10 +4762,20 @@ const defaultStaffProfiles = [
   { id: "staff-3", name: "Tizi", description: "Staff · descripción editable" },
   { id: "staff-4", name: "Rafa Martínez", description: "Staff · descripción editable" },
   { id: "staff-5", name: "Mati", description: "Staff · descripción editable" },
-  { id: "staff-6", name: "Staff 6", description: "Editá este perfil con el nombre y función del sexto staff" }
+  { id: "staff-6", name: "Johana", description: "Staff · descripción editable" }
 ];
 
 let staffProfiles = loadStaffProfiles();
+{
+  const sixthStaff = staffProfiles.find(profile => profile.id === "staff-6");
+  if (sixthStaff && (!sixthStaff.name || sixthStaff.name === "Staff 6")) {
+    sixthStaff.name = "Johana";
+    sixthStaff.description = sixthStaff.description === "Editá este perfil con el nombre y función del sexto staff"
+      ? "Staff · descripción editable"
+      : (sixthStaff.description || "Staff · descripción editable");
+    localStorage.setItem(STAFF_PROFILES_KEY, JSON.stringify(staffProfiles));
+  }
+}
 let staffEmailBindings = loadStaffEmailBindings();
 let selectedStaffId = null;
 let editingStaffId = null;
@@ -4663,6 +4791,7 @@ function loadStaffProfiles() {
 
 function saveStaffProfiles() {
   localStorage.setItem(STAFF_PROFILES_KEY, JSON.stringify(staffProfiles));
+  scheduleSharedSection("profiles");
 }
 
 function loadStaffEmailBindings() {
@@ -5005,40 +5134,192 @@ document.addEventListener("keydown", (event) => {
 });
 
 
-// Persistent "found" state for comodines.
-const comodinItems = document.querySelectorAll(".comodin-item");
 
-function loadFoundComodines() {
-  const stored = JSON.parse(localStorage.getItem("legacyFoundComodines") || "[]");
-  comodinItems.forEach((item) => {
-    const id = item.dataset.comodinId;
-    if (stored.includes(id)) {
-      item.classList.add("found");
-    }
-  });
+// =========================
+// COMODINES · CRUD + ESTADO
+// =========================
+const COMODINES_STORAGE_KEY = "legacyComodinesV2";
+const defaultComodinesData = [
+  { id: "comodin-1", text: "Tizi, Rami y Bolaños ya están ocupados", emoji: "🦹‍♀️ 🔜", found: false },
+  { id: "comodin-2", text: "A12", emoji: "🧾 💕", found: false },
+  { id: "comodin-3", text: "", emoji: "🦹‍♀️ 6️⃣ 🗿", found: false },
+  { id: "comodin-4", text: "el abecedario y marcar las letras brc/vrs", emoji: "", found: false },
+  { id: "comodin-5", text: "100 🛡️", emoji: "", found: false },
+  { id: "comodin-6", text: "", emoji: "🧂 🤜🏻", found: false },
+  { id: "comodin-7", text: "te gusta nio", emoji: "🍇 🏞️", found: false }
+];
+
+const comodinesList = document.getElementById("comodinesList");
+const comodinesEmpty = document.getElementById("comodinesEmpty");
+const comodinesCount = document.getElementById("comodinesCount");
+const comodinesFooterCount = document.getElementById("comodinesFooterCount");
+const addComodinBtn = document.getElementById("addComodinBtn");
+const addComodinEmptyBtn = document.getElementById("addComodinEmptyBtn");
+
+const comodinEditorModal = document.getElementById("comodinEditorModal");
+const comodinEditorBackdrop = document.getElementById("comodinEditorBackdrop");
+const comodinEditorForm = document.getElementById("comodinEditorForm");
+const comodinEditorMode = document.getElementById("comodinEditorMode");
+const comodinTextInput = document.getElementById("comodinTextInput");
+const comodinEmojiInput = document.getElementById("comodinEmojiInput");
+const closeComodinEditor = document.getElementById("closeComodinEditor");
+const cancelComodinEditor = document.getElementById("cancelComodinEditor");
+
+let comodinesData = loadComodinesData();
+let editingComodinId = null;
+
+function cloneDefaultComodines() {
+  return JSON.parse(JSON.stringify(defaultComodinesData));
 }
 
-function saveFoundComodines() {
-  const foundIds = [...comodinItems]
-    .filter((item) => item.classList.contains("found"))
-    .map((item) => item.dataset.comodinId);
+function loadComodinesData() {
+  try {
+    const current = JSON.parse(localStorage.getItem(COMODINES_STORAGE_KEY) || "null");
+    if (Array.isArray(current)) return current;
 
-  localStorage.setItem("legacyFoundComodines", JSON.stringify(foundIds));
+    const legacyFound = JSON.parse(localStorage.getItem("legacyFoundComodines") || "[]");
+    const migrated = cloneDefaultComodines().map((item, index) => ({
+      ...item,
+      found: legacyFound.includes(String(index + 1))
+    }));
+    localStorage.setItem(COMODINES_STORAGE_KEY, JSON.stringify(migrated));
+    return migrated;
+  } catch (error) {
+    return cloneDefaultComodines();
+  }
 }
 
-comodinItems.forEach((item) => {
-  const button = item.querySelector(".comodin-found-btn");
+function saveComodinesData() {
+  localStorage.setItem(COMODINES_STORAGE_KEY, JSON.stringify(comodinesData));
+  scheduleSharedSection("comodines");
+}
+
+function renderComodines() {
+  comodinesList.innerHTML = comodinesData.map((item, index) => `
+    <article class="comodin-item ${item.found ? "found" : ""}" data-comodin-id="${escapeHtml(item.id)}">
+      <span class="comodin-index">${String(index + 1).padStart(2, "0")}</span>
+      <div class="comodin-copy">
+        ${item.text ? `<p>${escapeHtml(item.text)}</p>` : ""}
+        ${item.emoji ? `<div class="emoji-row ${item.text ? "" : "large"}">${escapeHtml(item.emoji)}</div>` : ""}
+      </div>
+      <div class="comodin-actions">
+        <button class="comodin-found-btn" data-action="toggle-found" data-id="${escapeHtml(item.id)}" type="button">
+          <span class="found-label">${item.found ? "ENCONTRADO" : "MARCAR COMO ENCONTRADO"}</span>
+          <span class="found-icon">✓</span>
+        </button>
+        <button class="comodin-edit-btn" data-action="edit" data-id="${escapeHtml(item.id)}" type="button">EDITAR</button>
+        <button class="comodin-delete-btn" data-action="delete" data-id="${escapeHtml(item.id)}" type="button">QUITAR</button>
+      </div>
+    </article>
+  `).join("");
+
+  const total = comodinesData.length;
+  comodinesCount.textContent = `${total} ${total === 1 ? "COMODÍN" : "COMODINES"}`;
+  comodinesFooterCount.textContent = `${total} ${total === 1 ? "ELEMENTO" : "ELEMENTOS"}`;
+  comodinesEmpty.classList.toggle("visible", total === 0);
+  comodinesList.style.display = total ? "block" : "none";
+}
+
+function makeComodinId() {
+  return `comodin-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function openComodinEditor(id = null) {
+  editingComodinId = id;
+  const item = id ? comodinesData.find(entry => entry.id === id) : null;
+
+  comodinEditorMode.textContent = item ? "EDITAR COMODÍN" : "NUEVO COMODÍN";
+  comodinTextInput.value = item?.text || "";
+  comodinEmojiInput.value = item?.emoji || "";
+
+  comodinEditorModal.classList.add("open");
+  comodinEditorModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("comodin-editor-open");
+  setTimeout(() => comodinTextInput.focus(), 70);
+}
+
+function hideComodinEditor() {
+  comodinEditorModal.classList.remove("open");
+  comodinEditorModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("comodin-editor-open");
+  editingComodinId = null;
+  comodinEditorForm.reset();
+}
+
+function deleteComodin(id) {
+  const item = comodinesData.find(entry => entry.id === id);
+  if (!item) return;
+  const label = item.text || item.emoji || "este comodín";
+  if (!confirm(`¿Quitar "${label}"?`)) return;
+
+  comodinesData = comodinesData.filter(entry => entry.id !== id);
+  saveComodinesData();
+  renderComodines();
+}
+
+comodinesList.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
   if (!button) return;
 
-  button.addEventListener("click", (event) => {
-    event.stopPropagation();
-    item.classList.toggle("found");
-    saveFoundComodines();
-  });
+  const id = button.dataset.id;
+  const action = button.dataset.action;
+  const item = comodinesData.find(entry => entry.id === id);
+  if (!item) return;
+
+  if (action === "toggle-found") {
+    item.found = !item.found;
+    item.updatedAt = new Date().toISOString();
+    saveComodinesData();
+    renderComodines();
+  }
+
+  if (action === "edit") openComodinEditor(id);
+  if (action === "delete") deleteComodin(id);
 });
 
-loadFoundComodines();
+addComodinBtn.addEventListener("click", () => openComodinEditor());
+addComodinEmptyBtn.addEventListener("click", () => openComodinEditor());
 
+comodinEditorForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const text = comodinTextInput.value.trim();
+  const emoji = comodinEmojiInput.value.trim();
+  if (!text && !emoji) return;
+
+  if (editingComodinId) {
+    const item = comodinesData.find(entry => entry.id === editingComodinId);
+    if (item) {
+      item.text = text;
+      item.emoji = emoji;
+      item.updatedAt = new Date().toISOString();
+    }
+  } else {
+    comodinesData.push({
+      id: makeComodinId(),
+      text,
+      emoji,
+      found: false,
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  saveComodinesData();
+  hideComodinEditor();
+  renderComodines();
+});
+
+closeComodinEditor.addEventListener("click", hideComodinEditor);
+cancelComodinEditor.addEventListener("click", hideComodinEditor);
+comodinEditorBackdrop.addEventListener("click", hideComodinEditor);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && comodinEditorModal.classList.contains("open")) {
+    hideComodinEditor();
+  }
+});
+
+renderComodines();
 
 const cronogramaModal = document.getElementById("cronogramaModal");
 const openCronograma = document.getElementById("openCronograma");
@@ -5945,6 +6226,7 @@ function loadArchivoData() {
 
 function saveArchivoData() {
   localStorage.setItem(ARCHIVO_STORAGE_KEY, JSON.stringify(archivoData));
+  scheduleSharedSection("archivo");
 }
 
 function categoryLabel(category) {
@@ -6301,6 +6583,7 @@ function loadScoreTeams() {
 
 function saveScoreTeams() {
   localStorage.setItem(SCORE_TABLE_KEY, JSON.stringify(scoreTeams));
+  scheduleSharedSection("scores");
 }
 
 function getTeamById(id) {
@@ -6729,6 +7012,7 @@ function loadLeadersData() {
 
 function saveLeadersData() {
   localStorage.setItem(LEADERS_STORAGE_KEY, JSON.stringify(leadersData));
+  scheduleSharedSection("leaders");
 }
 
 function renderLeaders() {
@@ -6888,6 +7172,161 @@ document.addEventListener("keydown", (event) => {
 });
 
 renderLeaders();
+
+
+
+// =========================
+// ESTADO COMPARTIDO · SUPABASE
+// =========================
+const SHARED_SUPABASE_URL = "https://sqxcygylcxlsigcmawma.supabase.co";
+const SHARED_SUPABASE_KEY = "sb_publishable_SdZBbhB1onHQHFB-XFX3PQ_rsfgL7Af";
+const SHARED_SECTIONS = ["profiles", "comodines", "scores", "archivo", "leaders"];
+const sharedSaveTimers = new Map();
+const sharedDirtySections = new Set();
+let sharedSyncReady = false;
+let sharedPolling = false;
+
+function sharedHeaders(extra = {}) {
+  return {
+    "apikey": SHARED_SUPABASE_KEY,
+    "Authorization": `Bearer ${SHARED_SUPABASE_KEY}`,
+    ...extra
+  };
+}
+
+function snapshotSharedSection(section) {
+  if (section === "profiles") return staffProfiles;
+  if (section === "comodines") return comodinesData;
+  if (section === "scores") return scoreTeams;
+  if (section === "archivo") return archivoData;
+  if (section === "leaders") return leadersData;
+  return null;
+}
+
+function scheduleSharedSection(section) {
+  if (!SHARED_SECTIONS.includes(section)) return;
+  sharedDirtySections.add(section);
+
+  const previous = sharedSaveTimers.get(section);
+  if (previous) clearTimeout(previous);
+
+  const timer = setTimeout(() => {
+    sharedSaveTimers.delete(section);
+    if (sharedSyncReady) pushSharedSection(section);
+  }, 450);
+
+  sharedSaveTimers.set(section, timer);
+}
+
+async function pushSharedSection(section) {
+  const data = snapshotSharedSection(section);
+  if (data == null) return;
+
+  try {
+    const response = await fetch(
+      `${SHARED_SUPABASE_URL}/rest/v1/safari_shared_sections?on_conflict=section`,
+      {
+        method: "POST",
+        headers: sharedHeaders({
+          "Content-Type": "application/json",
+          "Prefer": "resolution=merge-duplicates,return=minimal"
+        }),
+        body: JSON.stringify({
+          section,
+          data,
+          updated_at: new Date().toISOString()
+        })
+      }
+    );
+
+    if (!response.ok) throw new Error(`Supabase ${response.status}`);
+    sharedDirtySections.delete(section);
+  } catch (error) {
+    console.warn("No se pudo guardar el estado compartido:", section, error);
+  }
+}
+
+function applySharedSection(section, data) {
+  if (sharedDirtySections.has(section) || data == null) return;
+
+  if (section === "profiles" && Array.isArray(data)) {
+    staffProfiles = data;
+    const sixth = staffProfiles.find(profile => profile.id === "staff-6");
+    if (sixth && (!sixth.name || sixth.name === "Staff 6")) sixth.name = "Johana";
+    localStorage.setItem(STAFF_PROFILES_KEY, JSON.stringify(staffProfiles));
+    renderStaffProfiles();
+    const currentId = localStorage.getItem(STAFF_SESSION_KEY);
+    const current = staffProfiles.find(profile => profile.id === currentId);
+    if (current) currentStaffName.textContent = current.name;
+  }
+
+  if (section === "comodines" && Array.isArray(data)) {
+    comodinesData = data;
+    localStorage.setItem(COMODINES_STORAGE_KEY, JSON.stringify(comodinesData));
+    renderComodines();
+  }
+
+  if (section === "scores" && Array.isArray(data)) {
+    scoreTeams = data;
+    localStorage.setItem(SCORE_TABLE_KEY, JSON.stringify(scoreTeams));
+    renderScoreTable();
+    if (currentSanctionsTeamId) renderSanctions();
+  }
+
+  if (section === "archivo" && data && typeof data === "object") {
+    archivoData = data;
+    localStorage.setItem(ARCHIVO_STORAGE_KEY, JSON.stringify(archivoData));
+    renderArchivo();
+  }
+
+  if (section === "leaders" && data && typeof data === "object") {
+    leadersData = data;
+    localStorage.setItem(LEADERS_STORAGE_KEY, JSON.stringify(leadersData));
+    renderLeaders();
+  }
+}
+
+async function fetchSharedSections({ bootstrap = false } = {}) {
+  if (sharedPolling) return;
+  sharedPolling = true;
+
+  try {
+    const query = encodeURIComponent(`(${SHARED_SECTIONS.join(",")})`);
+    const response = await fetch(
+      `${SHARED_SUPABASE_URL}/rest/v1/safari_shared_sections?select=section,data,updated_at&section=in.${query}`,
+      { headers: sharedHeaders() }
+    );
+
+    if (!response.ok) throw new Error(`Supabase ${response.status}`);
+    const rows = await response.json();
+    const found = new Set();
+
+    for (const row of rows) {
+      found.add(row.section);
+      applySharedSection(row.section, row.data);
+    }
+
+    if (bootstrap) {
+      sharedSyncReady = true;
+      for (const section of SHARED_SECTIONS) {
+        if (!found.has(section)) await pushSharedSection(section);
+      }
+    }
+  } catch (error) {
+    console.warn("Sincronización compartida temporalmente no disponible:", error);
+    if (bootstrap) sharedSyncReady = true;
+  } finally {
+    sharedPolling = false;
+  }
+}
+
+fetchSharedSections({ bootstrap: true });
+setInterval(() => fetchSharedSections(), 5000);
+
+window.addEventListener("online", () => {
+  fetchSharedSections();
+  for (const section of [...sharedDirtySections]) pushSharedSection(section);
+});
 
 </script>
 </body>
