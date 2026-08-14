@@ -1,0 +1,31 @@
+name: Materialize Safari Legacy v11
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/materialize-v11.yml'
+      - 'legacy-v11.html.gz'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Decompress v11 into index.html
+        run: gzip -dc legacy-v11.html.gz > index.html
+      - name: Commit direct HTML
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "index.html already matches v11"
+          else
+            git commit -m "Publish Safari 2026 Legacy v11 as direct HTML"
+            git push
+          fi
