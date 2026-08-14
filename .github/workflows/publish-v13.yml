@@ -1,0 +1,42 @@
+name: Publish Safari Legacy v13
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/publish-v13.yml'
+      - 'deploy/v13-patch-01.txt'
+      - 'deploy/v13-patch-02.txt'
+      - 'deploy/v13-patch-03.txt'
+      - 'deploy/v13-patch-04.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify v12 base
+        run: |
+          echo "168af24e85ce71dfb06cadc77c3b3552b2b8249afebb3b82ba3f0e0bac05542f  index.html" | sha256sum -c -
+
+      - name: Build exact v13
+        run: |
+          cat deploy/v13-patch-01.txt deploy/v13-patch-02.txt deploy/v13-patch-03.txt deploy/v13-patch-04.txt | tr -d '\r\n ' | base64 -d | gzip -dc > /tmp/v13.patch
+          git apply /tmp/v13.patch
+          test "$(wc -c < index.html)" -eq 212369
+          echo "a5c7fc105cd418cc14ad9bee725a9cb70e9d43cb13dbdba16fa5f4daf430862f  index.html" | sha256sum -c -
+          grep -q 'MAPA DE OPERACIONES' index.html
+          grep -q 'sharedRemoteVersions' index.html
+
+      - name: Commit v13
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Publish Safari 2026 Legacy v13"
+          git push
