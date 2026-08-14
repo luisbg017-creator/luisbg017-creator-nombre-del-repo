@@ -6,7 +6,10 @@ on:
     paths:
       - '.github/workflows/materialize-v11.yml'
       - 'payload/legacy-v11-01.txt'
-      - 'payload/legacy-v11-02.txt'
+      - 'payload/fix2-01.txt'
+      - 'payload/fix2-02.txt'
+      - 'payload/fix2-03.txt'
+      - 'payload/fix2-04.txt'
       - 'payload/legacy-v11-03.txt'
       - 'payload/legacy-v11-04.txt'
 
@@ -21,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Rebuild direct v11 HTML
         run: |
-          cat payload/legacy-v11-01.txt payload/legacy-v11-02.txt payload/legacy-v11-03.txt payload/legacy-v11-04.txt | tr -d '\r\n ' | base64 -d > /tmp/legacy-v11.html.gz
+          cat payload/legacy-v11-01.txt payload/fix2-01.txt payload/fix2-02.txt payload/fix2-03.txt payload/fix2-04.txt payload/legacy-v11-03.txt payload/legacy-v11-04.txt | tr -d '\r\n ' | base64 -d > /tmp/legacy-v11.html.gz
           gzip -t /tmp/legacy-v11.html.gz
           gzip -dc /tmp/legacy-v11.html.gz > index.html
           test -s index.html
