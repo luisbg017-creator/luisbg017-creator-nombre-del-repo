@@ -6,7 +6,11 @@ on:
     paths:
       - '.github/workflows/materialize-v11.yml'
       - 'payload/legacy-v11-01.txt'
-      - 'payload/fix2-01.txt'
+      - 'payload/fix2a-01.txt'
+      - 'payload/fix2a-02.txt'
+      - 'payload/fix2a-03.txt'
+      - 'payload/fix2a-04.txt'
+      - 'payload/fix2a-05.txt'
       - 'payload/fix2-02.txt'
       - 'payload/fix2-03.txt'
       - 'payload/fix2-04.txt'
@@ -22,16 +26,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Rebuild direct v11 HTML
+      - name: Rebuild and verify direct v11 HTML
         run: |
-          cat payload/legacy-v11-01.txt payload/fix2-01.txt payload/fix2-02.txt payload/fix2-03.txt payload/fix2-04.txt payload/legacy-v11-03.txt payload/legacy-v11-04.txt | tr -d '\r\n ' | base64 -d > /tmp/legacy-v11.html.gz
+          cat payload/legacy-v11-01.txt payload/fix2a-01.txt payload/fix2a-02.txt payload/fix2a-03.txt payload/fix2a-04.txt payload/fix2a-05.txt payload/fix2-02.txt payload/fix2-03.txt payload/fix2-04.txt payload/legacy-v11-03.txt payload/legacy-v11-04.txt | tr -d '\r\n ' | base64 -d > /tmp/legacy-v11.html.gz
           gzip -t /tmp/legacy-v11.html.gz
           gzip -dc /tmp/legacy-v11.html.gz > index.html
           test -s index.html
+          test "$(wc -c < index.html)" -eq 169257
+          echo "ea293ada86e01806f3c9db04145c5885f8c1f1942f54eb35b38fa47a823b4523  index.html" | sha256sum -c -
           grep -q '<!DOCTYPE html>' index.html
           grep -q 'SAFARI 2026' index.html
-          wc -c index.html
-          sha256sum index.html
       - name: Commit direct HTML
         run: |
           git config user.name "github-actions[bot]"
