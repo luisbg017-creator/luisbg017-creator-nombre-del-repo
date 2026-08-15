@@ -1,8 +1,8 @@
 (() => {
-  if (window.__SAFARI_META_V23_READY__) return;
-  window.__SAFARI_META_V23_READY__ = true;
+  if (window.__SAFARI_META_V24_READY__) return;
+  window.__SAFARI_META_V24_READY__ = true;
 
-  const VERSION = 'v23';
+  const VERSION = 'v24';
   const STAFF_SESSION_STORAGE = 'legacyCurrentStaffV1';
 
   function currentStaffName() {
@@ -19,6 +19,7 @@
   function installVersionBadge() {
     const intro = document.getElementById('intro');
     if (!intro) return;
+
     let badge = intro.querySelector('#safariVersionBadge');
     if (!badge) {
       badge = document.createElement('div');
@@ -26,7 +27,12 @@
       badge.className = 'safari-version-badge';
       intro.appendChild(badge);
     }
-    badge.innerHTML = `<span>VERSIÓN</span><strong>${VERSION.toUpperCase()}</strong>`;
+
+    const label = `VERSIÓN ${VERSION.toUpperCase()}`;
+    if (badge.dataset.versionLabel !== label) {
+      badge.dataset.versionLabel = label;
+      badge.innerHTML = `<span>VERSIÓN</span><strong>${VERSION.toUpperCase()}</strong>`;
+    }
   }
 
   function setCreator(item, author) {
@@ -42,14 +48,18 @@
 
   function afterExistingSubmit(callback) {
     setTimeout(() => {
-      try { callback(); } catch (error) { console.warn('Safari v23 creator metadata:', error); }
+      try {
+        callback();
+      } catch (error) {
+        console.warn('Safari creator metadata:', error);
+      }
     }, 0);
   }
 
   function trackComodines() {
     const form = document.getElementById('comodinEditorForm');
-    if (!form || form.dataset.v23Creator === '1') return;
-    form.dataset.v23Creator = '1';
+    if (!form || form.dataset.creatorTracked === '1') return;
+    form.dataset.creatorTracked = '1';
 
     form.addEventListener('submit', () => {
       let before = new Set();
@@ -72,8 +82,8 @@
 
   function trackArchivo() {
     const form = document.getElementById('itemEditorForm');
-    if (!form || form.dataset.v23Creator === '1') return;
-    form.dataset.v23Creator = '1';
+    if (!form || form.dataset.creatorTracked === '1') return;
+    form.dataset.creatorTracked = '1';
 
     form.addEventListener('submit', () => {
       let category = '';
@@ -93,7 +103,9 @@
         });
         if (changed) {
           saveArchivoData();
-          if (typeof currentArchivoCategory !== 'undefined' && currentArchivoCategory === category) renderArchivo();
+          if (typeof currentArchivoCategory !== 'undefined' && currentArchivoCategory === category) {
+            renderArchivo();
+          }
         }
       });
     }, true);
@@ -101,8 +113,8 @@
 
   function trackLeaders() {
     const form = document.getElementById('leaderEditorForm');
-    if (!form || form.dataset.v23Creator === '1') return;
-    form.dataset.v23Creator = '1';
+    if (!form || form.dataset.creatorTracked === '1') return;
+    form.dataset.creatorTracked = '1';
 
     form.addEventListener('submit', () => {
       let group = '';
@@ -130,8 +142,8 @@
 
   function trackSanctions() {
     const form = document.getElementById('sanctionEditorForm');
-    if (!form || form.dataset.v23Creator === '1') return;
-    form.dataset.v23Creator = '1';
+    if (!form || form.dataset.creatorTracked === '1') return;
+    form.dataset.creatorTracked = '1';
 
     form.addEventListener('submit', () => {
       let teamId = null;
@@ -153,74 +165,83 @@
         });
         if (changed) {
           saveScoreTeams();
-          if (typeof currentSanctionsTeamId !== 'undefined' && currentSanctionsTeamId === teamId) renderSanctions();
+          if (typeof currentSanctionsTeamId !== 'undefined' && currentSanctionsTeamId === teamId) {
+            renderSanctions();
+          }
           renderScoreTable();
         }
       });
     }, true);
   }
 
-  function creatorMeta(name) {
+  function syncCreatorMeta(host, name) {
+    if (!(host instanceof HTMLElement)) return;
+    const existing = host.querySelector(':scope > .safari-added-by');
+
+    if (!name) {
+      if (existing) existing.remove();
+      return;
+    }
+
+    const text = `Añadido por ${name}`;
+    if (existing) {
+      if (existing.textContent !== text) existing.textContent = text;
+      return;
+    }
+
     const meta = document.createElement('small');
     meta.className = 'safari-added-by';
-    meta.textContent = `Añadido por ${name}`;
-    return meta;
+    meta.textContent = text;
+    host.appendChild(meta);
   }
 
   function annotateComodines() {
     const list = document.getElementById('comodinesList');
-    if (!list || typeof comodinesData === 'undefined') return;
+    if (!list || typeof comodinesData === 'undefined' || !Array.isArray(comodinesData)) return;
+
     list.querySelectorAll('.comodin-item').forEach(row => {
-      const id = row.dataset.comodinId;
-      const item = comodinesData.find(entry => String(entry.id) === String(id));
-      const host = row.querySelector('.comodin-copy');
-      if (!host) return;
-      host.querySelector('.safari-added-by')?.remove();
-      if (item?.createdBy) host.appendChild(creatorMeta(item.createdBy));
+      const item = comodinesData.find(entry => String(entry.id) === String(row.dataset.comodinId));
+      syncCreatorMeta(row.querySelector('.comodin-copy'), item?.createdBy || '');
     });
   }
 
   function annotateArchivo() {
     const list = document.getElementById('archivoItems');
-    if (!list || typeof archivoData === 'undefined') return;
+    if (!list || typeof archivoData === 'undefined' || typeof currentArchivoCategory === 'undefined') return;
+
     const items = Array.isArray(archivoData[currentArchivoCategory]) ? archivoData[currentArchivoCategory] : [];
     list.querySelectorAll('.archivo-item').forEach(row => {
       const item = items.find(entry => String(entry.id) === String(row.dataset.id));
       const host = row.children?.[1];
-      if (!(host instanceof HTMLElement)) return;
-      host.querySelector('.safari-added-by')?.remove();
-      if (item?.createdBy) host.appendChild(creatorMeta(item.createdBy));
+      syncCreatorMeta(host, item?.createdBy || '');
     });
   }
 
   function annotateLeaders() {
     const root = document.getElementById('leadersGroups');
     if (!root || typeof leadersData === 'undefined') return;
+
     root.querySelectorAll('.leader-row').forEach(row => {
       const button = row.querySelector('button[data-id]');
       if (!button) return;
       const group = button.dataset.group;
       const item = (leadersData[group] || []).find(entry => String(entry.id) === String(button.dataset.id));
-      const host = row.querySelector('.leader-name');
-      if (!host) return;
-      host.querySelector('.safari-added-by')?.remove();
-      if (item?.createdBy) host.appendChild(creatorMeta(item.createdBy));
+      syncCreatorMeta(row.querySelector('.leader-name'), item?.createdBy || '');
     });
   }
 
   function annotateSanctions() {
     const root = document.getElementById('sanctionsList');
     if (!root || typeof currentSanctionsTeamId === 'undefined' || !currentSanctionsTeamId) return;
+
     const team = getTeamById(currentSanctionsTeamId);
     if (!team) return;
+
     root.querySelectorAll('.sanction-row').forEach(row => {
       const button = row.querySelector('button[data-id]');
       if (!button) return;
       const item = (team.sanctions || []).find(entry => String(entry.id) === String(button.dataset.id));
-      const host = row.querySelector('.sanction-reason');
-      if (!host) return;
-      host.querySelector('.safari-added-by')?.remove();
-      if (item?.createdBy) host.appendChild(creatorMeta(item.createdBy));
+      syncCreatorMeta(row.querySelector('.sanction-reason'), item?.createdBy || '');
     });
   }
 
@@ -228,7 +249,7 @@
   function annotateAllSoon() {
     if (annotateQueued) return;
     annotateQueued = true;
-    queueMicrotask(() => {
+    requestAnimationFrame(() => {
       annotateQueued = false;
       try { annotateComodines(); } catch (error) {}
       try { annotateArchivo(); } catch (error) {}
@@ -240,8 +261,8 @@
   function wireObservers() {
     ['comodinesList', 'archivoItems', 'leadersGroups', 'sanctionsList'].forEach(id => {
       const node = document.getElementById(id);
-      if (!node || node.dataset.v23Observer === '1') return;
-      node.dataset.v23Observer = '1';
+      if (!node || node.dataset.creatorObserver === '1') return;
+      node.dataset.creatorObserver = '1';
       new MutationObserver(annotateAllSoon).observe(node, { childList: true, subtree: true });
     });
   }
@@ -265,7 +286,6 @@
   const bodyObserver = new MutationObserver(() => {
     installVersionBadge();
     wireObservers();
-    annotateAllSoon();
   });
   bodyObserver.observe(document.body, { childList: true, subtree: true });
 })();
