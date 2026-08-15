@@ -26,6 +26,7 @@
 
   addStylesheet('./deploy/v16-map.css?v=16', 'safari-map-v16-css');
   addStylesheet('./deploy/v22-map-mobile-search.css?v=22', 'safari-map-v22-css');
+  addStylesheet('./deploy/v23-meta.css?v=23', 'safari-meta-v23-css');
 
   const parts = [
     './deploy/v16-map-part-01.txt?v=22',
@@ -39,6 +40,10 @@
 
   (async () => {
     try {
+      // V23 is independent from the map runtime: show version immediately
+      // and capture creator metadata for all editable items.
+      await loadScript('./deploy/v23-meta.js?v=23', 'safari-meta-v23-js');
+
       // V22 patches Leaflet before V16 creates the map, so search results can
       // focus the live map reliably. It also observes the V16 modal replacement.
       await loadScript('./deploy/v22-map-mobile-search.js?v=22', 'safari-map-v22-js');
@@ -53,13 +58,11 @@
       eval(code);
 
       // One authoritative map stack: V16 runtime + V22 search/mobile layer.
-      // Do not load V17/V21 here; those partial replacements caused the search
-      // bar to disappear in some browsers.
       window.__SAFARI_V22_INSTALL?.();
       setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 80);
       setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 300);
     } catch (error) {
-      console.error('No se pudo iniciar Safari Map V16/V22:', error);
+      console.error('No se pudo iniciar Safari Map V16/V22/V23:', error);
       window.__SAFARI_MAP_V16_LOADING__ = false;
       try { window.__SAFARI_V22_INSTALL?.(); } catch (installError) {}
     }
