@@ -3,7 +3,8 @@
   window.__SAFARI_MAP_V16_LOADING__ = true;
 
   const addStylesheet = (href, id) => {
-    if (document.getElementById(id)) return;
+    const old = document.getElementById(id);
+    if (old) old.remove();
     const link = document.createElement('link');
     link.id = id;
     link.rel = 'stylesheet';
@@ -11,31 +12,37 @@
     document.head.appendChild(link);
   };
 
-  const loadV21Boot = () => {
-    const old = document.getElementById('safari-v21-map-boot-from-v16');
+  const loadScript = (src, id) => new Promise((resolve, reject) => {
+    const old = document.getElementById(id);
     if (old) old.remove();
     const script = document.createElement('script');
-    script.id = 'safari-v21-map-boot-from-v16';
-    script.src = `./deploy/v21-map-boot.js?v=21&t=${Date.now()}`;
-    script.async = true;
+    script.id = id;
+    script.src = src;
+    script.async = false;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
     document.body.appendChild(script);
-  };
+  });
 
   addStylesheet('./deploy/v16-map.css?v=16', 'safari-map-v16-css');
+  addStylesheet('./deploy/v22-map-mobile-search.css?v=22', 'safari-map-v22-css');
 
   const parts = [
-    './deploy/v16-map-part-01.txt?v=16',
-    './deploy/v16-map-part-02.txt?v=16',
-    './deploy/v16-map-part-03.txt?v=16',
-    './deploy/v16-map-part-04.txt?v=16',
-    './deploy/v16-map-part-05.txt?v=16',
-    './deploy/v16-map-part-06.txt?v=16',
-    './deploy/v16-map-part-07.txt?v=16'
+    './deploy/v16-map-part-01.txt?v=22',
+    './deploy/v16-map-part-02.txt?v=22',
+    './deploy/v16-map-part-03.txt?v=22',
+    './deploy/v16-map-part-04.txt?v=22',
+    './deploy/v16-map-part-05.txt?v=22',
+    './deploy/v16-map-part-06.txt?v=22',
+    './deploy/v16-map-part-07.txt?v=22'
   ];
 
   (async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // V22 patches Leaflet before V16 creates the map, so search results can
+      // focus the live map reliably. It also observes the V16 modal replacement.
+      await loadScript('./deploy/v22-map-mobile-search.js?v=22', 'safari-map-v22-js');
+      await new Promise(resolve => setTimeout(resolve, 40));
 
       const responses = await Promise.all(parts.map(url => fetch(url, { cache: 'no-store' })));
       for (const response of responses) {
@@ -45,14 +52,16 @@
       const code = (await Promise.all(responses.map(response => response.text()))).join('');
       eval(code);
 
-      // V21 is now the authoritative map boot. It forces V17 search/groups
-      // and installs an independent search fallback if V17 cannot replace V16.
-      loadV21Boot();
+      // One authoritative map stack: V16 runtime + V22 search/mobile layer.
+      // Do not load V17/V21 here; those partial replacements caused the search
+      // bar to disappear in some browsers.
+      window.__SAFARI_V22_INSTALL?.();
+      setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 80);
+      setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 300);
     } catch (error) {
-      console.error('No se pudo iniciar Safari Map V16:', error);
+      console.error('No se pudo iniciar Safari Map V16/V22:', error);
       window.__SAFARI_MAP_V16_LOADING__ = false;
-      // Even when the V16 runtime fails, still try the independent V21 boot.
-      loadV21Boot();
+      try { window.__SAFARI_V22_INSTALL?.(); } catch (installError) {}
     }
   })();
 })();
