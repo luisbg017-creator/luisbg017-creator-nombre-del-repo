@@ -1,4 +1,4 @@
-name: Force Safari V28 loader
+name: Force Safari V29 loader
 
 on:
   push:
@@ -17,37 +17,38 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate V28 JavaScript
+      - name: Validate V29 JavaScript
         run: |
-          node --check deploy/safari-loader-v28.js
+          node --check deploy/safari-loader-v29.js
+          node --check deploy/v29-archivo.js
           node --check deploy/v27-map.js
           node --check deploy/v22-map-mobile-search.js
 
-      - name: Switch index to brand-new V28 loader filename
+      - name: Switch index to cache-safe V29 loader
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          pattern = r'<script src="\.\/deploy\/(?:v16-map-loader\.js\?v=\d+|safari-loader-v28\.js(?:\?v=\d+)?)"></script>'
-          replacement = '<script src="./deploy/safari-loader-v28.js"></script>'
+          pattern = r'<script src="\.\/deploy\/(?:v16-map-loader\.js\?v=\d+|safari-loader-v28\.js(?:\?v=\d+)?|safari-loader-v29\.js(?:\?v=\d+)?)"></script>'
+          replacement = '<script src="./deploy/safari-loader-v29.js?v=29"></script>'
           s2, count = re.subn(pattern, replacement, s)
           if count == 0:
-              raise SystemExit('Map loader reference not found')
+              raise SystemExit('Safari loader reference not found')
           if 'http-equiv="Cache-Control"' not in s2:
               s2 = s2.replace('<head>', '<head>\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n  <meta http-equiv="Pragma" content="no-cache">\n  <meta http-equiv="Expires" content="0">', 1)
           p.write_text(s2, encoding='utf-8')
           PY
 
-      - name: Commit V28 loader switch
+      - name: Commit V29 loader switch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then
-            echo "Index already uses Safari V28 loader"
+            echo "Index already uses Safari V29 loader"
           else
-            git commit -m "Activate cache-safe Safari V28 loader"
+            git commit -m "Activate cache-safe Safari V29 loader"
             git push
           fi
