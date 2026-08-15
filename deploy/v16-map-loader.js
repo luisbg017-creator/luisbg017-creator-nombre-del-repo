@@ -1,8 +1,8 @@
 (() => {
-  if (window.__SAFARI_LOADER_V26_READY__) return;
-  window.__SAFARI_LOADER_V26_READY__ = true;
+  if (window.__SAFARI_LOADER_V27_READY__) return;
+  window.__SAFARI_LOADER_V27_READY__ = true;
 
-  const VERSION = 'V26';
+  const VERSION = 'V27';
   let mapPromise = null;
   let mapReady = false;
   let metaPromise = null;
@@ -66,76 +66,38 @@
   }
 
   async function ensureLeaflet() {
-    addStylesheet(
-      'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-      'safari-leaflet-v26-css'
-    );
-
+    addStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', 'safari-leaflet-v27-css');
     if (window.L?.map) return;
 
-    await loadScript(
-      'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-      'safari-leaflet-v26-js'
-    );
-
+    await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', 'safari-leaflet-v27-js');
     if (!window.L?.map) throw new Error('Leaflet no quedó disponible');
   }
 
   function loadMeta() {
     if (metaPromise) return metaPromise;
-    addStylesheet('./deploy/v23-meta.css?v=26', 'safari-meta-v25-css');
-    metaPromise = loadScript('./deploy/v23-meta.js?v=26', 'safari-meta-v25-js')
-      .catch(error => {
-        console.warn('Safari metadata no pudo cargarse:', error);
-        metaPromise = null;
-      });
+    addStylesheet('./deploy/v23-meta.css?v=27', 'safari-meta-v27-css');
+    metaPromise = loadScript('./deploy/v23-meta.js?v=27', 'safari-meta-v27-js').catch(error => {
+      console.warn('Safari metadata no pudo cargarse:', error);
+      metaPromise = null;
+    });
     return metaPromise;
   }
 
   async function loadMapCore() {
-    addStylesheet('./deploy/v16-map.css?v=26', 'safari-map-v16-css');
+    addStylesheet('./deploy/v16-map.css?v=27', 'safari-map-v16-css');
 
-    const parts = [
-      './deploy/v16-map-part-01.txt?v=26',
-      './deploy/v16-map-part-02.txt?v=26',
-      './deploy/v16-map-part-03.txt?v=26',
-      './deploy/v16-map-part-04.txt?v=26',
-      './deploy/v16-map-part-05.txt?v=26',
-      './deploy/v16-map-part-06.txt?v=26',
-      './deploy/v16-map-part-07.txt?v=26'
-    ];
-
-    const responses = await Promise.all(
-      parts.map(url => fetch(url, { cache: 'no-store' }))
-    );
-
-    for (let i = 0; i < responses.length; i += 1) {
-      if (!responses[i].ok) {
-        throw new Error(`No se pudo cargar el fragmento ${i + 1} (${responses[i].status})`);
-      }
-    }
-
-    const code = (await Promise.all(responses.map(response => response.text()))).join('');
-    if (!code.trim()) throw new Error('El código del mapa llegó vacío');
-
-    eval(code);
+    await loadScript('./deploy/v27-map.js?v=27', 'safari-map-v27-core');
 
     if (!window.__SAFARI_MAP_V16_READY__ || !window.SafariMapV16?.open) {
-      throw new Error('El mapa base no terminó de inicializar');
+      throw new Error('El mapa validado no terminó de inicializar');
     }
   }
 
   async function loadSearchAndMobilePatch() {
-    addStylesheet('./deploy/v22-map-mobile-search.css?v=26', 'safari-map-v22-css');
-
-    await loadScript(
-      './deploy/v22-map-mobile-search.js?v=26',
-      'safari-map-v22-js'
-    );
-
+    addStylesheet('./deploy/v22-map-mobile-search.css?v=27', 'safari-map-v22-css');
+    await loadScript('./deploy/v22-map-mobile-search.js?v=27', 'safari-map-v22-js');
     window.__SAFARI_V22_INSTALL?.();
-    setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 80);
-    setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 240);
+    setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 100);
   }
 
   async function loadMapStack() {
@@ -143,18 +105,13 @@
     if (mapPromise) return mapPromise;
 
     mapPromise = (async () => {
-      window.__SAFARI_MAP_V16_LOADING__ = true;
-
       try {
         await ensureLeaflet();
         await loadMapCore();
         await loadSearchAndMobilePatch();
-
         mapReady = true;
-        window.__SAFARI_MAP_V16_LOADING__ = false;
       } catch (error) {
-        console.error('No se pudo iniciar Safari Map V26:', error);
-        window.__SAFARI_MAP_V16_LOADING__ = false;
+        console.error('No se pudo iniciar Safari Map V27:', error);
         mapPromise = null;
         throw error;
       }
@@ -163,51 +120,45 @@
     return mapPromise;
   }
 
-  function restoreMapButton(originalHTML) {
-    const liveButton = document.getElementById('openLegacyMap');
-    if (!liveButton) return;
-    liveButton.disabled = false;
-    liveButton.innerHTML = originalHTML;
+  function restoreButton(html) {
+    const button = document.getElementById('openLegacyMap');
+    if (!button) return;
+    button.disabled = false;
+    button.innerHTML = html;
   }
 
   function wireLazyLoading() {
     const enterBtn = document.getElementById('enterBtn');
-    if (enterBtn && enterBtn.dataset.v26MetaWire !== '1') {
-      enterBtn.dataset.v26MetaWire = '1';
-      enterBtn.addEventListener('click', () => {
-        setTimeout(loadMeta, 0);
-      }, { once: true, passive: true });
+    if (enterBtn && enterBtn.dataset.v27MetaWire !== '1') {
+      enterBtn.dataset.v27MetaWire = '1';
+      enterBtn.addEventListener('click', () => setTimeout(loadMeta, 0), { once: true, passive: true });
     }
 
     document.addEventListener('click', event => {
-      const mapTrigger = event.target.closest('#openLegacyMap,.open-map-btn');
-      if (!mapTrigger) return;
-
-      if (mapReady && window.SafariMapV16?.open) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        window.SafariMapV16.open();
-        return;
-      }
+      const trigger = event.target.closest('#openLegacyMap,.open-map-btn');
+      if (!trigger) return;
 
       event.preventDefault();
       event.stopImmediatePropagation();
 
-      const originalHTML = mapTrigger.innerHTML;
-      mapTrigger.disabled = true;
-      mapTrigger.textContent = 'CARGANDO MAPA…';
+      if (mapReady && window.SafariMapV16?.open) {
+        window.SafariMapV16.open();
+        return;
+      }
+
+      const originalHTML = trigger.innerHTML;
+      trigger.disabled = true;
+      trigger.textContent = 'CARGANDO MAPA…';
 
       loadMeta();
-
       loadMapStack()
         .then(() => {
-          restoreMapButton(originalHTML);
+          restoreButton(originalHTML);
           window.SafariMapV16.open();
         })
         .catch(error => {
-          restoreMapButton(originalHTML);
-          console.error(error);
-          alert(`No se pudo cargar el mapa: ${error?.message || 'error desconocido'}. Intentá nuevamente.`);
+          restoreButton(originalHTML);
+          alert(`No se pudo cargar el mapa: ${error?.message || 'error desconocido'}.`);
         });
     }, true);
   }
@@ -222,5 +173,3 @@
     }, { once: true });
   }
 })();
-
-// V26 deployment marker: Leaflet -> core map -> search/mobile patch -> open.
