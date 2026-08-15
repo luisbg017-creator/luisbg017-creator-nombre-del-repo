@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'deploy/v16-map-loader.js'
+      - '.github/workflows/enable-v16-map.yml'
 
 permissions:
   contents: write
@@ -19,16 +20,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Add v16 map loader to index
+      - name: Enable authoritative V16 + V22 map loader
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          tag = '<script src="./deploy/v16-map-loader.js?v=16"></script>'
-          if 'deploy/v16-map-loader.js' not in s:
+          tag = '<script src="./deploy/v16-map-loader.js?v=22"></script>'
+
+          pattern = r'<script\s+src=["\']\./deploy/v16-map-loader\.js\?v=\d+["\']\s*></script>'
+          if re.search(pattern, s):
+              s = re.sub(pattern, tag, s, count=1)
+          elif 'deploy/v16-map-loader.js' not in s:
               s = s.replace('</body>', f'  {tag}\n</body>', 1)
-              p.write_text(s, encoding='utf-8')
+
+          p.write_text(s, encoding='utf-8')
           PY
 
       - name: Commit loader reference
@@ -37,8 +45,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then
-            echo "v16 loader already enabled"
+            echo "v22 cache key already enabled"
           else
-            git commit -m "Enable Safari 2026 Legacy v16 map [skip ci]"
+            git commit -m "Load Safari map v22 without stale cache [skip ci]"
             git push
           fi
