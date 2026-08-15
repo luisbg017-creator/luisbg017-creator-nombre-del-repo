@@ -3,10 +3,11 @@
   if (window.__SAFARI_LOADER_V28_READY__) return;
   window.__SAFARI_LOADER_V28_READY__ = true;
 
-  const VERSION = 'V28';
+  const VERSION = 'V29';
   let mapPromise = null;
   let mapReady = false;
   let metaPromise = null;
+  let archivePromise = null;
 
   function installVersionBadge() {
     const intro = document.getElementById('intro');
@@ -60,6 +61,25 @@
     });
   }
 
+  function loadArchiveFix() {
+    if (window.__SAFARI_ARCHIVO_V29_READY__) return Promise.resolve();
+    if (archivePromise) return archivePromise;
+
+    archivePromise = loadScript('./deploy/v29-archivo.js?v=29', 'safari-archivo-v29-js')
+      .then(() => {
+        if (!window.__SAFARI_ARCHIVO_V29_READY__) {
+          throw new Error('El módulo Carpeta V29 no terminó de iniciar');
+        }
+      })
+      .catch((error) => {
+        console.error('Safari Carpeta V29 no pudo cargarse:', error);
+        archivePromise = null;
+        throw error;
+      });
+
+    return archivePromise;
+  }
+
   async function ensureLeaflet() {
     addStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', 'safari-leaflet-v28-css');
     if (window.L?.map) return;
@@ -69,11 +89,13 @@
 
   function loadMeta() {
     if (metaPromise) return metaPromise;
-    addStylesheet('./deploy/v23-meta.css?v=28', 'safari-meta-v28-css');
-    metaPromise = loadScript('./deploy/v23-meta.js?v=28', 'safari-meta-v28-js').catch(error => {
-      console.warn('Safari metadata no pudo cargarse:', error);
-      metaPromise = null;
-    });
+    addStylesheet('./deploy/v23-meta.css?v=29', 'safari-meta-v29-css');
+    metaPromise = loadScript('./deploy/v23-meta.js?v=29', 'safari-meta-v29-js')
+      .then(() => installVersionBadge())
+      .catch(error => {
+        console.warn('Safari metadata no pudo cargarse:', error);
+        metaPromise = null;
+      });
     return metaPromise;
   }
 
@@ -87,11 +109,7 @@
       addStylesheet('./deploy/v16-map.css?v=28', 'safari-map-v28-core-css');
       addStylesheet('./deploy/v22-map-mobile-search.css?v=28', 'safari-map-v28-search-css');
 
-      // Important: install search/mobile patch BEFORE creating Leaflet map,
-      // so it can capture the map instance reliably.
       await loadScript('./deploy/v22-map-mobile-search.js?v=28', 'safari-map-v28-search-js');
-
-      // Single validated map core. No eval(), no fragmented concatenation.
       await loadScript('./deploy/v27-map.js?v=28', 'safari-map-v28-core-js');
 
       if (!window.__SAFARI_MAP_V16_READY__ || !window.SafariMapV16?.open) {
@@ -104,7 +122,7 @@
 
       mapReady = true;
     })().catch(error => {
-      console.error('No se pudo iniciar Safari Map V28:', error);
+      console.error('No se pudo iniciar Safari Map V29:', error);
       mapPromise = null;
       throw error;
     });
@@ -121,9 +139,12 @@
 
   function wireLazyLoading() {
     const enterBtn = document.getElementById('enterBtn');
-    if (enterBtn && enterBtn.dataset.v28MetaWire !== '1') {
-      enterBtn.dataset.v28MetaWire = '1';
-      enterBtn.addEventListener('click', () => setTimeout(loadMeta, 0), { once: true, passive: true });
+    if (enterBtn && enterBtn.dataset.v29MetaWire !== '1') {
+      enterBtn.dataset.v29MetaWire = '1';
+      enterBtn.addEventListener('click', () => {
+        setTimeout(loadMeta, 0);
+        setTimeout(loadArchiveFix, 0);
+      }, { once: true, passive: true });
     }
 
     document.addEventListener('click', event => {
@@ -144,6 +165,7 @@
       trigger.textContent = 'CARGANDO MAPA…';
 
       loadMeta();
+      loadArchiveFix().catch(() => {});
       loadMapStack()
         .then(() => {
           restoreButton(originalHTML);
@@ -152,18 +174,20 @@
         })
         .catch(error => {
           restoreButton(originalHTML);
-          alert(`No se pudo cargar el mapa V28: ${error?.message || 'error desconocido'}.`);
+          alert(`No se pudo cargar el mapa V29: ${error?.message || 'error desconocido'}.`);
         });
     }, true);
   }
 
   installVersionBadge();
   wireLazyLoading();
+  loadArchiveFix().catch(() => {});
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       installVersionBadge();
       wireLazyLoading();
+      loadArchiveFix().catch(() => {});
     }, { once: true });
   }
 })();
