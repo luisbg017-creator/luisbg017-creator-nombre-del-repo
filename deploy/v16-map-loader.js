@@ -1,8 +1,8 @@
 (() => {
-  if (window.__SAFARI_LOADER_V25_READY__) return;
-  window.__SAFARI_LOADER_V25_READY__ = true;
+  if (window.__SAFARI_LOADER_V26_READY__) return;
+  window.__SAFARI_LOADER_V26_READY__ = true;
 
-  const VERSION = 'V25';
+  const VERSION = 'V26';
   let mapPromise = null;
   let mapReady = false;
   let metaPromise = null;
@@ -34,7 +34,11 @@
   }
 
   function addStylesheet(href, id) {
-    if (document.getElementById(id)) return;
+    const existing = document.getElementById(id);
+    if (existing) {
+      if (existing.getAttribute('href') !== href) existing.setAttribute('href', href);
+      return;
+    }
     const link = document.createElement('link');
     link.id = id;
     link.rel = 'stylesheet';
@@ -61,56 +65,95 @@
     });
   }
 
+  async function ensureLeaflet() {
+    addStylesheet(
+      'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+      'safari-leaflet-v26-css'
+    );
+
+    if (window.L?.map) return;
+
+    await loadScript(
+      'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+      'safari-leaflet-v26-js'
+    );
+
+    if (!window.L?.map) throw new Error('Leaflet no quedó disponible');
+  }
+
   function loadMeta() {
     if (metaPromise) return metaPromise;
-    addStylesheet('./deploy/v23-meta.css?v=25', 'safari-meta-v25-css');
-    metaPromise = loadScript('./deploy/v23-meta.js?v=25', 'safari-meta-v25-js')
+    addStylesheet('./deploy/v23-meta.css?v=26', 'safari-meta-v25-css');
+    metaPromise = loadScript('./deploy/v23-meta.js?v=26', 'safari-meta-v25-js')
       .catch(error => {
-        console.warn('Safari V25 metadata no pudo cargarse:', error);
+        console.warn('Safari metadata no pudo cargarse:', error);
         metaPromise = null;
       });
     return metaPromise;
+  }
+
+  async function loadMapCore() {
+    addStylesheet('./deploy/v16-map.css?v=26', 'safari-map-v16-css');
+
+    const parts = [
+      './deploy/v16-map-part-01.txt?v=26',
+      './deploy/v16-map-part-02.txt?v=26',
+      './deploy/v16-map-part-03.txt?v=26',
+      './deploy/v16-map-part-04.txt?v=26',
+      './deploy/v16-map-part-05.txt?v=26',
+      './deploy/v16-map-part-06.txt?v=26',
+      './deploy/v16-map-part-07.txt?v=26'
+    ];
+
+    const responses = await Promise.all(
+      parts.map(url => fetch(url, { cache: 'no-store' }))
+    );
+
+    for (let i = 0; i < responses.length; i += 1) {
+      if (!responses[i].ok) {
+        throw new Error(`No se pudo cargar el fragmento ${i + 1} (${responses[i].status})`);
+      }
+    }
+
+    const code = (await Promise.all(responses.map(response => response.text()))).join('');
+    if (!code.trim()) throw new Error('El código del mapa llegó vacío');
+
+    eval(code);
+
+    if (!window.__SAFARI_MAP_V16_READY__ || !window.SafariMapV16?.open) {
+      throw new Error('El mapa base no terminó de inicializar');
+    }
+  }
+
+  async function loadSearchAndMobilePatch() {
+    addStylesheet('./deploy/v22-map-mobile-search.css?v=26', 'safari-map-v22-css');
+
+    await loadScript(
+      './deploy/v22-map-mobile-search.js?v=26',
+      'safari-map-v22-js'
+    );
+
+    window.__SAFARI_V22_INSTALL?.();
+    setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 80);
+    setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 240);
   }
 
   async function loadMapStack() {
     if (mapReady) return;
     if (mapPromise) return mapPromise;
 
-    window.__SAFARI_MAP_V16_LOADING__ = true;
-
     mapPromise = (async () => {
+      window.__SAFARI_MAP_V16_LOADING__ = true;
+
       try {
-        addStylesheet('./deploy/v16-map.css?v=25', 'safari-map-v16-css');
-        addStylesheet('./deploy/v22-map-mobile-search.css?v=25', 'safari-map-v22-css');
-
-        await loadScript('./deploy/v22-map-mobile-search.js?v=25', 'safari-map-v22-js');
-
-        const parts = [
-          './deploy/v16-map-part-01.txt?v=25',
-          './deploy/v16-map-part-02.txt?v=25',
-          './deploy/v16-map-part-03.txt?v=25',
-          './deploy/v16-map-part-04.txt?v=25',
-          './deploy/v16-map-part-05.txt?v=25',
-          './deploy/v16-map-part-06.txt?v=25',
-          './deploy/v16-map-part-07.txt?v=25'
-        ];
-
-        const responses = await Promise.all(parts.map(url => fetch(url, { cache: 'force-cache' })));
-        for (const response of responses) {
-          if (!response.ok) throw new Error(`Safari map part ${response.status}`);
-        }
-
-        const code = (await Promise.all(responses.map(response => response.text()))).join('');
-        eval(code);
-
-        window.__SAFARI_V22_INSTALL?.();
-        setTimeout(() => window.__SAFARI_V22_INSTALL?.(), 100);
+        await ensureLeaflet();
+        await loadMapCore();
+        await loadSearchAndMobilePatch();
 
         mapReady = true;
-        window.__SAFARI_MAP_V16_READY__ = true;
         window.__SAFARI_MAP_V16_LOADING__ = false;
       } catch (error) {
-        console.error('No se pudo iniciar Safari Map V25:', error);
+        console.error('No se pudo iniciar Safari Map V26:', error);
         window.__SAFARI_MAP_V16_LOADING__ = false;
         mapPromise = null;
         throw error;
@@ -120,10 +163,17 @@
     return mapPromise;
   }
 
+  function restoreMapButton(originalHTML) {
+    const liveButton = document.getElementById('openLegacyMap');
+    if (!liveButton) return;
+    liveButton.disabled = false;
+    liveButton.innerHTML = originalHTML;
+  }
+
   function wireLazyLoading() {
     const enterBtn = document.getElementById('enterBtn');
-    if (enterBtn && enterBtn.dataset.v25MetaWire !== '1') {
-      enterBtn.dataset.v25MetaWire = '1';
+    if (enterBtn && enterBtn.dataset.v26MetaWire !== '1') {
+      enterBtn.dataset.v26MetaWire = '1';
       enterBtn.addEventListener('click', () => {
         setTimeout(loadMeta, 0);
       }, { once: true, passive: true });
@@ -131,26 +181,33 @@
 
     document.addEventListener('click', event => {
       const mapTrigger = event.target.closest('#openLegacyMap,.open-map-btn');
-      if (!mapTrigger || mapReady) return;
+      if (!mapTrigger) return;
+
+      if (mapReady && window.SafariMapV16?.open) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.SafariMapV16.open();
+        return;
+      }
 
       event.preventDefault();
       event.stopImmediatePropagation();
 
-      const oldText = mapTrigger.textContent;
+      const originalHTML = mapTrigger.innerHTML;
       mapTrigger.disabled = true;
       mapTrigger.textContent = 'CARGANDO MAPA…';
 
       loadMeta();
+
       loadMapStack()
         .then(() => {
-          mapTrigger.disabled = false;
-          mapTrigger.textContent = oldText;
-          setTimeout(() => document.getElementById('openLegacyMap')?.click(), 0);
+          restoreMapButton(originalHTML);
+          window.SafariMapV16.open();
         })
-        .catch(() => {
-          mapTrigger.disabled = false;
-          mapTrigger.textContent = oldText;
-          alert('No se pudo cargar el mapa. Revisá tu conexión e intentá nuevamente.');
+        .catch(error => {
+          restoreMapButton(originalHTML);
+          console.error(error);
+          alert(`No se pudo cargar el mapa: ${error?.message || 'error desconocido'}. Intentá nuevamente.`);
         });
     }, true);
   }
@@ -166,4 +223,4 @@
   }
 })();
 
-// V25 deployment marker: access-safe lightweight startup.
+// V26 deployment marker: Leaflet -> core map -> search/mobile patch -> open.
