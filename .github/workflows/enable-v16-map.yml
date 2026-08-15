@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Enable authoritative V16 + V22 map loader
+      - name: Enable authoritative V16 + V22 map + V23 metadata loader
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -28,7 +28,7 @@ jobs:
 
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          tag = '<script src="./deploy/v16-map-loader.js?v=22"></script>'
+          tag = '<script src="./deploy/v16-map-loader.js?v=23"></script>'
 
           pattern = r'<script\s+src=["\']\./deploy/v16-map-loader\.js\?v=\d+["\']\s*></script>'
           if re.search(pattern, s):
@@ -45,8 +45,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then
-            echo "v22 cache key already enabled"
+            echo "v23 cache key already enabled"
           else
-            git commit -m "Load Safari map v22 without stale cache [skip ci]"
+            git commit -m "Load Safari v23 without stale cache [skip ci]"
             git push
           fi
