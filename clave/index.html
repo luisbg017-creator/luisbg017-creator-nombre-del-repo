@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <title>SAFARI 2026 — CLAVE</title>
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#050505;color:#f4f4f0;font-family:Arial,Helvetica,sans-serif}
+    body{min-height:100dvh;display:grid;place-items:center;padding:24px;overflow:hidden}
+    .frame{position:fixed;inset:18px;border:1px solid rgba(255,255,255,.12);pointer-events:none}
+    .frame:before,.frame:after{content:"";position:absolute;width:44px;height:44px;border-color:#fff;opacity:.35}
+    .frame:before{left:-1px;top:-1px;border-left:1px solid;border-top:1px solid}
+    .frame:after{right:-1px;bottom:-1px;border-right:1px solid;border-bottom:1px solid}
+    main{width:min(720px,100%);position:relative;z-index:2}
+    .eyebrow{font-size:11px;letter-spacing:.42em;color:#888;margin:0 0 18px;text-align:center}
+    h1{font-size:clamp(42px,10vw,98px);line-height:.88;letter-spacing:-.055em;margin:0;text-align:center}
+    .outline{-webkit-text-stroke:1px #f4f4f0;color:transparent}
+    .sub{text-align:center;margin:20px auto 44px;max-width:470px;color:#777;font-size:12px;line-height:1.7;letter-spacing:.12em}
+    .terminal{border:1px solid rgba(255,255,255,.18);background:#0b0b0b;padding:16px;box-shadow:0 22px 80px rgba(0,0,0,.45)}
+    .terminal-head{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(255,255,255,.1);padding:0 0 12px;margin-bottom:14px;font-size:10px;letter-spacing:.2em;color:#666}
+    form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+    input{width:100%;min-height:52px;border:1px solid rgba(255,255,255,.18);background:#050505;color:#fff;padding:0 15px;font:700 15px/1 monospace;letter-spacing:.12em;outline:none;text-transform:uppercase}
+    input:focus{border-color:#fff}
+    button{min-height:52px;border:1px solid #fff;background:#fff;color:#050505;padding:0 18px;font-size:10px;font-weight:800;letter-spacing:.14em;cursor:pointer}
+    button:disabled{opacity:.45;cursor:wait}
+    .status{min-height:30px;margin-top:12px;font:600 11px/1.5 monospace;letter-spacing:.08em;color:#777}
+    .status.error{color:#c66}
+    .status.ok{color:#8fb99a}
+    .result{display:none;margin-top:14px;border-top:1px solid rgba(255,255,255,.12);padding-top:18px}
+    .result.visible{display:grid;gap:12px;animation:reveal .45s ease both}
+    .label{font-size:9px;letter-spacing:.25em;color:#666}
+    .coords{font:700 clamp(20px,5vw,34px)/1.1 monospace;letter-spacing:.02em;word-break:break-all}
+    .open-map{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border:1px solid rgba(255,255,255,.3);color:#fff;text-decoration:none;font-size:10px;font-weight:800;letter-spacing:.12em;padding:0 14px;width:max-content}
+    .foot{margin-top:22px;text-align:center;font-size:9px;letter-spacing:.22em;color:#3f3f3f}
+    @keyframes reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    @media(max-width:600px){
+      body{padding:18px}
+      form{grid-template-columns:1fr}
+      button{width:100%}
+      .frame{inset:8px}
+      .sub{margin-bottom:28px}
+    }
+  </style>
+</head>
+<body>
+  <div class="frame"></div>
+  <main>
+    <p class="eyebrow">SAFARI 2026 · LEGACY</p>
+    <h1>ACCESS<br><span class="outline">POINT</span></h1>
+    <p class="sub">NO HAY PISTA ACÁ. SI LLEGASTE HASTA ESTA PÁGINA, YA SABÉS QUÉ TENÉS QUE INTRODUCIR.</p>
+
+    <section class="terminal">
+      <div class="terminal-head">
+        <span>COORDINATE VAULT</span>
+        <span>SECURE CHANNEL</span>
+      </div>
+
+      <form id="unlockForm">
+        <input id="codeInput" autocomplete="off" autocapitalize="characters" spellcheck="false"
+               maxlength="32" placeholder="CÓDIGO DE ACCESO" aria-label="Código de acceso" />
+        <button id="unlockBtn" type="submit">DESBLOQUEAR</button>
+      </form>
+
+      <div id="status" class="status">ESPERANDO CÓDIGO…</div>
+
+      <div id="result" class="result">
+        <span class="label">COORDENADAS DESBLOQUEADAS</span>
+        <div id="coords" class="coords"></div>
+        <a id="mapLink" class="open-map" target="_blank" rel="noopener">ABRIR UBICACIÓN ↗</a>
+      </div>
+    </section>
+
+    <div class="foot">NO COMPARTAS LA SOLUCIÓN · LEGACY</div>
+  </main>
+
+  <script>
+    const ENDPOINT = "https://sqxcygylcxlsigcmawma.supabase.co/functions/v1/safari-clave-auriazul";
+    const form = document.getElementById("unlockForm");
+    const input = document.getElementById("codeInput");
+    const button = document.getElementById("unlockBtn");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+    const coords = document.getElementById("coords");
+    const mapLink = document.getElementById("mapLink");
+
+    function setStatus(text, type=""){
+      status.textContent = text;
+      status.className = "status" + (type ? " " + type : "");
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const code = input.value.trim().toUpperCase();
+      result.classList.remove("visible");
+      if (!code) return setStatus("INTRODUCÍ UN CÓDIGO.", "error");
+
+      button.disabled = true;
+      setStatus("VALIDANDO…");
+
+      try {
+        const response = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({code})
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.ok) {
+          input.select();
+          return setStatus("ACCESO DENEGADO · CÓDIGO INCORRECTO.", "error");
+        }
+
+        const lat = Number(data.lat).toFixed(5);
+        const lng = Number(data.lng).toFixed(5);
+        coords.textContent = `${lat}, ${lng}`;
+        mapLink.href = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(lat)}&mlon=${encodeURIComponent(lng)}#map=18/${encodeURIComponent(lat)}/${encodeURIComponent(lng)}`;
+        result.classList.add("visible");
+        setStatus("ACCESO CONCEDIDO.", "ok");
+        input.value = "";
+      } catch (error) {
+        console.error(error);
+        setStatus("NO SE PUDO CONECTAR. INTENTÁ OTRA VEZ.", "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
