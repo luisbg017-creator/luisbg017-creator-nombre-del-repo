@@ -1,8 +1,8 @@
 (() => {
-  if (window.__SAFARI_META_V24_READY__) return;
-  window.__SAFARI_META_V24_READY__ = true;
+  if (window.__SAFARI_META_V25_READY__) return;
+  window.__SAFARI_META_V25_READY__ = true;
 
-  const VERSION = 'v24';
+  const VERSION = 'v25';
   const STAFF_SESSION_STORAGE = 'legacyCurrentStaffV1';
 
   function currentStaffName() {
@@ -16,23 +16,23 @@
     return 'Staff';
   }
 
-  function installVersionBadge() {
+  function ensureVersionBadge() {
     const intro = document.getElementById('intro');
     if (!intro) return;
-
-    let badge = intro.querySelector('#safariVersionBadge');
+    let badge = document.getElementById('safariVersionBadge');
     if (!badge) {
       badge = document.createElement('div');
       badge.id = 'safariVersionBadge';
-      badge.className = 'safari-version-badge';
+      badge.className = 'safari-version-badge safari-version-badge-v25';
       intro.appendChild(badge);
     }
-
-    const label = `VERSIÓN ${VERSION.toUpperCase()}`;
-    if (badge.dataset.versionLabel !== label) {
-      badge.dataset.versionLabel = label;
-      badge.innerHTML = `<span>VERSIÓN</span><strong>${VERSION.toUpperCase()}</strong>`;
+    if (badge.textContent !== `VERSIÓN ${VERSION.toUpperCase()}`) {
+      badge.textContent = `VERSIÓN ${VERSION.toUpperCase()}`;
     }
+  }
+
+  function idsOf(items) {
+    return new Set((Array.isArray(items) ? items : []).map(item => String(item?.id || '')));
   }
 
   function setCreator(item, author) {
@@ -42,36 +42,26 @@
     return true;
   }
 
-  function idsOf(items) {
-    return new Set((Array.isArray(items) ? items : []).map(item => String(item?.id || '')));
-  }
-
-  function afterExistingSubmit(callback) {
+  function afterSubmit(callback) {
     setTimeout(() => {
-      try {
-        callback();
-      } catch (error) {
-        console.warn('Safari creator metadata:', error);
-      }
+      try { callback(); } catch (error) { console.warn('Safari v25 metadata:', error); }
     }, 0);
   }
 
   function trackComodines() {
     const form = document.getElementById('comodinEditorForm');
-    if (!form || form.dataset.creatorTracked === '1') return;
-    form.dataset.creatorTracked = '1';
-
+    if (!form || form.dataset.creatorTrackedV25 === '1') return;
+    form.dataset.creatorTrackedV25 = '1';
     form.addEventListener('submit', () => {
       let before = new Set();
       try { before = idsOf(comodinesData); } catch (error) {}
       const author = currentStaffName();
-
-      afterExistingSubmit(() => {
-        if (typeof comodinesData === 'undefined' || !Array.isArray(comodinesData)) return;
+      afterSubmit(() => {
+        if (!Array.isArray(comodinesData)) return;
         let changed = false;
-        comodinesData.forEach(item => {
+        for (const item of comodinesData) {
           if (!before.has(String(item.id))) changed = setCreator(item, author) || changed;
-        });
+        }
         if (changed) {
           saveComodinesData();
           renderComodines();
@@ -82,9 +72,8 @@
 
   function trackArchivo() {
     const form = document.getElementById('itemEditorForm');
-    if (!form || form.dataset.creatorTracked === '1') return;
-    form.dataset.creatorTracked = '1';
-
+    if (!form || form.dataset.creatorTrackedV25 === '1') return;
+    form.dataset.creatorTrackedV25 = '1';
     form.addEventListener('submit', () => {
       let category = '';
       let before = new Set();
@@ -93,19 +82,15 @@
         before = idsOf(archivoData?.[category]);
       } catch (error) {}
       const author = currentStaffName();
-
-      afterExistingSubmit(() => {
-        if (!category || typeof archivoData === 'undefined') return;
-        const items = Array.isArray(archivoData[category]) ? archivoData[category] : [];
+      afterSubmit(() => {
+        const items = Array.isArray(archivoData?.[category]) ? archivoData[category] : [];
         let changed = false;
-        items.forEach(item => {
+        for (const item of items) {
           if (!before.has(String(item.id))) changed = setCreator(item, author) || changed;
-        });
+        }
         if (changed) {
           saveArchivoData();
-          if (typeof currentArchivoCategory !== 'undefined' && currentArchivoCategory === category) {
-            renderArchivo();
-          }
+          renderArchivo();
         }
       });
     }, true);
@@ -113,24 +98,18 @@
 
   function trackLeaders() {
     const form = document.getElementById('leaderEditorForm');
-    if (!form || form.dataset.creatorTracked === '1') return;
-    form.dataset.creatorTracked = '1';
-
+    if (!form || form.dataset.creatorTrackedV25 === '1') return;
+    form.dataset.creatorTrackedV25 = '1';
     form.addEventListener('submit', () => {
-      let group = '';
-      let before = new Set();
-      try {
-        group = editingLeaderGroup || '';
-        before = idsOf(leadersData?.[group]);
-      } catch (error) {}
       const author = currentStaffName();
-
-      afterExistingSubmit(() => {
-        if (!group || typeof leadersData === 'undefined') return;
-        const items = Array.isArray(leadersData[group]) ? leadersData[group] : [];
+      const before = new Set();
+      try {
+        Object.values(leadersData || {}).flat().forEach(item => before.add(String(item?.id || '')));
+      } catch (error) {}
+      afterSubmit(() => {
         let changed = false;
-        items.forEach(item => {
-          if (!before.has(String(item.id))) changed = setCreator(item, author) || changed;
+        Object.values(leadersData || {}).flat().forEach(item => {
+          if (!before.has(String(item?.id || ''))) changed = setCreator(item, author) || changed;
         });
         if (changed) {
           saveLeadersData();
@@ -142,139 +121,121 @@
 
   function trackSanctions() {
     const form = document.getElementById('sanctionEditorForm');
-    if (!form || form.dataset.creatorTracked === '1') return;
-    form.dataset.creatorTracked = '1';
-
+    if (!form || form.dataset.creatorTrackedV25 === '1') return;
+    form.dataset.creatorTrackedV25 = '1';
     form.addEventListener('submit', () => {
       let teamId = null;
       let before = new Set();
       try {
         teamId = currentSanctionsTeamId;
-        const team = getTeamById(teamId);
-        before = idsOf(team?.sanctions);
+        before = idsOf(getTeamById(teamId)?.sanctions);
       } catch (error) {}
       const author = currentStaffName();
-
-      afterExistingSubmit(() => {
-        if (!teamId) return;
-        const team = getTeamById(teamId);
+      afterSubmit(() => {
+        const team = teamId ? getTeamById(teamId) : null;
         if (!team || !Array.isArray(team.sanctions)) return;
         let changed = false;
-        team.sanctions.forEach(item => {
+        for (const item of team.sanctions) {
           if (!before.has(String(item.id))) changed = setCreator(item, author) || changed;
-        });
+        }
         if (changed) {
           saveScoreTeams();
-          if (typeof currentSanctionsTeamId !== 'undefined' && currentSanctionsTeamId === teamId) {
-            renderSanctions();
-          }
+          renderSanctions();
           renderScoreTable();
         }
       });
     }, true);
   }
 
-  function syncCreatorMeta(host, name) {
-    if (!(host instanceof HTMLElement)) return;
-    const existing = host.querySelector(':scope > .safari-added-by');
-
-    if (!name) {
-      if (existing) existing.remove();
-      return;
-    }
-
-    const text = `Añadido por ${name}`;
-    if (existing) {
-      if (existing.textContent !== text) existing.textContent = text;
-      return;
-    }
-
-    const meta = document.createElement('small');
-    meta.className = 'safari-added-by';
-    meta.textContent = text;
-    host.appendChild(meta);
+  function metaEl(name) {
+    const el = document.createElement('small');
+    el.className = 'safari-added-by';
+    el.textContent = `Añadido por ${name}`;
+    return el;
   }
 
   function annotateComodines() {
-    const list = document.getElementById('comodinesList');
-    if (!list || typeof comodinesData === 'undefined' || !Array.isArray(comodinesData)) return;
-
-    list.querySelectorAll('.comodin-item').forEach(row => {
+    if (!Array.isArray(window.comodinesData)) return;
+    document.querySelectorAll('#comodinesList .comodin-item').forEach(row => {
       const item = comodinesData.find(entry => String(entry.id) === String(row.dataset.comodinId));
-      syncCreatorMeta(row.querySelector('.comodin-copy'), item?.createdBy || '');
+      const host = row.querySelector('.comodin-copy');
+      if (!host) return;
+      host.querySelector(':scope > .safari-added-by')?.remove();
+      if (item?.createdBy) host.appendChild(metaEl(item.createdBy));
     });
   }
 
   function annotateArchivo() {
-    const list = document.getElementById('archivoItems');
-    if (!list || typeof archivoData === 'undefined' || typeof currentArchivoCategory === 'undefined') return;
-
-    const items = Array.isArray(archivoData[currentArchivoCategory]) ? archivoData[currentArchivoCategory] : [];
-    list.querySelectorAll('.archivo-item').forEach(row => {
-      const item = items.find(entry => String(entry.id) === String(row.dataset.id));
-      const host = row.children?.[1];
-      syncCreatorMeta(host, item?.createdBy || '');
-    });
+    try {
+      const items = Array.isArray(archivoData?.[currentArchivoCategory]) ? archivoData[currentArchivoCategory] : [];
+      document.querySelectorAll('#archivoItems .archivo-item').forEach(row => {
+        const item = items.find(entry => String(entry.id) === String(row.dataset.id));
+        const host = row.children?.[1];
+        if (!(host instanceof HTMLElement)) return;
+        host.querySelector(':scope > .safari-added-by')?.remove();
+        if (item?.createdBy) host.appendChild(metaEl(item.createdBy));
+      });
+    } catch (error) {}
   }
 
   function annotateLeaders() {
-    const root = document.getElementById('leadersGroups');
-    if (!root || typeof leadersData === 'undefined') return;
-
-    root.querySelectorAll('.leader-row').forEach(row => {
-      const button = row.querySelector('button[data-id]');
-      if (!button) return;
-      const group = button.dataset.group;
-      const item = (leadersData[group] || []).find(entry => String(entry.id) === String(button.dataset.id));
-      syncCreatorMeta(row.querySelector('.leader-name'), item?.createdBy || '');
-    });
+    try {
+      document.querySelectorAll('#leadersGroups .leader-row').forEach(row => {
+        const button = row.querySelector('button[data-id]');
+        const host = row.querySelector('.leader-name');
+        if (!button || !host) return;
+        const item = (leadersData?.[button.dataset.group] || []).find(entry => String(entry.id) === String(button.dataset.id));
+        host.querySelector(':scope > .safari-added-by')?.remove();
+        if (item?.createdBy) host.appendChild(metaEl(item.createdBy));
+      });
+    } catch (error) {}
   }
 
   function annotateSanctions() {
-    const root = document.getElementById('sanctionsList');
-    if (!root || typeof currentSanctionsTeamId === 'undefined' || !currentSanctionsTeamId) return;
-
-    const team = getTeamById(currentSanctionsTeamId);
-    if (!team) return;
-
-    root.querySelectorAll('.sanction-row').forEach(row => {
-      const button = row.querySelector('button[data-id]');
-      if (!button) return;
-      const item = (team.sanctions || []).find(entry => String(entry.id) === String(button.dataset.id));
-      syncCreatorMeta(row.querySelector('.sanction-reason'), item?.createdBy || '');
-    });
+    try {
+      const team = getTeamById(currentSanctionsTeamId);
+      if (!team) return;
+      document.querySelectorAll('#sanctionsList .sanction-row').forEach(row => {
+        const button = row.querySelector('button[data-id]');
+        const host = row.querySelector('.sanction-reason');
+        if (!button || !host) return;
+        const item = (team.sanctions || []).find(entry => String(entry.id) === String(button.dataset.id));
+        host.querySelector(':scope > .safari-added-by')?.remove();
+        if (item?.createdBy) host.appendChild(metaEl(item.createdBy));
+      });
+    } catch (error) {}
   }
 
-  let annotateQueued = false;
-  function annotateAllSoon() {
-    if (annotateQueued) return;
-    annotateQueued = true;
-    requestAnimationFrame(() => {
-      annotateQueued = false;
-      try { annotateComodines(); } catch (error) {}
-      try { annotateArchivo(); } catch (error) {}
-      try { annotateLeaders(); } catch (error) {}
-      try { annotateSanctions(); } catch (error) {}
-    });
-  }
-
-  function wireObservers() {
-    ['comodinesList', 'archivoItems', 'leadersGroups', 'sanctionsList'].forEach(id => {
-      const node = document.getElementById(id);
-      if (!node || node.dataset.creatorObserver === '1') return;
-      node.dataset.creatorObserver = '1';
-      new MutationObserver(annotateAllSoon).observe(node, { childList: true, subtree: true });
-    });
+  function wrapRender(name, annotate) {
+    try {
+      const original = window[name];
+      if (typeof original !== 'function' || original.__v25Wrapped) return;
+      const wrapped = function (...args) {
+        const result = original.apply(this, args);
+        setTimeout(annotate, 0);
+        return result;
+      };
+      wrapped.__v25Wrapped = true;
+      window[name] = wrapped;
+    } catch (error) {}
   }
 
   function install() {
-    installVersionBadge();
+    ensureVersionBadge();
     trackComodines();
     trackArchivo();
     trackLeaders();
     trackSanctions();
-    wireObservers();
-    annotateAllSoon();
+    wrapRender('renderComodines', annotateComodines);
+    wrapRender('renderArchivo', annotateArchivo);
+    wrapRender('renderLeaders', annotateLeaders);
+    wrapRender('renderSanctions', annotateSanctions);
+    setTimeout(() => {
+      annotateComodines();
+      annotateArchivo();
+      annotateLeaders();
+      annotateSanctions();
+    }, 0);
   }
 
   if (document.readyState === 'loading') {
@@ -282,10 +243,4 @@
   } else {
     install();
   }
-
-  const bodyObserver = new MutationObserver(() => {
-    installVersionBadge();
-    wireObservers();
-  });
-  bodyObserver.observe(document.body, { childList: true, subtree: true });
 })();
