@@ -1,9 +1,11 @@
 (() => {
-  if (window.__SAFARI_MAP_V17_LOADING__ || window.__SAFARI_MAP_V17_READY__) return;
+  if (window.__SAFARI_MAP_V17_READY__) return;
+  if (window.__SAFARI_MAP_V17_LOADING__) return;
   window.__SAFARI_MAP_V17_LOADING__ = true;
 
   const addStylesheet = (href, id) => {
-    if (document.getElementById(id)) return;
+    const old = document.getElementById(id);
+    if (old) old.remove();
     const link = document.createElement('link');
     link.id = id;
     link.rel = 'stylesheet';
@@ -12,7 +14,8 @@
   };
 
   const addScript = (src, id) => {
-    if (document.getElementById(id)) return;
+    const old = document.getElementById(id);
+    if (old) old.remove();
     const script = document.createElement('script');
     script.id = id;
     script.src = src;
@@ -20,26 +23,24 @@
     document.body.appendChild(script);
   };
 
-  addStylesheet('./deploy/v17-map.css?v=17', 'safari-map-v17-css');
-  addStylesheet('./deploy/v18-layout.css?v=18', 'safari-layout-v18-css');
-  addStylesheet('./deploy/v19-layout.css?v=19', 'safari-layout-v19-css');
-  addStylesheet('./deploy/v20-layout.css?v=20', 'safari-layout-v20-css');
+  addStylesheet('./deploy/v17-map.css?v=21', 'safari-map-v17-css');
+  addStylesheet('./deploy/v20-layout.css?v=21', 'safari-layout-v20-css');
 
   const parts = [
-    './deploy/v17-map-part-01.txt?v=17',
-    './deploy/v17-map-part-02.txt?v=17',
-    './deploy/v17-map-part-03.txt?v=17',
-    './deploy/v17-map-part-04.txt?v=17',
-    './deploy/v17-map-part-05.txt?v=17',
-    './deploy/v17-map-part-06.txt?v=17',
-    './deploy/v17-map-part-07.txt?v=17',
-    './deploy/v17-map-part-08.txt?v=17'
+    './deploy/v17-map-part-01.txt?v=21',
+    './deploy/v17-map-part-02.txt?v=21',
+    './deploy/v17-map-part-03.txt?v=21',
+    './deploy/v17-map-part-04.txt?v=21',
+    './deploy/v17-map-part-05.txt?v=21',
+    './deploy/v17-map-part-06.txt?v=21',
+    './deploy/v17-map-part-07.txt?v=21',
+    './deploy/v17-map-part-08.txt?v=21'
   ];
 
   const waitForV16 = async () => {
-    const deadline = Date.now() + 7000;
+    const deadline = Date.now() + 10000;
     while (!window.__SAFARI_MAP_V16_READY__ && Date.now() < deadline) {
-      await new Promise(resolve => setTimeout(resolve, 80));
+      await new Promise(resolve => setTimeout(resolve, 60));
     }
   };
 
@@ -54,12 +55,16 @@
 
       const code = (await Promise.all(responses.map(response => response.text()))).join('');
       eval(code);
-      addScript('./deploy/v18-layout.js?v=18', 'safari-layout-v18-js');
-      addScript('./deploy/v19-layout.js?v=19', 'safari-layout-v19-js');
-      addScript('./deploy/v20-layout.js?v=20', 'safari-layout-v20-js');
+
+      if (!window.__SAFARI_MAP_V17_READY__) {
+        throw new Error('V17 runtime did not finish initialization');
+      }
+
+      addScript('./deploy/v20-layout.js?v=21', 'safari-layout-v20-js');
     } catch (error) {
       console.error('No se pudo iniciar Safari Map V17:', error);
       window.__SAFARI_MAP_V17_LOADING__ = false;
+      window.dispatchEvent(new CustomEvent('safari-map-v17-failed', { detail: String(error) }));
     }
   })();
 })();
