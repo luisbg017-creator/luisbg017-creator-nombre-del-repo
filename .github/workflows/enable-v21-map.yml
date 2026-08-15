@@ -1,0 +1,50 @@
+name: Enable Safari v21 map
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'deploy/v21-map-boot.js'
+      - '.github/workflows/enable-v21-map.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  enable-v21-map:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Force fresh map loaders in index
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace('./deploy/v16-map-loader.js?v=16', './deploy/v16-map-loader.js?v=21')
+          s = s.replace('./deploy/v16-map-loader.js?v=20', './deploy/v16-map-loader.js?v=21')
+
+          tag = '<script src="./deploy/v21-map-boot.js?v=21"></script>'
+          if 'deploy/v21-map-boot.js' not in s:
+              s = s.replace('</body>', f'  {tag}\n</body>', 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit activation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "v21 map already enabled"
+          else
+            git commit -m "Enable Safari v21 map boot"
+            git push
+          fi
