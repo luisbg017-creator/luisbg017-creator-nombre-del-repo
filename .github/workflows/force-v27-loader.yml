@@ -21,10 +21,14 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          s = s.replace('./deploy/v16-map-loader.js?v=26', './deploy/v16-map-loader.js?v=27')
-          p.write_text(s, encoding='utf-8')
+          pattern = r'\.\/deploy\/v16-map-loader\.js\?v=\d+'
+          s2, count = re.subn(pattern, './deploy/v16-map-loader.js?v=27', s)
+          if count == 0:
+              raise SystemExit('Map loader reference not found')
+          p.write_text(s2, encoding='utf-8')
           PY
 
       - name: Commit V27 loader switch
