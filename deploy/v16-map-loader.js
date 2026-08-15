@@ -11,10 +11,12 @@
     document.head.appendChild(link);
   };
 
-  const loadV17 = () => {
-    if (window.__SAFARI_MAP_V17_LOADING__ || window.__SAFARI_MAP_V17_READY__) return;
+  const loadV21Boot = () => {
+    const old = document.getElementById('safari-v21-map-boot-from-v16');
+    if (old) old.remove();
     const script = document.createElement('script');
-    script.src = './deploy/v17-map-loader.js?v=17';
+    script.id = 'safari-v21-map-boot-from-v16';
+    script.src = `./deploy/v21-map-boot.js?v=21&t=${Date.now()}`;
     script.async = true;
     document.body.appendChild(script);
   };
@@ -33,7 +35,7 @@
 
   (async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 120));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const responses = await Promise.all(parts.map(url => fetch(url, { cache: 'no-store' })));
       for (const response of responses) {
@@ -42,10 +44,15 @@
 
       const code = (await Promise.all(responses.map(response => response.text()))).join('');
       eval(code);
-      loadV17();
+
+      // V21 is now the authoritative map boot. It forces V17 search/groups
+      // and installs an independent search fallback if V17 cannot replace V16.
+      loadV21Boot();
     } catch (error) {
       console.error('No se pudo iniciar Safari Map V16:', error);
       window.__SAFARI_MAP_V16_LOADING__ = false;
+      // Even when the V16 runtime fails, still try the independent V21 boot.
+      loadV21Boot();
     }
   })();
 })();
