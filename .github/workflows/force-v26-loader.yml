@@ -1,0 +1,42 @@
+name: Force Safari v26 loader
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - '.github/workflows/force-v26-loader.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  switch-loader:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Force V26 cache key
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('v16-map-loader.js?v=25', 'v16-map-loader.js?v=26')
+          s = s.replace('v16-map-loader.js?v=24', 'v16-map-loader.js?v=26')
+          s = s.replace('v16-map-loader.js?v=23', 'v16-map-loader.js?v=26')
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit V26 loader switch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "V26 loader already active"
+          else
+            git commit -m "Activate Safari V26 map loader"
+            git push
+          fi
