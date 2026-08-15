@@ -165,3 +165,5 @@
     }, { once: true });
   }
 })();
+
+// V25 deployment marker: access-safe lightweight startup.
