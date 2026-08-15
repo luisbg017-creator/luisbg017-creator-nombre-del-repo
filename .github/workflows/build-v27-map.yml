@@ -31,6 +31,20 @@ jobs:
             deploy/v16-map-part-07.txt \
             > deploy/v27-map.js
 
+      - name: Repair malformed editor quote
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('deploy/v27-map.js')
+          s = p.read_text(encoding='utf-8')
+          bad = 'id=\\"mapPointEditorForm">'
+          good = 'id=\\"mapPointEditorForm\\">'
+          if bad not in s:
+              raise SystemExit('Expected malformed mapPointEditorForm sequence not found')
+          s = s.replace(bad, good, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Validate JavaScript syntax
         run: node --check deploy/v27-map.js
 
