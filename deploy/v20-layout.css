@@ -1,0 +1,386 @@
+/* ==========================================================
+   SAFARI 2026 LEGACY · V20
+   STRICT VIEWPORT FIT — NO MODAL/PRIMARY ACTION MAY BE CUT
+   ========================================================== */
+
+:root {
+  --v20-vw: 100vw;
+  --v20-vh: 100dvh;
+  --v20-vtop: 0px;
+  --v20-vleft: 0px;
+  --v20-gap: 12px;
+}
+
+.folder-modal,
+.schedule-modal,
+.archivo-modal,
+.item-editor-modal,
+.profile-editor-modal,
+.export-password-modal,
+.score-modal,
+.score-password-modal,
+.sanctions-modal,
+.sanction-editor-modal,
+.leaders-modal,
+.leader-editor-modal,
+.comodin-editor-modal,
+.map-modal,
+.map-point-editor-modal {
+  position: fixed !important;
+  inset: auto !important;
+  top: var(--v20-vtop) !important;
+  left: var(--v20-vleft) !important;
+  width: var(--v20-vw) !important;
+  height: var(--v20-vh) !important;
+  max-width: var(--v20-vw) !important;
+  max-height: var(--v20-vh) !important;
+  padding:
+    max(var(--v20-gap), env(safe-area-inset-top))
+    max(var(--v20-gap), env(safe-area-inset-right))
+    max(var(--v20-gap), env(safe-area-inset-bottom))
+    max(var(--v20-gap), env(safe-area-inset-left)) !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+.folder-modal.open .folder-window,
+.schedule-modal.open .schedule-window,
+.archivo-modal.open .archivo-window,
+.item-editor-modal.open .item-editor-window,
+.profile-editor-modal.open .profile-editor-window,
+.export-password-modal.open .export-password-window,
+.score-modal.open .score-window,
+.score-password-modal.open .score-password-window,
+.sanctions-modal.open .sanctions-window,
+.sanction-editor-modal.open .sanction-editor-window,
+.leaders-modal.open .leaders-window,
+.leader-editor-modal.open .leader-editor-window,
+.comodin-editor-modal.open .comodin-editor-window,
+.map-modal.open .map-window,
+.map-point-editor-modal.open .map-point-editor-window {
+  transform: none !important;
+}
+
+.folder-window,
+.schedule-window,
+.archivo-window,
+.score-window,
+.sanctions-window,
+.leaders-window,
+.map-window {
+  margin: 0 !important;
+  max-width: calc(var(--v20-vw) - (var(--v20-gap) * 2)) !important;
+  height: calc(var(--v20-vh) - (var(--v20-gap) * 2)) !important;
+  max-height: calc(var(--v20-vh) - (var(--v20-gap) * 2)) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#comodinesModal .folder-window {
+  width: min(900px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  display: grid !important;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto !important;
+}
+#comodinesModal .folder-header,
+#comodinesModal .folder-path,
+#comodinesModal .comodines-toolbar,
+#comodinesModal .folder-footer {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  flex-shrink: 0 !important;
+}
+#comodinesModal .comodines-list,
+#comodinesModal .comodines-empty {
+  grid-row: 4 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#comodinesModal .folder-footer { grid-row: 5 !important; }
+#comodinesModal .add-comodin-btn,
+#comodinesModal #addComodinEmptyBtn { min-height: 42px; flex-shrink: 0; }
+
+#cronogramaModal .schedule-window {
+  width: min(1080px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+}
+#cronogramaModal .schedule-header,
+#cronogramaModal .schedule-intro,
+#cronogramaModal .schedule-footer {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+#cronogramaModal .schedule-days {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#archivoModal .archivo-window {
+  width: min(1040px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  display: grid !important;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto !important;
+  padding-bottom: 0 !important;
+}
+#archivoModal .archivo-header,
+#archivoModal .archivo-toolbar,
+#archivoModal .archivo-section-head,
+#archivoModal .archivo-footer {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  flex-shrink: 0 !important;
+}
+#archivoModal .archivo-header { grid-row: 1 !important; }
+#archivoModal .archivo-toolbar { grid-row: 2 !important; }
+#archivoModal .archivo-section-head { grid-row: 3 !important; }
+#archivoModal .archivo-items,
+#archivoModal .archivo-empty {
+  grid-row: 4 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#archivoModal .archivo-items { padding-bottom: 18px !important; }
+#archivoModal .archivo-footer { grid-row: 5 !important; }
+#archivoModal .archivo-toolbar-actions { min-width: 0 !important; flex-shrink: 0 !important; }
+#archivoModal .archivo-add-btn,
+#archivoModal .archivo-export-btn,
+#archivoModal #addArchivoItemEmpty { min-height: 42px; }
+
+#scoreModal .score-window {
+  width: min(1120px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto !important;
+}
+#scoreModal .score-header,
+#scoreModal .score-summary,
+#scoreModal .score-note,
+#scoreModal .score-footer {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+#scoreModal .league-table-wrap {
+  min-height: 0 !important;
+  overflow: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#sanctionsModal .sanctions-window {
+  width: min(850px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  padding-bottom: 0 !important;
+}
+#sanctionsModal .sanctions-header,
+#sanctionsModal .sanctions-summary,
+#sanctionsModal .sanctions-footer {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+#sanctionsModal .sanctions-list,
+#sanctionsModal .sanctions-empty {
+  grid-row: 3 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#sanctionsModal .sanctions-footer { grid-row: 4 !important; }
+
+#leadersModal .leaders-window {
+  width: min(980px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+}
+#leadersModal .leaders-header,
+#leadersModal .leaders-summary,
+#leadersModal .leaders-footer {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+#leadersModal .leaders-groups {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.item-editor-window,
+.profile-editor-window,
+.export-password-window,
+.score-password-window,
+.sanction-editor-window,
+.leader-editor-window,
+.comodin-editor-window,
+.map-point-editor-window {
+  margin: 0 !important;
+  width: min(680px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  max-width: calc(var(--v20-vw) - (var(--v20-gap) * 2)) !important;
+  max-height: calc(var(--v20-vh) - (var(--v20-gap) * 2)) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+}
+#itemEditorForm,
+#profileEditorForm,
+#exportPasswordForm,
+#scorePasswordForm,
+#sanctionEditorForm,
+#leaderEditorForm,
+#comodinEditorForm,
+#mapPointEditorForm {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+}
+.item-editor-actions,
+.profile-editor-actions,
+.export-password-actions,
+.score-password-actions,
+.sanction-editor-actions,
+.leader-editor-actions,
+.comodin-editor-actions,
+.map-point-editor-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 25 !important;
+  background: #f2f2ef !important;
+  padding-top: 10px !important;
+  padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+}
+
+#mapModal .map-window {
+  width: min(1540px, calc(var(--v20-vw) - (var(--v20-gap) * 2))) !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+}
+#mapModal .map-header,
+#mapModal .map-footer {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+#mapModal .map-layout,
+#mapModal .map-canvas-wrap {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+#mapModal .map-search-shell {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: absolute !important;
+  left: 12px !important;
+  top: 12px !important;
+  width: min(520px, calc(100% - 24px)) !important;
+  max-width: calc(100% - 24px) !important;
+  z-index: 980 !important;
+}
+#mapModal .map-floating-actions {
+  position: absolute !important;
+  left: 12px !important;
+  top: 118px !important;
+  z-index: 970 !important;
+  max-width: calc(100% - 24px) !important;
+}
+#mapModal .route-floating-panel {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  max-width: min(420px, calc(100% - 24px)) !important;
+  max-height: calc(100% - 24px) !important;
+  overflow-y: auto !important;
+  z-index: 990 !important;
+}
+#mapModal .map-sidebar {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 820px), (pointer: coarse) {
+  :root { --v20-gap: 0px; }
+  .folder-modal,.schedule-modal,.archivo-modal,.item-editor-modal,.profile-editor-modal,.export-password-modal,.score-modal,.score-password-modal,.sanctions-modal,.sanction-editor-modal,.leaders-modal,.leader-editor-modal,.comodin-editor-modal,.map-modal,.map-point-editor-modal { padding: 0 !important; }
+  .folder-window,.schedule-window,.archivo-window,.score-window,.sanctions-window,.leaders-window,.map-window {
+    width: var(--v20-vw) !important;
+    max-width: var(--v20-vw) !important;
+    height: var(--v20-vh) !important;
+    max-height: var(--v20-vh) !important;
+    border: 0 !important;
+  }
+  .folder-close,.schedule-close,.archivo-close,.score-close,#closeSanctions,.leaders-close,#closeLegacyMap,#closeComodinEditor,#closeMapPointEditor,#closeItemEditor,#closeProfileEditor,#closeExportPassword,#closeScorePassword,#closeSanctionEditor,#closeLeaderEditor {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+  #archivoModal .archivo-header { min-height: 58px !important; padding: max(7px, env(safe-area-inset-top)) 10px 7px !important; }
+  #archivoModal .archivo-title-group p,#archivoModal .archivo-folder-symbol { display: none !important; }
+  #archivoModal .archivo-toolbar { padding: 7px 8px !important; display: grid !important; gap: 6px !important; }
+  #archivoModal .archivo-tabs { width: 100% !important; overflow-x: auto !important; display: flex !important; flex-wrap: nowrap !important; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  #archivoModal .archivo-tabs::-webkit-scrollbar { display: none; }
+  #archivoModal .archivo-tab { flex: 0 0 auto !important; min-height: 38px !important; }
+  #archivoModal .archivo-toolbar-actions { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; width: 100% !important; }
+  #archivoModal .archivo-add-btn,#archivoModal .archivo-export-btn { width: 100% !important; min-width: 0 !important; min-height: 42px !important; white-space: normal !important; line-height: 1.15 !important; }
+  #archivoModal .archivo-section-head { min-height: 70px !important; padding: 10px 12px !important; }
+  #archivoModal .archivo-items { padding: 0 11px 16px !important; }
+  #archivoModal .archivo-item { grid-template-columns: 28px minmax(0, 1fr) !important; gap: 8px !important; }
+  #archivoModal .archivo-item-actions { grid-column: 2 !important; width: 100% !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  #archivoModal .archivo-item-actions button { width: 100% !important; min-height: 40px !important; }
+  #archivoModal .archivo-footer { display: none !important; }
+  #comodinesModal .folder-header { min-height: 58px !important; padding: max(7px, env(safe-area-inset-top)) 10px 7px !important; }
+  #comodinesModal .folder-title-wrap p,#comodinesModal .folder-symbol { display: none !important; }
+  #comodinesModal .folder-path { min-height: 32px !important; padding: 6px 10px !important; }
+  #comodinesModal .comodines-toolbar { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(140px, auto) !important; gap: 7px !important; padding: 7px 9px !important; }
+  #comodinesModal .add-comodin-btn { width: 100% !important; min-width: 0 !important; min-height: 42px !important; white-space: normal !important; }
+  #comodinesModal .comodines-list { padding: 0 9px 16px !important; }
+  #comodinesModal .folder-footer { display: none !important; }
+  #scoreModal .score-header,#sanctionsModal .sanctions-header,#leadersModal .leaders-header,#cronogramaModal .schedule-header { min-height: 58px !important; padding: max(7px, env(safe-area-inset-top)) 10px 7px !important; }
+  #scoreModal .score-header p,#sanctionsModal .sanctions-header p,#leadersModal .leaders-header p,#cronogramaModal .schedule-eyebrow { display: none !important; }
+  #scoreModal .score-summary,#sanctionsModal .sanctions-summary { padding: 7px 9px !important; }
+  #scoreModal .score-note { padding: 7px 9px !important; }
+  #leadersModal .leaders-summary { padding: 7px 10px !important; }
+  #leadersModal .leaders-groups { padding: 0 10px 16px !important; }
+  .item-editor-window,.profile-editor-window,.export-password-window,.score-password-window,.sanction-editor-window,.leader-editor-window,.comodin-editor-window,.map-point-editor-window {
+    width: var(--v20-vw) !important;
+    max-width: var(--v20-vw) !important;
+    max-height: var(--v20-vh) !important;
+    border-radius: 0 !important;
+  }
+  #mapModal .map-search-shell { left: 8px !important; right: 8px !important; top: max(8px, env(safe-area-inset-top)) !important; width: auto !important; max-width: none !important; z-index: 1050 !important; }
+  #mapModal .map-floating-actions { left: 8px !important; right: 8px !important; top: auto !important; bottom: max(8px, env(safe-area-inset-bottom)) !important; width: auto !important; max-width: none !important; z-index: 1040 !important; }
+  #mapModal .route-floating-panel { left: 8px !important; right: 8px !important; top: 106px !important; width: auto !important; max-width: none !important; max-height: calc(100% - 190px) !important; z-index: 1060 !important; }
+  #mapModal .map-action-hint { left: 8px !important; right: 8px !important; bottom: calc(74px + env(safe-area-inset-bottom)) !important; max-width: none !important; }
+  #mapModal .map-sidebar.mobile-open { max-height: min(68%, calc(100% - 70px)) !important; z-index: 1100 !important; }
+}
+
+@media (max-width: 390px) {
+  #comodinesModal .comodines-toolbar,#archivoModal .archivo-toolbar-actions { grid-template-columns: 1fr !important; }
+  #mapModal .map-search-types { display: none !important; }
+}
+
+@media (max-height: 650px) and (min-width: 821px) {
+  :root { --v20-gap: 6px; }
+  #archivoModal .archivo-header,#comodinesModal .folder-header,#scoreModal .score-header,#sanctionsModal .sanctions-header,#leadersModal .leaders-header,#cronogramaModal .schedule-header { min-height: 54px !important; padding-top: 7px !important; padding-bottom: 7px !important; }
+  #archivoModal .archivo-title-group p,#comodinesModal .folder-title-wrap p,#scoreModal .score-header p,#sanctionsModal .sanctions-header p,#leadersModal .leaders-header p,#cronogramaModal .schedule-eyebrow { display: none !important; }
+  #mapModal .map-search-types { display: none !important; }
+  #mapModal .map-floating-actions { top: 72px !important; }
+  #mapModal .map-action-hint { display: none !important; }
+}
