@@ -1,0 +1,49 @@
+name: Force Safari v25 loader
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/force-v25-loader.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  switch-loader:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove obsolete V15 loader and force V25 cache key
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = re.sub(r'\s*<script src="\./deploy/v15-map-loader\.js\?v=[^"]+"></script>', '', s)
+          s = re.sub(
+              r'<script src="\./deploy/v16-map-loader\.js\?v=[^"]+"></script>',
+              '<script src="./deploy/v16-map-loader.js?v=25"></script>',
+              s
+          )
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit V25 loader switch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "V25 loader already active"
+          else
+            git commit -m "Activate Safari V25 lightweight startup [skip ci]"
+            git push
+          fi
