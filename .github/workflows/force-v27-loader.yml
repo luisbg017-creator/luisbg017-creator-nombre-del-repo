@@ -1,4 +1,4 @@
-name: Force Safari V29 loader
+name: Force Safari V30 loader
 
 on:
   push:
@@ -17,22 +17,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate V29 JavaScript
+      - name: Validate V30 JavaScript
         run: |
-          node --check deploy/safari-loader-v29.js
+          node --check deploy/safari-loader-v30.js
+          node --check deploy/v30-comodines-location.js
           node --check deploy/v29-archivo.js
           node --check deploy/v27-map.js
           node --check deploy/v22-map-mobile-search.js
 
-      - name: Switch index to cache-safe V29 loader
+      - name: Switch index to cache-safe V30 loader
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          pattern = r'<script src="\.\/deploy\/(?:v16-map-loader\.js\?v=\d+|safari-loader-v28\.js(?:\?v=\d+)?|safari-loader-v29\.js(?:\?v=\d+)?)"></script>'
-          replacement = '<script src="./deploy/safari-loader-v29.js?v=29"></script>'
+          pattern = r'<script src="\.\/deploy\/(?:v16-map-loader\.js\?v=\d+|safari-loader-v28\.js(?:\?v=\d+)?|safari-loader-v29\.js(?:\?v=\d+)?|safari-loader-v30\.js(?:\?v=\d+)?)"></script>'
+          replacement = '<script src="./deploy/safari-loader-v30.js?v=30"></script>'
           s2, count = re.subn(pattern, replacement, s)
           if count == 0:
               raise SystemExit('Safari loader reference not found')
@@ -41,14 +42,14 @@ jobs:
           p.write_text(s2, encoding='utf-8')
           PY
 
-      - name: Commit V29 loader switch
+      - name: Commit V30 loader switch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then
-            echo "Index already uses Safari V29 loader"
+            echo "Index already uses Safari V30 loader"
           else
-            git commit -m "Activate cache-safe Safari V29 loader"
+            git commit -m "Activate cache-safe Safari V30 loader"
             git push
           fi
