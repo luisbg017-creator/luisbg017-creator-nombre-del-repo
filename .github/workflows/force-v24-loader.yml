@@ -1,0 +1,41 @@
+name: Force Safari v24 loader
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - '.github/workflows/force-v24-loader.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Force v24 loader in index
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('./deploy/v16-map-loader.js?v=23', './deploy/v16-map-loader.js?v=24')
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit cache bust
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "v24 already active"
+          else
+            git commit -m "Load Safari v24 without stale cache [skip ci]"
+            git push
+          fi
