@@ -22,6 +22,7 @@
 
   addStylesheet('./deploy/v17-map.css?v=17', 'safari-map-v17-css');
   addStylesheet('./deploy/v18-layout.css?v=18', 'safari-layout-v18-css');
+  addStylesheet('./deploy/v19-layout.css?v=19', 'safari-layout-v19-css');
 
   const parts = [
     './deploy/v17-map-part-01.txt?v=17',
@@ -53,6 +54,7 @@
       const code = (await Promise.all(responses.map(response => response.text()))).join('');
       eval(code);
       addScript('./deploy/v18-layout.js?v=18', 'safari-layout-v18-js');
+      addScript('./deploy/v19-layout.js?v=19', 'safari-layout-v19-js');
     } catch (error) {
       console.error('No se pudo iniciar Safari Map V17:', error);
       window.__SAFARI_MAP_V17_LOADING__ = false;
