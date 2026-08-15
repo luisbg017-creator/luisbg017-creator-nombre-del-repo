@@ -1,0 +1,47 @@
+name: Build validated Safari V27 map
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - '.github/workflows/build-v27-map.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-map:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Concatenate map core exactly
+        run: |
+          cat \
+            deploy/v16-map-part-01.txt \
+            deploy/v16-map-part-02.txt \
+            deploy/v16-map-part-03.txt \
+            deploy/v16-map-part-04.txt \
+            deploy/v16-map-part-05.txt \
+            deploy/v16-map-part-06.txt \
+            deploy/v16-map-part-07.txt \
+            > deploy/v27-map.js
+
+      - name: Validate JavaScript syntax
+        run: node --check deploy/v27-map.js
+
+      - name: Commit validated single-file map
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/v27-map.js
+          if git diff --cached --quiet; then
+            echo "Validated map already current"
+          else
+            git commit -m "Build validated Safari V27 map [skip ci]"
+            git push
+          fi
