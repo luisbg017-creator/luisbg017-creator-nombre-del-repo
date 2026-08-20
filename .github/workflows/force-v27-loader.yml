@@ -1,4 +1,4 @@
-name: Force Safari V32 loader
+name: Force Safari V33 loader
 
 on:
   push:
@@ -17,26 +17,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate V32 JavaScript
+      - name: Validate V33 JavaScript
         run: |
-          node --check deploy/safari-loader-v32.js
+          node --check deploy/safari-loader-v33.js
+          node --check deploy/v33-archivo.js
           node --check deploy/v32-device-auth.js
           node --check deploy/safari-loader-v31.js
           node --check deploy/v31-cronograma.js
           node --check deploy/v30-comodines-location.js
-          node --check deploy/v29-archivo.js
           node --check deploy/v27-map.js
           node --check deploy/v22-map-mobile-search.js
 
-      - name: Switch index to cache-safe V32 loader
+      - name: Switch index to cache-safe V33 loader
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          pattern = r'<script src="\.\/deploy\/(?:v16-map-loader\.js\?v=\d+|safari-loader-v28\.js(?:\?v=\d+)?|safari-loader-v29\.js(?:\?v=\d+)?|safari-loader-v30\.js(?:\?v=\d+)?|safari-loader-v31\.js(?:\?v=\d+)?|safari-loader-v32\.js(?:\?v=\d+)?)"></script>'
-          replacement = '<script src="./deploy/safari-loader-v32.js?v=32"></script>'
+          pattern = r'<script src="\.\/deploy\/(?:v16-map-loader\.js\?v=\d+|safari-loader-v28\.js(?:\?v=\d+)?|safari-loader-v29\.js(?:\?v=\d+)?|safari-loader-v30\.js(?:\?v=\d+)?|safari-loader-v31\.js(?:\?v=\d+)?|safari-loader-v32\.js(?:\?v=\d+)?|safari-loader-v33\.js(?:\?v=\d+)?)"></script>'
+          replacement = '<script src="./deploy/safari-loader-v33.js?v=33"></script>'
           s2, count = re.subn(pattern, replacement, s)
           if count == 0:
               raise SystemExit('Safari loader reference not found')
@@ -45,14 +45,14 @@ jobs:
           p.write_text(s2, encoding='utf-8')
           PY
 
-      - name: Commit V32 loader switch
+      - name: Commit V33 loader switch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then
-            echo "Index already uses Safari V32 loader"
+            echo "Index already uses Safari V33 loader"
           else
-            git commit -m "Activate cache-safe Safari V32 loader"
+            git commit -m "Activate cache-safe Safari V33 loader"
             git push
           fi
