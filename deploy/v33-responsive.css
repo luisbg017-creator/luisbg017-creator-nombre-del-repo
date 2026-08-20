@@ -1,0 +1,182 @@
+/* SAFARI V33 — containment-first responsive controls */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+button,
+input[type="button"],
+input[type="submit"],
+.ghost-btn,
+.comodin-found-btn,
+.archivo-edit-btn,
+.archivo-delete-btn,
+.archivo-add-btn,
+.archivo-tab,
+.schedule-close,
+.folder-close,
+.logout-staff-btn {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.card,
+.staff-profile-card,
+.comodin-item,
+.archivo-item,
+.schedule-event,
+.schedule-day,
+.folder-window,
+.schedule-window,
+.profile-editor-window,
+.comodin-editor-window,
+.item-editor-window,
+.leaders-window,
+.map-window,
+.map-panel,
+.archivo-toolbar,
+.archivo-tabs,
+.archivo-item > *,
+.comodin-item > *,
+.schedule-event > * {
+  min-width: 0 !important;
+  max-width: 100%;
+}
+
+.archivo-toolbar,
+.archivo-tabs,
+.archivo-item-actions,
+.profile-editor-actions,
+.comodin-editor-actions,
+.item-editor-actions,
+.schedule-editor-actions,
+.leader-actions,
+.map-actions,
+.folder-footer {
+  flex-wrap: wrap !important;
+}
+
+.archivo-tabs {
+  overflow: visible !important;
+  gap: 6px;
+}
+
+.archivo-tab {
+  flex: 1 1 110px;
+}
+
+.archivo-item {
+  grid-template-columns: minmax(34px, 50px) minmax(0, 1fr) minmax(0, auto) !important;
+  column-gap: 12px !important;
+  width: 100%;
+}
+
+.archivo-item-copy-v33,
+.archivo-item > div:nth-child(2) {
+  overflow-wrap: anywhere;
+}
+
+.archivo-item-actions {
+  display: flex !important;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0 !important;
+}
+
+.archivo-edit-btn,
+.archivo-delete-btn {
+  flex: 0 1 auto;
+}
+
+.comodin-item {
+  grid-template-columns: minmax(34px, 50px) minmax(0, 1fr) minmax(0, auto) !important;
+  column-gap: 12px !important;
+}
+
+.comodin-found-btn {
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+.schedule-event {
+  grid-template-columns: minmax(82px, 115px) minmax(0, 1fr) !important;
+}
+
+@media (max-width: 760px) {
+  .dashboard { padding-left: 14px !important; padding-right: 14px !important; }
+
+  .topbar,
+  .folder-header,
+  .schedule-header,
+  .archivo-toolbar {
+    gap: 10px;
+    flex-wrap: wrap !important;
+  }
+
+  .archivo-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .archivo-tab {
+    width: 100% !important;
+    min-height: 42px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .archivo-item {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    row-gap: 10px;
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .archivo-item-actions {
+    grid-column: 2;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .archivo-edit-btn,
+  .archivo-delete-btn {
+    flex: 1 1 110px;
+    min-height: 40px;
+  }
+
+  .comodin-item {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    row-gap: 10px;
+  }
+
+  .comodin-found-btn {
+    grid-column: 2;
+    width: 100% !important;
+    justify-self: stretch !important;
+  }
+
+  .schedule-event {
+    grid-template-columns: 74px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding-left: 12px !important;
+  }
+
+  .folder-footer > *,
+  .profile-editor-actions > *,
+  .comodin-editor-actions > *,
+  .item-editor-actions > *,
+  .schedule-editor-actions > *,
+  .leader-actions > *,
+  .map-actions > * {
+    flex: 1 1 140px;
+  }
+}
+
+@media (max-width: 420px) {
+  .archivo-tabs { grid-template-columns: 1fr; }
+  .archivo-item-actions { flex-direction: column; }
+  .archivo-edit-btn,
+  .archivo-delete-btn { width: 100% !important; }
+}
